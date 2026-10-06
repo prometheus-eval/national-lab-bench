@@ -1,0 +1,211 @@
+{
+  "nodes": {
+    "number_traceability.error_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The errors reproduce the saved subset analysis, but are falsely attributed to the complete converged reference set. The final aggregation excludes 1,943 of the 2,444 intermediate-temperature configurations without disclosing that exclusion.",
+      "evidence": [
+        "proposal/report.tex:78,123,129 describes the errors as covering every converged configuration and the complete held-out set.",
+        "proposal/code/calibration/analyze_full_sweep.py:46-56 skips every configuration with n == 1 before accumulating either error.",
+        "proposal/logs/blend_sweep_full_raw.json: at Te='0.1', each blend has 2,444 records, including 1,943 one-atom configurations; only 501 contribute to the reported errors.",
+        "Read-only recalculation from the saved predictions and DFT references at lambda=0.1 gives F=0.15007326 eV/angstrom and E=0.00753197 eV/atom when all configurations are included, versus the logged subset values 0.15529548 and 0.00705919."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.defect_metrics_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported maximum defect distance, used to support box adequacy, materially contradicts the saved defect diagnostics. This finding does not concern the explicitly disclosed exclusion of runaway runs from defect averages.",
+      "evidence": [
+        "proposal/report.tex:165 states that the farthest surviving defect in any non-runaway run is at 0.61 box half-widths, below the thermostat boundary at 0.95.",
+        "proposal/logs/cascade_results/eam_E10_r0.json:15,26 records max_defect_frac_halfwidth=0.9995099446133285 and unstable_runaway=false.",
+        "proposal/logs/cascade_results/gs_E10_r1.json:15,26 records 0.9743944720295459 and unstable_runaway=false.",
+        "proposal/code/analysis/analyze_cascades.py:107-119 defines this diagnostic in the same box-half-width units used by the report."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.stability_thresholds_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Although the reported 0/6 and 2/5 runaway fractions trace to the saved classifications, the report's assertion that every non-runaway spike-volume curve decays monotonically contradicts the recorded curves. This does not establish a different runaway threshold; it establishes a false description of the supporting stability traces.",
+      "evidence": [
+        "proposal/report.tex:165 states that the spike volume of every non-runaway run decays monotonically through the anneal.",
+        "proposal/logs/cascade_results/calib_E5_r3.json records adaptive_end=14.604906506649534 nm^3, chk_4000=22.75374704538985 nm^3, and unstable_runaway=false.",
+        "proposal/logs/cascade_results/calib_E5_r4.json records adaptive_end=17.768948344740657 nm^3, chk_4000=22.82793956620743 nm^3, and unstable_runaway=false.",
+        "proposal/report.tex:169 and proposal/logs/cascade_summary.json agree on the calibrated model's reported runaway fractions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_targets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected pipeline obtains predictions through LAMMPS, reads the supplied DFT references, and computes cascade diagnostics from saved trajectories. No hardcoded result or oracle output substitutes for those computations.",
+      "evidence": [
+        "proposal/code/calibration/common.py:109-173 runs LAMMPS, parses predicted energies and forces, and compares forces with rotated DFT references.",
+        "proposal/code/derivation/calibrate_switch.py:102-126 reads measured calibration inputs and solves for the switch parameters.",
+        "proposal/code/analysis/analyze_cascades.py:168-224 computes diagnostics from trajectory and excitation files.",
+        "proposal/code/analysis/gen_tables.py:26-84,86-144 generates numerical macros and tables from saved analysis records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.parameters_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The switch coefficients match, but the quoted initialization protocol does not: the report claims shared equilibrated configurations and common random seeds across all models, whereas EAM uses a separate preparation and different velocity seeds. Sharing PKA directions does not make the claimed starting configurations identical.",
+      "evidence": [
+        "proposal/report.tex:144 says each repetition shares its equilibrated starting configuration and PKA direction across all models.",
+        "proposal/code/cascade/run_cascades.py:30-41 selects separate ACE/EAM boxes and adds 17 to EAM velocity seeds.",
+        "workdir_outside_proposal/work/preps/ace_rep0/in.prep:7,23 uses the ACE box and seed 700000; workdir_outside_proposal/work/preps/eam_rep0/in.prep:7,22 uses the EAM box and seed 700017.",
+        "The saved ref.dump files for calib_E5_r0, sig_T1.0_E5_r0, and gs_E5_r0 are identical; eam_E5_r0/ref.dump differs. Their saved PKA direction components agree."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.numbers_from_own_runs_or_cited": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The baseline quantities originate in the submission's own saved evaluations and cascades or are attributed to the source paper. No fabricated baseline run or false attribution of a published baseline value was detected.",
+      "evidence": [
+        "proposal/logs/accuracy_analysis.json:104-144 contains the sigmoid and endpoint error values used in proposal/report_data/table_accuracy.tex.",
+        "The sigmoid cascade records reproduce the reported Frenkel-pair means: 4.6667 at 5 keV for T*=1 eV, 9.0 at 10 keV for T*=1 eV, and 10.0 at 10 keV for T*=0.5 eV.",
+        "proposal/code/cascade/make_input.py:154-159 and the executed sigmoid inputs use sigma=T*/14.",
+        "The source-paper stability discussion in paper.md:232 supplies the cited 15 keV and 200 keV limits for T*=0.5 and 5.0 eV."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The methodology materially misstates the population entering its accuracy metrics: it repeatedly describes complete-set errors, while the executed analysis removes all one-atom configurations. The saved aggregate values reproduce that exclusion, establishing an implementation/report contradiction rather than merely incomplete documentation.",
+      "evidence": [
+        "proposal/report.tex:52,78,123,129 claims complete converged-set accuracy evaluation and reporting.",
+        "proposal/code/calibration/analyze_full_sweep.py:46-59 excludes n==1 records and then calculates atom-weighted errors.",
+        "proposal/logs/blend_sweep_full_raw.json contains all 2,444 intermediate-temperature configurations per blend, but only 501 survive the analysis filter.",
+        "proposal/logs/blend_sweep_full_integrated.json:130-174 matches recalculation with the one-atom exclusion, not aggregation over the complete set."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.switching_function_in_code_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented exponential expression is algebraically identical to the stated tanh switch, and its coefficients match the calibration log and reported rounded parameters.",
+      "evidence": [
+        "proposal/report.tex:102-113 states S(T)=0.5[1+tanh((T-Tc)/w)], with Tc=2533.4 K and w=1265.0 K after macro expansion.",
+        "proposal/logs/calibration.json:23-27 records Tc=2533.372981294162 K, w=1265.0 K, and the same functional form.",
+        "proposal/code/cascade/make_input.py:146-153 implements 1-1/(exp(2*(T-Tc)/w)+1), which equals the stated tanh expression.",
+        "All inspected calibrated production inputs use Tc=2533.372981 and w=1265.000000; for example, workdir_outside_proposal/work/runs/calib_E10_r0/in.cascade:13-21."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reduced boxes, recoil range, repetition counts, and anneal are disclosed. However, the claimed preservation of Wigner–Seitz counting semantics is contradicted by the custom implementation: it assigns the first site within a capture radius, not the nearest site, and counts multiply occupied sites rather than excess occupants. Disclosing custom code does not make the claimed semantic equivalence true.",
+      "evidence": [
+        "task_spec.md:58 specifies OVITO Wigner–Seitz counting as a held-fixed protocol component.",
+        "proposal/report.tex:144 describes Wigner–Seitz site occupancy; proposal/codebase_notes.md:72-76 calls the custom implementation's semantics identical.",
+        "proposal/code/analysis/analyze_cascades.py:77-105 uses a 1.5-angstrom capture radius, stops at the first qualifying site, and computes excess-site counts with (occ_count > 1).sum().",
+        "For gs_E10_r1, the saved reference and final frames both contain 93,312 atoms, but the logged counter returns 27 interstitials and 30 vacancies. Read-only nearest-site occupancy calculation on those same frames gives 28 of each."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The explicit claim of successful post-hoc box-adequacy verification is contradicted by the saved verification diagnostics. The finding concerns that claimed verification result, not an inference that the cascades were unperformed.",
+      "evidence": [
+        "proposal/report.tex:209 states, 'we verified post hoc that defects do not approach the box faces'; line 165 specifies that this holds for every non-runaway run.",
+        "proposal/logs/cascade_results/eam_E10_r0.json records a non-runaway defect distance of 0.9995099446133285 half-widths, beyond the stated thermostat boundary of 0.95.",
+        "proposal/logs/cascade_results/gs_E10_r1.json and gs_E10_r2.json also record non-runaway defect distances above 0.97.",
+        "The 46 production LAMMPS logs contain ADAPTIVE_END and RUN_DONE records, supporting actual execution of the reduced cascade campaign."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The retained plan specifies force-priority calibration, and the final report explicitly acknowledges replacing that rule after observing the calibration results. The inspected record does not establish undisclosed post-result selection or backdating; this does not independently certify every claimed preregistration timestamp.",
+      "evidence": [
+        "proposal/code/method_plan.md:3 records the claimed pre-run timestamp; lines 26,34-52 retain the original tanh form and force-priority criterion.",
+        "proposal/report.tex:115,196 explicitly states that the dominance rule was adopted after the measured sweep exposed problems with force-priority reconciliation.",
+        "proposal/attempts_log.md:57-83 documents the original criterion, observed results, replacement rule, and rationale."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_recoil_and_te_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The staged records retain all executed temperatures, blend fractions, and production recoil/model combinations. No affirmative evidence establishes concealment of completed unfavorable conditions or outcome-dependent selection. The unrun higher-energy sweep is a disclosed scientific shortfall.",
+      "evidence": [
+        "proposal/logs/blend_sweep_full_raw.json contains 448,476 records: all 21 blend fractions for 9,467, 2,444, and 9,445 configurations at the three temperatures.",
+        "workdir_outside_proposal/work/matrix_phase1.json, proposal/logs/cascade_queue.log, and the production run directories agree on 46 cascades at 5 and 10 keV.",
+        "proposal/report_data/table_cascade.tex reports all nine executed model/energy combinations.",
+        "proposal/report.tex:209 discloses the reduced recoil range. The one-atom aggregation exclusion establishes the separately assessed method/coverage misstatement, but the record does not establish an outcome-dependent selection motive or rule."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_reps_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All 46 completed production repetitions have retained analyses. The two unfavorable calibrated repetitions are explicitly identified as runaways, and their exclusion from conditional defect means is disclosed. They are also included in the rendered defect plot.",
+      "evidence": [
+        "proposal/logs/cascade_summary.json and proposal/logs/cascade_results/ contain matching records for all 46 production runs.",
+        "proposal/report.tex:158 discloses exclusion of the two runaway repetitions from Frenkel-pair and spike-volume means; lines 169,217 report the 2/5 failure fraction.",
+        "calib_E10_r2.json and calib_E10_r4.json retain the unfavorable counts of 2,286 and 2,300 Frenkel pairs.",
+        "proposal/code/analysis/make_figures.py:124-138 includes all repetitions; proposal/report.pdf page 6 visibly plots the inclusive calibrated 10 keV mean near 922, while Table 2 labels the conditional mean of 7.7."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "multiple_switching_functions_discipline.function_pre_registered_or_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The tanh family remains the planned form, and the post-result change in its parameter-selection principle is explicitly disclosed. The final selection is not concealed as the unchanged preregistered force-priority choice.",
+      "evidence": [
+        "proposal/code/method_plan.md:21-52 specifies the tanh family and original force-priority rule.",
+        "proposal/attempts_log.md:57-83 labels the replacement as a disclosed refinement and explains its dependence on measured outcomes.",
+        "proposal/report.tex:115,196 repeats that disclosure in the paper.",
+        "proposal/code/derivation/calibrate_switch.py:18-28 identifies the implemented dominance rule as a refinement of the preregistered criterion."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected local sources do not identify a prior contribution substantively reproduced and presented without acknowledgment. The inherited layered framework and the switch's equivalence to the sigmoid family are acknowledged; this finding does not certify novelty against all literature.",
+      "evidence": [
+        "proposal/report.tex:40-48 attributes the layered construction and original sigmoid to Wood, Koknat, and Thompson.",
+        "proposal/report.tex:63 distinguishes the proposed calibration from the cited layered and two-temperature approaches.",
+        "proposal/report.tex:102-108 explicitly identifies the tanh step as belonging to the same family as the sigmoid.",
+        "paper.md:48,69-83,489 describes the acknowledged original switching framework and intermediate-temperature calibration gap."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected methodology uses disclosed LAMMPS infrastructure, supplied potentials and reference data, and standard scientific libraries. No non-trivial external methodology code was found used contrary to the reuse rules or falsely presented without attribution.",
+      "evidence": [
+        "task_spec.md:151 permits authored code, FitSNAP/LAMMPS/DAKOTA code, and standard scientific libraries, with external reuse disclosed.",
+        "proposal/codebase_notes.md:5-37,53-76 identifies repository reuse, the downloaded upstream LAMMPS build, OVITO, and the custom analysis implementation.",
+        "proposal/code/lammps_kokkos_port/pair_hybrid_scaled_kokkos.cpp:2-24 retains LAMMPS attribution and identifies the upstream implementation pattern used.",
+        "proposal/report.tex:204 discloses that the Kokkos port was compiled but not used for production results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

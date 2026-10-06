@@ -1,0 +1,199 @@
+{
+  "nodes": {
+    "number_traceability.phase_and_threshold_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Figure 1 describes its error bars as seed standard deviations, but the plotting code uses SEM. With 24 seeds, the displayed uncertainty is smaller by approximately 4.90 than the stated quantity. This is a material uncertainty-label contradiction; the central phase values and point thresholds otherwise reproduce from the saved records.",
+      "evidence": [
+        "proposal/report.tex:278–285 and proposal/report.pdf, p. 5, Figure 1: 'error bars are the seed standard deviation.'",
+        "proposal/code/make_figures.py:39–61 reads dev_sem and passes it as yerr.",
+        "proposal/logs/sweep_U0_nontrivial.json:2913–2934: at alpha=2, p2q=0.01 and S=8192, dev_std=0.7421902577269092 but dev_sem=0.1514989519579723.",
+        "proposal/figures/fig_threshold.pdf: the rendered final U=0 nontrivial error bar agrees with the smaller SEM."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.noise_rates_and_shots_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported base rates, coherence times, gate durations and reference shot count match the saved sweep configurations. Inspection of every saved record found consistent rate scaling and shot counts; the implementation performs binomial sampling.",
+      "evidence": [
+        "proposal/report.tex:202–211 and proposal/sections/numbers.tex:2–12 specify p2q=0.005, p1q=0.0005, readout=0.01, T1=T2=100 microseconds, 300/50 ns gates and S_ref=8192.",
+        "proposal/code/config.py:22–35 and all four proposal/logs/sweep_*.json files, base/S_ref/records fields, contain those settings.",
+        "proposal/code/noise.py:79–93 implements rate scaling; lines 326–335 and 413–423 draw finite binomial samples.",
+        "Read-only checks of all 512 saved aggregate records found no discrepancies between logged rates and alpha-scaled base values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.resource_counts_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported loop-ansatz CNOT counts and depths agree with the saved operator selections. Independently summing compilation costs and packing disjoint supports reproduced the final counts and every logged trajectory resource entry.",
+      "evidence": [
+        "proposal/sections/table.tex:17–24 reports CNOT/depth pairs 220/20, 108/11, 504/51 and 648/62.",
+        "proposal/logs/anchor_U0_nontrivial.pkl, anchor_U0_trivial.pkl, anchor_U10_nontrivial.pkl and anchor_U10_trivial.pkl: ops_final, cnot, depth and traj records reproduce those pairs.",
+        "proposal/code/engine.py:70–90 derives resources from individual selected operators.",
+        "proposal/logs/anchor_summary.txt:1–4 also agrees, including AVQITE preparation counts of 20 and 76 CNOTs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_ground_truth": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The Hamiltonian, ED reference phases and thresholds have computational implementations rather than planted result literals. The noiseless values used in the correction estimator come from computed anchor records. Archive Hamiltonian data appears in a separate validation routine, not the production model construction.",
+      "evidence": [
+        "proposal/code/sshh.py:37–81 constructs the fermionic Hamiltonian and applies the attributed OpenFermion Jordan–Wigner transform; lines 154–175 compute the ED Wilson-loop phase.",
+        "proposal/code/run_anchor.py:40–55 computes and stores phase components and the runtime ED reference.",
+        "proposal/code/threshold.py:25–74 interpolates thresholds from saved sweep deviations.",
+        "proposal/code/validate_core.py:50–78 confines archive Hamiltonian/pool loading to cross-checking; proposal/code/sweep.py:130–164 uses computed anchor values for its correction estimator."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The quoted numerical run settings match the submitted configurations and saved results: the selected dimerizations, T=20, noise profile, 24 seeds, reference shots and 0.10π tolerance. The configured McLachlan cutoff is also 10^-4; its enforcement is a separate contradiction assessed under held-fixed disclosure.",
+      "evidence": [
+        "proposal/code/config.py:11–35 specifies the four configurations, device profile, S_ref=8192 and EPS_TOL=0.10π.",
+        "proposal/code/run_anchor.py:38–42 passes l2_cut=1e-4 and the disclosed U=10 growth cap.",
+        "proposal/report.tex:161–166, 202–211 and 225–237 describe the corresponding settings.",
+        "All four anchor pickles and sweep pickles agree on configuration metadata; each sweep record contains n_seed=24."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The noiseless-anchor quantities trace to the submission's own detailed trajectories and phase components. Reference-paper and archive quantities are identified as comparisons, and no executed Trotter baseline is claimed. No false attribution of baseline numbers was detected.",
+      "evidence": [
+        "proposal/report.tex:241–268 distinguishes the submission's anchors from the archive comparison ranges.",
+        "proposal/logs/anchor_U0_nontrivial.pkl records phiB=-3.1351443439663704 and deviation=0.006448309623422688; anchor_U10_nontrivial.pkl records phiB=3.129295878958362 and deviation=0.012296774631426644.",
+        "proposal/code/run_anchor.py:21–59 generates the anchors through the submitted AVQITE/AVQDS engine.",
+        "proposal/logs/figshare_crosscheck.txt and proposal/codebase_notes.md:38–68 separately identify archive results; paper.md:225–248 and 313–317 provide the original resource context."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report claims growth keeps the McLachlan distance below 10^-4 and discloses an exception specifically for capped U=10 runs. The uncapped U=0 nontrivial trajectory also violates this condition: three accepted steps exceed the cutoff, with a maximum approximately 63 times larger. The implementation limits growth rounds instead of enforcing the claimed cutoff before every step.",
+      "evidence": [
+        "proposal/report.tex:141–148 claims the held-fixed algorithm keeps L² below 10^-4; lines 161–166 limit the disclosed cutoff exception to U=10.",
+        "proposal/code/engine.py:237–286 permits return after max_calls rounds; lines 508–511 call growth with max_calls=2 and then continue evolution.",
+        "proposal/logs/anchor_U0_nontrivial.pkl: zero-based traj[227], traj[228] and traj[229] have L²=0.00010519491976510031, 0.006294053335421351 and 0.0016965154038586505.",
+        "At traj[228], lambda=0.552529039188544 and n_theta=22, far below the U=0 cap of 260 specified in proposal/code/run_anchor.py:38."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper specifies a direct two-quadrature atan2 readout estimator. Production reconstruction instead adds the anchor phase to the difference between a noisy sampled phase and an independently sampled noiseless-control phase. That additional random control changes the estimator and its variance at finite shots. The attempts log describes the correction approach, but the paper's explicit estimator formula does not.",
+      "evidence": [
+        "proposal/report.tex:213–223 specifies phi_qc=atan2(Im,Re) from the measured overlap.",
+        "proposal/code/sweep.py:155–164 samples qc_n and qc_0 separately, then returns anchor['phi_qc'] + fold(qc_n - qc_0).",
+        "proposal/code/noise.py:413–423 confirms each estimator call draws its own real- and imaginary-quadrature binomial samples.",
+        "proposal/attempts_log.md:96–113 describes the additive anchor correction, and lines 126–140 identify the completed production sweeps as using that correction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The claimed completed production anchors and four sweeps are supported by detailed saved records and completion outputs. No inspected artifact affirmatively establishes that a claimed experiment, inspection or repair was not performed. Historical validation outputs are not fully preserved, which limits verification but does not establish a false execution claim.",
+      "evidence": [
+        "proposal/attempts_log.md:126–140 claims all four production sweeps completed with 128 records each.",
+        "proposal/logs/sweep_run_0.out through sweep_run_3.out each report SWEEP DONE, n_bins=96 and nrec=128.",
+        "All four sweep pickles actually contain 128 records, each with 24 individual phase estimates and deviations; all four anchor pickles contain detailed trajectories.",
+        "proposal/report.log:631 records an eight-page compiled PDF; proposal/code/validate_core.py and validate_noise.py contain the described validation routines."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The submission explicitly claims choices were fixed before results, including before any noisy result was examined. The staged record contains final code and retrospective attempts descriptions but no dated pre-result versions or chronology establishing when those choices were fixed. Their timing cannot be verified or affirmatively contradicted from this snapshot.",
+      "evidence": [
+        "proposal/report.tex:110–113 claims the model, estimator, tolerance and extraction rule were fixed before any results.",
+        "proposal/report.tex:168–170 states 'Everything in this section is fixed before any noisy result is examined'; line 417 calls the first-crossing rule pre-registered.",
+        "proposal/code/config.py:34–35 and proposal/code/threshold.py:1–17 repeat pre-stated/fixed claims without dated versions.",
+        "proposal/attempts_log.md records methodological revisions retrospectively; the complete staged file inventory contains no dated preregistration or version history."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_levels_and_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All recorded production sweep combinations and individual seed estimates are retained. The figures cover both interaction strengths and topological regimes, and preliminary failed dimerization choices are disclosed. No completed unfavorable results were identified as concealed through outcome-dependent selection.",
+      "evidence": [
+        "All four proposal/logs/sweep_*.pkl files contain the complete 16-alpha × 8-shot grid with 24 phiBs and devs per record: 12,288 individual phase estimates in total.",
+        "Read-only recomputation recovered every recorded mean, standard deviation and SEM from those individual values to floating-point precision.",
+        "proposal/code/make_figures.py:50–75 plots every positive-noise level at S_ref for all four configurations; lines 102–121 cover zero-noise shot sweeps.",
+        "proposal/attempts_log.md:85–94 explicitly reports the failed U=10 delta=±0.6 anchors and the subsequent choice of delta=±0.9."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "threshold_extraction_integrity.threshold_by_prestated_rule": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "All four reported point thresholds reproduce from the stated first upward crossing of mean circular deviation plus SEM at 8192 shots. Later favorable recrossings are not used to inflate robustness. There is no affirmative evidence of post-result threshold selection; the historical precommitment timing remains unresolved separately.",
+      "evidence": [
+        "proposal/report.tex:225–237 defines the first-crossing rule and conservative per-U threshold.",
+        "proposal/code/threshold.py:25–52 applies the same interpolation to each configuration.",
+        "Read-only calculations from the saved sweeps reproduce p2q thresholds 0.0001417696861455758, 0.000693196985537786, 0.000025706750848002525 and 0.000037606066903602496, matching proposal/logs/thresholds.json.",
+        "For U10_nontrivial, thresholds.json:244–278 retains a later accurate point at alpha=0.3, while alpha_star remains 0.005141350169600505; proposal/code/make_table.py:20–32 also stops at the first failure."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "variational_simulation_integrity.ansatz_growth_uses_measurable_signals": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Operator growth and stopping decisions use McLachlan quantities, energy variance and energy descent, without exact-state fidelity entering those decisions. ED also selects the explicitly disclosed initial product-state reference; that initialization choice is distinct from the operator-growth predicate assessed here. No prohibited oracle-driven growth was detected.",
+      "evidence": [
+        "proposal/code/engine.py:197–286 and 292–313 rank and append operators using metric/force-derived distance reductions.",
+        "proposal/code/engine.py:391–415 controls AVQITE growth and termination using energy, variance and descent; fidelity is calculated afterward at lines 418–423.",
+        "proposal/code/engine.py:486–500 uses ED states for recorded infidelity, separately from the growth call at lines 508–511.",
+        "proposal/report.tex:161–166 discloses the ED-derived product-state reference implemented in proposal/code/engine.py:363–369."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission acknowledges the original adaptive-variational method and relevant predecessor work. The inspected source and citation record do not identify a prior noise-resilience contribution that was substantively reproduced without acknowledgment. This finding is limited to the supplied evidence and does not certify exhaustive novelty.",
+      "evidence": [
+        "proposal/report.tex:84–95 and 423–437 attribute the AVQDS Berry-phase method and distinguish the noise characterization.",
+        "proposal/references.bib attributes Mootz–Yao, AVQDS, AVQITE, cyclic adiabatic estimation and related topology/noise work.",
+        "paper.md:225 explicitly describes the original results as noiseless; lines 329–331 discuss noise-related future directions.",
+        "The staged report, implementation and notes contain no identifiable unacknowledged follow-up used as the source of the claimed noise study."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The observable external dependencies are standard libraries credited in the codebase notes. The production methodology code is included, and archive parsing is separated into reference validation. No affirmative evidence of prohibited or unattributed nontrivial external code reuse was found.",
+      "evidence": [
+        "proposal/codebase_notes.md:70–91 attributes OpenFermion, NumPy/SciPy, h5py, Qiskit/Aer and Matplotlib and identifies the locally authored modules.",
+        "proposal/code/sshh.py:19–21 imports OpenFermion for the attributed Hamiltonian/Jordan–Wigner operations.",
+        "proposal/code/engine.py, noise.py, sweep.py and threshold.py contain the production methodology implementation.",
+        "proposal/code/validate_core.py:50–78 and figshare_crosscheck.py inspect archive data for comparisons; validate_noise.py:123–199 separates the optional Qiskit validation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

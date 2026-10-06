@@ -1,0 +1,193 @@
+{
+  "nodes": {
+    "number_traceability.errors_and_margins_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported errors, uncertainties, improvements, and intervention effects agree with the saved per-specification evaluations after the stated averaging and rounding. Independent read-only calculations found no discrepancies in the evaluation aggregates or three-seed summaries.",
+      "evidence": [
+        "proposal/logs/main_results_table.tex:11-13 reports CoDA relative errors 0.1493, 0.1449, and 0.0137; proposal/logs/final_aggregate_metrics.json records 0.1492998150, 0.1448592253, and 0.0136589923 for the corresponding partitions.",
+        "proposal/logs/eval_final_{baseline,naive,anchored}_seed{0,1,2}.json, results.normal: per-specification values reproduce the aggregate means and sample SDs.",
+        "proposal/logs/final_aggregate_metrics.json, preregistered_clear_win_decisions: raw-control margins 0.0484026575, 0.0468049903, and 0.0863540940 reproduce proposal/logs/decision_table.tex.",
+        "proposal/code/evaluate.py:45-54 explicitly distinguishes relative L2, absolute RMS, unnormalized L2, and MAE; saved unnormalized norms equal 160 times RMS on the 25,600-point grid."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.breadth_and_latent_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The breadth counts and latent statistics match their saved sources. The report explicitly limits breadth to two evaluated IC families, one boundary type, and one PDE family, without claiming boundary or cross-PDE transfer.",
+      "evidence": [
+        "proposal/report.tex:268-271 and proposal/logs/final_aggregate_metrics.json, breadth: one training IC family, two evaluated IC families, one boundary type, and one PDE family.",
+        "proposal/logs/final_latent_diagnostics.json, seed_diagnostics: correlations 0.9238863100, 0.9336747953, and 0.9403269183 give 0.9326293412 ± 0.0082700140, matching the reported 0.933 ± 0.008.",
+        "proposal/report.tex:428-446 and proposal/logs/final_latent_diagnostics.json: minimum latent distance 0.1407518983, novelty/error correlation 0.5403674130, and maximum rectangle residual 4.311265656e-08 match the displayed rounded values.",
+        "proposal/code/mechanism_final.py:36-72 computes diagnostics from checkpoints, profile representations, and saved evaluation results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_reference_or_encodings": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implementation computes references, IC representations, predictions, and metrics at runtime. Fixed profile definitions, architectural constants, and plan hashes do not substitute fabricated outputs for computation. The analytic reaction reference is explicitly identified and matches the supplied construction.",
+      "evidence": [
+        "proposal/code/common.py:161-195 computes Fourier coefficients from sampled IC values; lines 230-241 implement the logistic reference and evaluation grid.",
+        "workdir_outside_proposal/code/P2INN/data_gen/systems.py:50-56 and 76-92 provide the same logistic reaction construction.",
+        "proposal/code/evaluate_final.py:29-47 loads trained checkpoints, predicts solutions, constructs references, and computes metrics separately.",
+        "proposal/code/model.py:82-128 implements learned encoding and decoding; it does not replace network predictions with the analytic reaction solution."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The final report's architecture, representation, optimizer, epochs, seeds, point counts, evaluation grid, and checkpoint policy match the submitted configuration and run evidence. The successive development architectures are disclosed rather than represented as the final method.",
+      "evidence": [
+        "proposal/report.tex:196-235 and 273-290 specify 64 sensors, cutoff 16, the 9/41-dimensional branches, Adam at 0.001, 20,000 epochs, seeds 0/1/2, and δ=0.010.",
+        "proposal/code/final_confirmation_plan.json:5-21 and proposal/logs/train_final_{naive,anchored}_seed{0,1,2}.json record the same settings, 86,451 total parameters, and 63,050 encoder parameters.",
+        "proposal/code/train_final.py:27-69 implements 20,000 interior, 5,120 initial, and 2,000 boundary points with the four equal-weight loss terms.",
+        "proposal/logs/eval_final_*.json records checkpoint_epoch=20000 and a 256×100 evaluation grid."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_and_control_honesty.numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Baseline and raw-control quantities trace to the submission's training records, checkpoints, and evaluations. Baseline checkpoint reuse is disclosed and consistent with the unchanged anchor inputs; no evidence shows copied reference-paper numbers or falsely attributed matched runs.",
+      "evidence": [
+        "proposal/logs/train_baseline_seed{0,1,2}.json and corresponding JSONL traces/checkpoints document three completed 20,000-epoch baseline runs.",
+        "proposal/report.tex:301-305 explains reuse of those checkpoints because anchor targets, coefficient rows, coordinates, objective, architecture, epochs, and seeds remain equivalent.",
+        "proposal/code/train.py:43-85 replaces every baseline IC target with the supplied anchor; proposal/code/evaluate_final.py:29 selects the retained baseline checkpoints.",
+        "proposal/logs/final_aggregate_metrics.json, aggregate.baseline.anchor_final.relative_l2: own-run mean 0.0031602324; the original paper's reaction 1–5 value is separately 0.0027 in paper.md:281-282.",
+        "proposal/logs/train_final_naive_seed{0,1,2}.json and eval_final_naive_seed{0,1,2}.json provide the matched raw-control training and evaluation records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "attribution_integrity.non_degenerate_integrity": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implementation and intervention results support actual IC conditioning rather than contradicting it with a collapsed or unused encoding. The report makes no claim that the fixed periodic boundary was varied or learned as a conditioning axis.",
+      "evidence": [
+        "proposal/code/model.py:82-99 passes the IC representation through the learned IC branch and direct skip into the 50-dimensional specification code.",
+        "proposal/logs/final_latent_diagnostics.json, seed_diagnostics: all seeds have positive feature variance and minimum pairwise latent distances between 0.14075 and 0.15070.",
+        "proposal/logs/ablation_table.tex:9-11 reports new-pairing error rising from 0.0137 to 0.3778 under mean-code replacement and 0.4044 under derangement.",
+        "proposal/code/evaluate_final.py:33-47 performs the code interventions with fixed checkpoints; saved evaluations reproduce all six core intervention degradations, whose smallest degradation/pooled-SD ratio is 19.5457.",
+        "proposal/report.tex:268-271 explicitly excludes a BC descriptor and BC-transfer claim."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No inspected implementation materially contradicts the paper's held-fixed compliance claims. The protected architecture and loss algebra match the supplied reference, and the actual sampling counts, duplicated anchor rows, and metric definitions are disclosed. This finding does not independently certify all scientific parity requirements.",
+      "evidence": [
+        "proposal/report.tex:172-185 claims retention of the coordinate encoder, concatenation, decoder, modulation, and four equal-weight losses.",
+        "proposal/code/model.py:49-67 and 114-128 match workdir_outside_proposal/code/P2INN/model.py:18-33 and 48-81, including modvec receiving only coefficients and coordinates.",
+        "proposal/code/model.py:135-158 matches workdir_outside_proposal/code/P2INN/Loss_f.py:5-29; proposal/code/train_final.py:54-61 retains the four-term sum.",
+        "proposal/report.tex:248-255 and 273-281 disclose duplicate anchor rows, actual point counts, full-grid evaluation, RMS L2, and MAE.",
+        "Read-only inspection of all 22 saved checkpoint state dictionaries found matching protected-layer shapes and the reported parameter counts."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The substantive methodology matches the implementation: clipped logit–Fourier inputs, training-only scaling, anchored disjoint encoder branches, unchanged decoding, analytic references, checkerboard splits, and inference-time conditioning interventions. No material method or execution contradiction was found.",
+      "evidence": [
+        "proposal/report.tex:189-243 describes the representation and anchored fusion; proposal/code/common.py:187-195 and proposal/code/model.py:27-40,82-99 implement them.",
+        "proposal/code/select_final_representation.py:25-33 calculates scale exclusively from final training profiles while keeping cutoff 16 fixed.",
+        "proposal/report.tex:248-305 matches proposal/code/final_common.py:27-104 and proposal/code/evaluate_final.py:26-50 for profiles, partitions, reference construction, and baseline reuse.",
+        "proposal/report.tex:399-413 describes the mean-code and within-coefficient cyclic interventions implemented by proposal/code/evaluate.py:32-42 and evaluate_final.py:33-47."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Completed training, evaluation, intervention, diagnostic, and compilation claims have consistent corresponding artifacts. The record contains 22 training runs and 28 evaluations, including the disclosed reused-baseline evaluations and one-seed screen. No affirmative evidence establishes a falsely claimed execution.",
+      "evidence": [
+        "proposal/logs/train*.json and matching JSONL files: all 22 histories contain epoch 1 and every 500th epoch through 20,000, with matching final-loss records.",
+        "proposal/logs/checkpoints/*.pt: read-only metadata inspection confirms the corresponding arm, seed, epoch 20,000, plan hashes, and parameter counts.",
+        "proposal/logs/eval*.json includes nine first-study, nine second-study, one candidate, and nine final evaluations; structured arms include normal, mean-code, and shuffled-code results.",
+        "proposal/logs/reference_validation.json and final_latent_diagnostics.json contain the claimed reference and mechanism records.",
+        "proposal/report.log:709 records a 15-page PDF; proposal/report.pdf is readable and contains the final report. proposal/report.tex:381-383 and 462-472 explicitly exclude an executed scaling study and BC/PDE-transfer results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "Available plan hashes and dated run records are consistent with the stated pre-comparison commitments. Outcome-driven development and the candidate evaluation's regenerated timestamp are disclosed. The record does not establish undisclosed post-result selection or backdating; artifact timestamps alone are not independent certification of historical immutability.",
+      "evidence": [
+        "proposal/report.tex:499-514 identifies four plan freezes; the four submitted plan JSON hashes match their recorded SHA-256 values.",
+        "proposal/code/specification_encoder_plan.json froze δ=0.010 at 09:59:23+09:00, before the first baseline run started at 10:07:54 on 2026-09-05.",
+        "proposal/code/final_confirmation_plan.json froze the final method and split at 12:00:44+09:00; the first final baseline evaluation is dated 12:06:07 and first final training run 12:06:35.",
+        "proposal/report.tex:590-606 and proposal/attempts_log.md:43-94 disclose both failed comparisons, the subsequent architecture screen, and the fresh final split.",
+        "proposal/attempts_log.md:22-29 discloses regeneration of the candidate evaluation at 13:04:33; its training finished at 12:00:17, and proposal/code/final_confirmation_plan.md:12-16 records its screening values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_training_on_held_out.held_out_specs_never_trained": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No evidence shows that specifications presented as unseen in the headline entered training or hyperparameter selection. Final training uses only the declared f-profile pairs; w/c profiles and withheld f-profile pairings remain evaluation-only. Earlier evaluated splits used for architecture development are explicitly separated from headline evidence.",
+      "evidence": [
+        "proposal/code/train_final.py:35-41 obtains every training target and representation from FINAL_TRAIN_PROFILES and final_train_rows().",
+        "proposal/code/final_common.py:65-104 defines 15 unique training specifications and disjoint core partitions containing 12 new-Gaussian, 12 circular-logistic, and 10 withheld-pair specifications.",
+        "All final evaluation records match these declared memberships; read-only set comparisons found zero overlap between training pairs and each core held-out partition.",
+        "proposal/code/select_final_representation.py:25-33 uses only the five final training ICs; checkpoint evaluation is fixed at epoch 20,000.",
+        "proposal/report.tex:104-108,266-267,590-606 and proposal/attempts_log.md:71-94 identify the candidate screen as development evidence and reserve headline claims for the fresh final profiles."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_specs_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The record does not show completed unfavorable outcomes concealed behind a claim of complete or rule-selected reporting. All declared seeds and partitions are retained, earlier pairing failures are reported, and final cases where the raw control performs better remain visible.",
+      "evidence": [
+        "proposal/logs/eval_final_*.json contains all seven declared partitions for all three arms and seeds 0/1/2; proposal/logs/full_aggregate_table.tex and per_spec_tables.tex report the full final results.",
+        "proposal/report.tex:339-344 reports heterogeneous wins: 10/12 new-Gaussian, 8/12 new-family, and 10/10 pairing cases, matching the underlying evaluations.",
+        "proposal/report.tex:374-386 reports the unfavorable sharpness tail: CoDA error 0.2245 versus raw-control 0.1788 at sharpness 12.",
+        "proposal/logs/pilot_table.tex and later_development_table.tex retain the unsuccessful development comparisons; proposal/report.tex:590-606 identifies pairing margins 0.0118 and 0.0030 as insufficient under the decision rule.",
+        "proposal/code/plot_results.py:154-194 includes every core specification; saved figure_data.json values agree with the corresponding per-seed evaluations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected submission acknowledges the supplied P²INN contribution and related operator-conditioning approaches, and distinguishes its proposed representation and fusion mechanism. The supplied record does not identify a prior contribution substantively reproduced without acknowledgment. This is not an exhaustive external novelty determination.",
+      "evidence": [
+        "proposal/report.tex:69-88 attributes the underlying factorization to P²INN and identifies logit–Fourier representation and anchored disjoint fusion as the proposed changes.",
+        "proposal/report.tex:123-151 discusses DeepONet, FNO, physics-informed operators, MIONet, PINTO, HyPINO, and Functa, including explicit methodological distinctions.",
+        "paper.md:159-213 describes the original coefficient-only encoder and shared decoder; proposal/code/model.py:27-40,82-99 implements the disclosed IC-encoding extension.",
+        "proposal/references.bib supplies citations for the original method and the related approaches discussed in the report."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The observable reference-code reuse and scientific-library dependencies are attributed. No inspected artifact identifies non-trivial external methodology code used without acknowledgment or falsely presented as an original contribution.",
+      "evidence": [
+        "proposal/codebase_notes.md:7-41 credits the supplied P²INN architecture, residual, training objective, and reference construction, and names PyTorch, NumPy, SciPy, and Matplotlib.",
+        "proposal/codebase_notes.md:48-70 explicitly describes transcription of protected reference algebra and identifies the authored representation, encoder, evaluation, and diagnostic components.",
+        "proposal/report.tex:69-74,172-175 and 292-305 credits the underlying architecture and analytic reference.",
+        "proposal/codebase_notes.md:72-75 separately attributes the downloaded NeurIPS style file; no external nonperiodic solver is used or claimed."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

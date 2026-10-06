@@ -1,0 +1,199 @@
+{
+  "nodes": {
+    "number_traceability.error_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported accuracy values reproduce the saved predictions and residual calculations after rounding and unit conversion. This finding concerns numerical provenance, not the scientific correctness of the evaluation.",
+      "evidence": [
+        "proposal/report.tex:239–258 reports λ_E=0.057, λ_F=0.957, λ_J=0.720, force RMSE 1.349 eV/Å and energy RMSE 4.016 eV/atom.",
+        "proposal/logs/calibration.json:17–20 records λ_J=0.7195, force RMSE=1.3493663059 and energy RMSE=4015.5595069 meV/atom.",
+        "Read-only calculations from proposal/logs/pre_T0.1.npz reproduce λ_E=0.056513, λ_F=0.956619 and ground-state force RMSE=1.385654 on the disclosed 457-configuration subset. Its residual summaries agree with proposal/logs/ace_T0.1.npz."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.defect_metrics_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Several reported thermal-spike-volume uncertainties materially contradict the underlying repetitions. Neither population nor sample standard deviations, standard errors, units, or rounding explain the discrepancies. The defect-count means and excitation integrals otherwise trace to the saved summaries.",
+      "evidence": [
+        "proposal/report.tex:311–326, also proposal/report.pdf Table 1, labels the uncertainties as standard deviations over five repetitions and reports 5-keV volume spreads of 126, 106 and 131 Å³ for ground state, sigmoid and Sommerfeld.",
+        "proposal/logs/cascades/summary.jsonl:16–20 yields ground-state volume mean 518.34 Å³ and population/sample SDs 139.558/156.031 Å³.",
+        "proposal/logs/cascades/summary.jsonl:26–30 contains sigmoid volumes [763.2,572.4,699.6,779.1,461.1], giving mean 655.08 and population/sample SDs 121.258/135.570 Å³, not 106.",
+        "proposal/logs/cascades/summary.jsonl:36–40 yields Sommerfeld population/sample SDs 112.430/125.701 Å³, not 131. No alternative uncertainty calculation was found in the staged code or results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.stability_thresholds_in_logs": {
+      "value": "not_applicable",
+      "confidence": "high",
+      "reason": "The final report does not claim a measured stable-recoil-range threshold or a cutoff determined by the greater-than-25% termination rule. It describes an unfavorable 5-keV repetition. The absent threshold comparison is a scientific-completeness issue.",
+      "evidence": [
+        "proposal/report.tex:277–307 and 333–354 discuss the 125-defect repetition without reporting a stable-range threshold.",
+        "proposal/code/method_plan.md:93–105 proposes the termination rule and a larger sweep; the final report explicitly limits executed cascades to 1 and 5 keV."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_targets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected computation uses DFT references, PACE evaluations and saved cascade configurations. No hardcoded target or oracle output substitutes for those computations. Physical constants and disclosed analysis cutoffs do not establish this predicate.",
+      "evidence": [
+        "proposal/code/ace_eval.py:76–88,112–142 reads reference configurations and evaluates the supplied potentials using LAMMPS.",
+        "proposal/code/precompute.py:5–22 and proposal/code/derivation/calibrate_switch.py:25–61 calculate residuals from saved predictions.",
+        "proposal/code/md/analyze.py:39–103 derives metrics from configurations; proposal/code/md/collect.py:16–40 integrates logged excitation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.parameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported switching parameters, energies and repetition count match the supporting runs. The reported timestep lower bound differs from the configured bound, but neither bound was approached: the minimum recorded timestep exceeds both, so this discrepancy does not materially change the supporting runs.",
+      "evidence": [
+        "proposal/report.tex:198–218 specifies ν=2, T0=T*=0.5 eV, σ=T*/14, 1/5-keV recoils and five repetitions.",
+        "proposal/logs/cascades/sommerfeld_E5000_s500001/cascade.in:16–18 sets T0=5802.2591 K and the quadratic rational switch; sigmoid_E5000_s500001/log.lammps:26–29 records the corresponding sigmoid parameters.",
+        "proposal/report.tex:205–206 gives a 10^-6 ps minimum; cascade inputs use 10^-9 ps. Inspection of all 40 production thermo logs gives a minimum observed timestep of approximately 6.90646×10^-5 ps."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.numbers_from_own_runs_or_cited": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reproduced sigmoid's reported volume uncertainty is falsely attributed to its five-run ensemble: the stated standard deviation is contradicted by those runs. This finding does not concern the traceable baseline means or explicitly cited reference-paper optima.",
+      "evidence": [
+        "proposal/report.tex:311–324 reports the reproduced 5-keV sigmoid volume as 655±106 Å³, explicitly mean±standard deviation over five repetitions.",
+        "proposal/logs/cascades/summary.jsonl:26–30 gives the five corresponding volumes, whose standard deviation is 121.258 Å³ using the population convention or 135.570 Å³ using the sample convention.",
+        "proposal/logs/cascades/summary_agg.json:37–42 confirms that the matching baseline mean is 655.08 Å³."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report explicitly describes geometry-preserving rotation of nonorthogonal DFT cells. The evaluation code instead discards all cell tilts when constructing the LAMMPS box. For included nonorthogonal configurations, this changes the periodic geometry and materially contradicts the stated evaluation procedure.",
+      "evidence": [
+        "proposal/report.tex:185–188 says configurations are transformed into restricted form by a proper rotation and forces rotated back to the DFT frame.",
+        "proposal/code/ace_eval.py:51–53 constructs a lower-triangular H_rows, but lines 95–101 take bx, cx and cy from its zero upper-triangular entries and pass these as all three prism tilts.",
+        "workdir_outside_proposal/data/dft_reference/T0.1/dislocation_quadrupole/dislocation_quadrupole_100.json:822–839 contains a nonorthogonal cell. The declared rotation requires tilts approximately [9.051862,-0.307951,-0.615901] Å, whereas the code supplies [0,0,0].",
+        "proposal/logs/pre_T0.1.npz record 323 identifies this configuration and records fr0=2.349647, so it is included even in the reported interpretable subset."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.switching_function_in_code_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented rational switching function, exponent, temperature conversion and complementary force weights match the stated cascade switch. The sigmoid implementation also uses the reported width.",
+      "evidence": [
+        "proposal/report.tex:138–146 gives λ=T_i²/(T_i²+T0²); lines 212–215 specify the cascade midpoint of 0.5 eV.",
+        "proposal/code/md/md_common.py:42–58 implements the rational function and sigmoid with Kelvin-converted parameters.",
+        "proposal/logs/cascades/sommerfeld_E5000_s500001/cascade.in:16–26 records the rational switch and applies 1−λ to U_gs and λ to U_ht through hybrid/scaled."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The report identifies the reduced cell, recoil range, repetition count, displacement-based volume proxy and midpoint matching. It also publishes the large residency mismatch. These shortcomings do not establish concealed compliance with the required protocol, and no affirmative evidence establishes retraining or substitution of the potentials.",
+      "evidence": [
+        "proposal/report.tex:198–218 explicitly describes the executed reduced protocol and volume proxy.",
+        "proposal/report.tex:299–305 reports χ≈9712 versus 45 at 1 keV and ≈9819 versus 240 at 5 keV, openly exposing the lack of residency matching.",
+        "proposal/attempts_log.md:63–91 discusses scale reductions, the proxy and direction sampling; cascade inputs reference the supplied W_pot_T0.0.yace and W_pot_T0.5.yace files."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The 40 production cascades claimed as completed have corresponding completed LAMMPS anneals and final configurations. Saved prediction arrays support execution of the accuracy evaluations. The record does not establish that a claimed experiment was unperformed; analysis correctness is assessed separately.",
+      "evidence": [
+        "proposal/attempts_log.md:93–99 claims completion of 40 production tasks.",
+        "proposal/code/md/tasks.txt and proposal/logs/cascades/summary.jsonl identify the same 40 production cases; all corresponding logs contain completed 60000-step anneals with 11664 atoms.",
+        "For example, proposal/logs/cascades/sommerfeld_E5000_s500001/log.lammps:1873–1903 records completed integration and final.dump output.",
+        "proposal/logs/ace_T0.001.npz, ace_T0.1.npz and ace_T0.5.npz contain predictions for 9467, 2444 and 9445 configurations respectively."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspectable chronology does not contradict the pre-run commitment claim. The plan precedes the saved numerical outputs, and the record does not establish undisclosed post-result function selection or backdating. This is not independent certification of the claimed commitment time.",
+      "evidence": [
+        "proposal/code/method_plan.md:1–9 claims commitment at 2026-09-02T05:50Z; its staged modification timestamp is 2026-09-02T06:13:33Z.",
+        "proposal/logs/ace_T0.001.npz has modification timestamp 2026-09-02T09:29:32Z; the other saved ACE prediction arrays are later.",
+        "proposal/report.tex:190–194,198–218 and proposal/attempts_log.md disclose the analysis subset and reduced cascade design."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_recoil_and_te_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Both executed recoil energies and the unfavorable Sommerfeld outcome are reported. All three temperature datasets and full-set calibration results remain inspectable, and the report identifies its filtered subset. The record does not establish concealed outcome-dependent selection; incomplete reporting of required comparisons is a separate issue.",
+      "evidence": [
+        "proposal/report.tex:190–194 describes the subset exclusions; lines 289–326 report both executed energies and the unfavorable Sommerfeld result.",
+        "proposal/logs/calibration.json contains full and interpretable results at all three temperatures; proposal/logs/pre_T0.001.npz, pre_T0.1.npz and pre_T0.5.npz retain the complete converged-set summaries.",
+        "proposal/attempts_log.md:68–71 discloses reduction to 1 and 5 keV."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_reps_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All 40 designated production repetitions enter the saved summaries, including the 125-defect outlier. An additional ground-state self-test is outside that batch; its exclusion does not establish outcome-dependent selection.",
+      "evidence": [
+        "proposal/code/md/run_batch.py:27–41 defines five repetitions per method and energy with seeds rep+1+100E; proposal/code/md/tasks.txt lists all 40 tasks.",
+        "proposal/logs/cascades/summary.jsonl:1–40 includes every production task; lines 36–40 retain Sommerfeld counts [125,7,5,6,5].",
+        "proposal/report.tex:295–298 explicitly discusses the outlier and includes it in 29.6±47.7.",
+        "proposal/code/md/cascade.py:185–199 identifies the default seed-1 ground-state run as a self-test, corresponding to logs/cascades/gs_E1000_s1/."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "multiple_switching_functions_discipline.function_pre_registered_or_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The reported quadratic rational form matches the recorded plan and executed switch. No evidence establishes that another function was selected after outcomes and falsely represented as preregistered. Steeper exponents are discussed as future modifications.",
+      "evidence": [
+        "proposal/code/method_plan.md:15–37 fixes the rational family and ν=2.",
+        "proposal/code/md/md_common.py:39–48 and executed cascade inputs use that form.",
+        "proposal/report.tex:212–215 discloses the MD midpoint choice; lines 352–354 and 398–400 discuss ν>2 or a cutoff prospectively."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission acknowledges the layered framework, Sommerfeld correction and two-temperature antecedents. The available record identifies no substantive prior contribution reproduced without acknowledgment. This does not establish broad novelty.",
+      "evidence": [
+        "proposal/report.tex:75–102 attributes the layered construction and sigmoid to Wood et al.",
+        "proposal/report.tex:126–143 identifies the Sommerfeld motivation and Hill-type rational form; lines 356–368 acknowledge Ackland and two-temperature work.",
+        "paper.md:40–48 describes the acknowledged antecedents and original layered construction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The observed dependencies and reused methodology are permitted or disclosed: LAMMPS/PACE, FitSNAP conventions and standard scientific libraries. No affirmative evidence establishes prohibited or unattributed external methodology code.",
+      "evidence": [
+        "proposal/codebase_notes.md:3–6,10–42 identifies reused sources, including the cloned upstream LAMMPS dependency.",
+        "proposal/codebase_notes.md:44–81 distinguishes project scripts from dependencies and describes the build.",
+        "proposal/code/ace_eval.py and proposal/code/md/ use the disclosed interfaces; task_spec.md:151 permits FitSNAP/LAMMPS/DAKOTA and standard scientific libraries, with external reuse disclosed."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

@@ -1,0 +1,223 @@
+{
+  "nodes": {
+    "number_traceability.fidelity_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The endpoint fidelities match the logs, but Figure 2's explicit claim that the methods remain within approximately 0.0004 at all times is materially contradicted by its source data. For MFIM hz=0.5, the plotted difference reaches approximately 0.001354, over three times the stated bound.",
+      "evidence": [
+        "proposal/report.tex:570-576; proposal/report.pdf, page 8, Figure 2 caption: 'within ~4×10^-4 of each other at all times'.",
+        "proposal/logs/variant_eta0.1_mfim_hz0.5_topoB.json: zero-based t[331]=0.909893335540247 and fidelity[331]=0.9976742754638634.",
+        "proposal/logs/baseline_mfim_hz0.5.json: t[307]=0.9059948671045118, fidelity[307]=0.9990623892380368; t[308]=0.9110003649764402, fidelity[308]=0.9990187445491192. Linear interpolation gives 0.9990283971264655 at the variant sample, a difference of 0.0013541216626020702.",
+        "proposal/code/make_figures.py:67-74 plots these saved time/fidelity arrays directly."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.cnot_counts_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The final CNOT counts are traceable, but the reported time-dependent comparisons contradict the saved count curves. The variant is not cheaper throughout the three successful benchmarks, and the unfavorable LSM variant already exceeds naive routing during the ramp, rather than overtaking it during the post-ramp stage as claimed.",
+      "evidence": [
+        "proposal/report.tex:595-600; proposal/report.pdf, page 10, Figure 4 caption claims cheaper circuits 'throughout the evolution on three of four benchmarks' and an LSM hz=-0.7 overtake 'during the post-ramp stage'.",
+        "proposal/logs/variant_eta0.1_mfim_hz0.5_topoB.json: zero-based t[236]=0.603128324151872 and circuit.ncx_hist[236]=135. The bracketing naive_mfim_hz0.5_topoB.json samples [221] and [222] have counts 102 and 107.",
+        "proposal/logs/variant_eta0.1_lsm_hz-0.7_topoB.json: t[43]=0.22874671554192788 and circuit.ncx_hist[43]=156. In naive_lsm_hz-0.7_topoB.json, bracketing samples [26] and [27] both have 112 CNOTs. This is well before the ramp ends at t=3.",
+        "proposal/code/make_figures.py:80-85 plots the saved CNOT histories directly; the rendered Figure 4 also displays the early LSM excess."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.overhead_multipliers_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported overhead multipliers agree with the saved circuit counts and depths after rounding. Their denominators are the corresponding logged unconstrained baselines; no altered or inflated denominator was detected.",
+      "evidence": [
+        "proposal/report.tex:545-564, Table 3; proposal/logs/consolidated.json, all four benchmark objects and naive_A/B/C and variant_A/B/C records.",
+        "For MFIM hz=0.5 on B, variant ratios are 512/212=2.4150943396 and 147/43=3.4186046512, reported as 2.42/3.42. Naive ratios are 734/212=3.4622641509 and 190/43=4.4186046512, reported as 3.46/4.42.",
+        "proposal/code/consolidate.py:57-70 computes these ratios from the individual saved baseline and constrained-run records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_ground_truth": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected implementation computes variational states, exact references, overlaps, and gate counts. No hardcoded result or oracle output substitutes for those computations. Hamiltonian constants, numerical tolerances, documented reference energies in comments, and figure-layout constants are not substituted experimental results.",
+      "evidence": [
+        "proposal/code/taavqds/avqds.py:74-78, 192-225 evolves parameters and constructs the variational state through Pauli rotations.",
+        "proposal/code/taavqds/benchmarks.py:50-115 computes initial states and exact-reference trajectories by diagonalization and propagation.",
+        "proposal/code/taavqds/runner.py:143-184 calculates fidelity and observables; proposal/code/taavqds/router.py:131-165 accumulates circuit resources.",
+        "proposal/code/make_figures.py:44-85, 169-183 reads saved results for scientific plots."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The quoted numerical hyperparameters match the implementation and run records: rcut=0.001, xi=0.000001, dthmax=0.01, dtmax=0.05, pthcut=7000, and headline eta=0.1. No materially different executed value was identified.",
+      "evidence": [
+        "proposal/report.tex:299-318, 408-424 specifies the safeguard tolerance, headline eta, and baseline integration parameters.",
+        "All 75 individual run JSON records in proposal/logs/ contain matching hyperparams fields; the 12 headline variant records contain eta=0.1.",
+        "proposal/code/taavqds/avqds.py:34-36, 192-225, 279-305 implements the stated regularization, integration, selection tolerance, and safeguard.",
+        "proposal/code/taavqds/runner.py:43-55, 166-169 specifies and records the same settings."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.unconstrained_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The unconstrained quantities trace to the submission's own detailed JSON and stdout records. The paper discloses using a reimplementation. The available evidence does not show reference-paper numbers falsely passed off as local results; whether the reimplementation satisfies the required baseline protocol is a separate scientific assessment.",
+      "evidence": [
+        "proposal/report.tex:408-424 discloses the fast-backend reimplementation; Tables 1 and 2 at lines 515 and 536 report its baseline results.",
+        "proposal/logs/baseline_mfim_hz0.0.json: final_fidelity=0.9956556142162102, circuit.ncx=134; baseline_mfim_hz0.5.json: 0.9973421500761841 and 212.",
+        "proposal/logs/baseline_lsm_hz-0.7.json: final_fidelity=0.9991063776690534, circuit.ncx=106; baseline_lsm_hz1.6.json: 0.9975752478265618 and 104. Corresponding baseline stdout files corroborate these values.",
+        "paper.md:183-191 reports 210 CNOTs for the published nonintegrable MFIM result, distinct from the submission's logged 212; proposal/code/run_baseline.py:27-46 generates the local baseline records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.naive_baseline_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The naive-baseline quantities are supported by saved unconstrained source ansätze, routed event lists, and stdout records. Their logical operator sequences match the corresponding unconstrained runs, with only negligible floating-point differences in one run. No fabricated or falsely attributed baseline quantity was detected.",
+      "evidence": [
+        "proposal/code/run_naive.py:21-38 runs the unconstrained core and then applies compile_and_audit.",
+        "The 12 proposal/logs/naive_*_topoA/B/C.json records contain ansatz_labels, ansatz_params, events, circuit, and audit fields. Their logical operator sequences and gate histories match the associated baseline records.",
+        "proposal/logs/naive_mfim_hz0.5_topoB.json and naive_mfim_hz0.5_B.stdout: 734 CNOTs, 190 entangling layers, 174 SWAPs; proposal/report.tex:517 reports the same values.",
+        "proposal/logs/naive_lsm_hz-0.7_topoB.json: 214 CNOTs and 59 layers, matching proposal/report.tex:538."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "honest_overhead_reporting.swaps_counted_in_cnot_total": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Recounting the saved event lists for all 24 headline constrained runs reproduces their reported CNOT totals using two CNOTs per two-qubit rotation and three per SWAP. No executed routing event is omitted from those totals.",
+      "evidence": [
+        "proposal/code/taavqds/router.py:146-164 adds two CNOTs for each two-qubit rotation and three for each SWAP.",
+        "proposal/logs/variant_eta0.1_mfim_hz0.5_topoB.json: 82 two-qubit rotations and 116 SWAPs yield 2×82+3×116=512 CNOTs.",
+        "proposal/logs/naive_mfim_hz0.5_topoB.json: 106 two-qubit rotations and 174 SWAPs yield 2×106+3×174=734 CNOTs.",
+        "proposal/report.tex:501-519 states the same accounting convention and reports those totals."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "honest_overhead_reporting.depth_includes_routing": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The paper explicitly reports an entangling-layer metric. The scheduler includes every SWAP in the qubit-dependency schedule, alongside two-qubit rotations. It counts composite entangling events rather than decomposed CNOT layers, but the evidence does not establish concealment of routing under the declared metric.",
+      "evidence": [
+        "proposal/report.tex:225-228, 426-428, 501-506 identifies the metric as entangling depth and describes greedy packing with single-qubit rotations absorbed.",
+        "proposal/code/taavqds/router.py:131-165 documents the event-layer model and advances qubit availability for both rotations and SWAPs.",
+        "proposal/attempts_log.md:100-108 discloses the depth-accounting correction and the use of one entangling layer per two-qubit rotation.",
+        "proposal/logs/variant_eta0.1_mfim_hz0.5_topoB.json records depth=147 including routing events; baseline_mfim_hz0.5.json records depth=43 under the same scheduler."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The methodology describes one chosen placement used for both growth penalties and subsequent compilation. The implementation instead uses the minimax-tie-broken placement for growth, independently selects a different placement for compilation, and then overwrites the recorded placement without rerouting. This materially contradicts the described coupling between placement, growth, and compilation.",
+      "evidence": [
+        "proposal/report.tex:250-263 defines the placement and its minimax-then-lexicographic tie-break; lines 325-340 say compilation starts from that placement.",
+        "proposal/code/taavqds/taavqds.py:47-57, 73-84 selects the growth placement, invokes compilation, and overwrites compiled['pi'].",
+        "proposal/code/taavqds/runner.py:84-98 independently calls optimize_embedding and routes using its returned placement; proposal/code/taavqds/embedding.py:40-53 returns the first lexicographic optimum without the minimax tie-break.",
+        "proposal/logs/variant_eta0.1_mfim_hz0.5_topoB.json records embedding.pi=[0,1,5,7,6,4,3,2], but events[2] rotates site 2 on physical qubit 2 before any SWAP, contradicting the recorded placement of site 2 on qubit 5."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.topology_aware_logic_matches": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The executed routing and recorded placement disagree for the MFIM variants on B and C. The saved physical events consistently follow identity initialization, while the reported placement is the different mapping used to calculate growth penalties. Thus the claimed topology-aware placement-to-routing logic is false even though the emitted two-qubit gates themselves satisfy the edge sets.",
+      "evidence": [
+        "proposal/report.tex:284-295, 325-340 connects the penalty's placement to the placement used by the router.",
+        "proposal/code/taavqds/taavqds.py:78-84 overwrites placement metadata after routing; proposal/code/taavqds/runner.py:85-98 routes from the independently selected lexicographic optimum.",
+        "proposal/logs/variant_eta0.1_mfim_hz0.5_topoB.json: embedding.pi maps sites 3 and 4 to physical qubits 7 and 6, already adjacent. Nevertheless events[9] inserts SWAP(3,5), followed by events[10] rotating sites [3,4] on physical qubits [5,4], consistent with identity initialization instead.",
+        "Replaying only the saved mapping updates gives zero rotation-location mismatches under identity initialization, but 219 under the recorded placement for that run. The other MFIM B/C variant ledgers show the same discrepancy."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The paper explicitly claims execution of the full eta scan on Topology A, while the submission's own attempts record describes a reduced LSM scan of only eta=0 and 0.1 on both topologies. The A execution records corroborate that reduced grid; the additional LSM ablations are explicitly for B. This is an execution-scope contradiction, rather than an inference of fabrication merely from absent required experiments.",
+      "evidence": [
+        "proposal/report.tex:315-318 defines the scan as eta={0,0.02,0.05,0.1,0.2,0.4}; lines 651-659 explicitly state, 'We also ran the full eta scan on Topology A'.",
+        "proposal/attempts_log.md:62-72 describes the executed scan as the MFIM grid and '(and 0, 0.1 on LSM) x both topologies'.",
+        "proposal/logs/etascan_lsm_hz-0.7_A.stdout:1-4 and etascan_lsm_hz1.6_A.stdout:1-4 record the two completed eta settings, 0 and 0.1.",
+        "The additional saved LSM eta=0.02, 0.05, 0.2, and 0.4 ablation JSON/stdout records identify Topology B. Both staged submission locations were inspected for further execution records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "not_applicable",
+      "confidence": "high",
+      "reason": "The task requires the methodology to precede empirical results in the paper, not historical preregistration. The submission makes no explicit claim that eta or the analysis was fixed before observing results; it openly describes selecting eta=0.1 from the observed saturation scan. There is no fixed-before-results claim to assess for backdating.",
+      "evidence": [
+        "task_spec.md:45 and 105-109 specifies methodology-before-results presentation.",
+        "proposal/report.tex:312-320 explicitly links the headline eta choice to the scan's observed saturation.",
+        "proposal/attempts_log.md:62-72 records hyperparameter exploration and the resulting headline choice."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "variational_simulation_integrity.ansatz_growth_uses_classical_signals": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Growth decisions use current-state Hamiltonian expectations, derivative overlaps, trial McLachlan distances, and the topology penalty. Exact-reference trajectories are computed after the variational run for evaluation and do not feed back into its growth decisions. The ED initial state for LSM is expressly permitted by the task.",
+      "evidence": [
+        "proposal/code/taavqds/avqds.py:178-214, 228-345 computes measurable variational quantities and selects operators without accessing an exact evolving state or fidelity.",
+        "proposal/code/run_variant.py:16-18 completes run_taavqds before calling exact_on_mesh and finalize_log.",
+        "proposal/code/taavqds/runner.py:138-148 separates reference generation and fidelity calculation from run_avqds_core.",
+        "task_spec.md:231 and proposal/code/taavqds/benchmarks.py:50-63 permit and implement exact diagonalization for the LSM initial state."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The identifiable reused AVQDS contribution is explicitly attributed to Yao et al. Standard placement and routing components are also acknowledged as prior techniques. The available evidence does not identify a substantively reproduced prior contribution presented without acknowledgment; this finding does not establish global novelty.",
+      "evidence": [
+        "paper.md:80-116 describes the original adaptive-growth and integration framework.",
+        "proposal/report.tex:153-201 attributes that framework to AVQDS; lines 349-373 explicitly characterize placement and routing as standard components and delimit the claimed contribution.",
+        "proposal/codebase_notes.md:91-104 distinguishes vendored code, the faster reimplementation, and new components.",
+        "workdir_outside_proposal/code/avqds_figshare/avdynamics-avqds/README.md:1-3 identifies the reference implementation. Comparison with the vendored Python files confirms reuse with NumPy compatibility substitutions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.variant_configurations_all_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected completed variants and ablations do not reveal concealed unfavorable outcomes. The report includes the unfavorable LSM result, reports the failed restricted-pool approach, and summarizes the positive-eta runs as identical, which the saved ansätze and results support. The execution-scope overstatement about Topology A is distinct from hiding completed unfavorable results.",
+      "evidence": [
+        "proposal/report.tex:536-540, 734-768 reports LSM hz=-0.7 on B as worse: 240 versus 214 CNOTs and 90 versus 65 parameters.",
+        "proposal/report.tex:648-678 and proposal/attempts_log.md:31-83 disclose eta scans, restricted-pool failures, and the unfavorable benchmark.",
+        "The 16 proposal/logs/ablation_eta{0.02,0.05,0.2,0.4}_*_topoB.json records have the same ansatz labels, parameters, final fidelities, and counts as their corresponding eta=0.1 headline runs.",
+        "The four ablation_poolrestrict_*_B.stdout files explicitly record 'dynamic ansatz cannot further improve'; Topology A restricted-pool results are preserved in the corresponding JSON files."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.embedding_choices_documented": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Both implemented placement-selection rules depend on Hamiltonian weights and graph distances, with deterministic tie-breaking, rather than observed run performance. The placement/routing mismatch is affirmative method misrepresentation, assessed above, but it does not establish outcome-dependent selection among completed embedding experiments or concealment of unfavorable alternatives.",
+      "evidence": [
+        "proposal/report.tex:250-267 states the weighted-distance objective and deterministic tie-break.",
+        "proposal/code/taavqds/embedding.py:18-53 selects from permutations using only Hamiltonian bond weights and graph distances; proposal/code/taavqds/taavqds.py:47-57 adds the minimax tie-break.",
+        "proposal/code/taavqds/runner.py:84-98 uses the first lexicographic optimum for compilation, also without consulting fidelity or measured circuit performance.",
+        "The saved naive and variant JSON records include embedding metadata and physical event ledgers. No inspected record identifies completed alternative embeddings suppressed because their outcomes were unfavorable."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

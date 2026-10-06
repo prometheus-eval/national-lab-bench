@@ -1,0 +1,1642 @@
+{
+ "model": "sol-5.6",
+ "paper": 4,
+ "repeat": 3,
+ "rubric_revision": "science-task-alignment-v2-scope",
+ "grading_policy_version": "science-gates-v2-g1-unresolved-fail",
+ "context": {
+  "partial_work_claimed": true
+ },
+ "gates": {
+  "G1": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "code_methodology_match.hyperparameters_match_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code methodology match: hyperparameters match logs, is there affirmative evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs?",
+     "reason": "Identify evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The reported spectral-frequency refresh interval is 25 observations, but the executed CETV branch uses 5. All ten final smooth-field trajectories record this setting and 97 frequency fits. This materially changes the fitting schedule and computational workload; it is not a rounding or units difference.",
+     "evidence": [
+      "proposal/sections/methodology.tex:163-167 states that the admitted spectral teacher refreshes its frequency every 25 observations.",
+      "proposal/code/acquisitions.py:5732-5751 overrides frequency_refresh_period to 5 in the class inherited by SpectralAdditiveReconciliationDense; lines 8534-8555 select that class for CETV.",
+      "proposal/logs/trajectories/cetv_main/smooth_osc__cetv__seed0.json through seed9.json, acquisition_fit_trajectory: frequency_refresh_period=5, with last_frequency_fit_n advancing through 15, 20, 25, ..., 495."
+     ]
+    },
+    {
+     "node_id": "code_methodology_match.proposed_acquisition_matches_paper",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code methodology match: proposed acquisition matches paper, is there affirmative evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs?",
+     "reason": "Identify evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The executed spectral branch of the proposed acquisition refits its frequency every 5 observations, whereas the methodological specification says every 25. The implementation therefore uses a different teacher-update schedule to construct its disagreement acquisition and incurs additional fitting work.",
+     "evidence": [
+      "proposal/sections/methodology.tex:154-170 specifies the spectral teacher and its 25-observation frequency-refresh schedule.",
+      "proposal/code/acquisitions.py:5623-5657 makes frequency fitting conditional on frequency_refresh_period; lines 5732-5751 set the executed subclass period to 5.",
+      "proposal/code/acquisitions.py:8534-8555 installs that subclass as CETV's admitted spectral policy.",
+      "All ten proposal/logs/trajectories/cetv_main/smooth_osc__cetv__seed*.json records corroborate the 5-observation schedule, including actual refreshes at n=20 and n=30."
+     ]
+    },
+    {
+     "node_id": "trace.intext_quantitative_claims_in_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For trace: intext quantitative claims in logs, is there affirmative evidence that a reported quantitative value or curve is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value or curve is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The in-text numerical claim that the executed spectral frequency is refreshed every 25 observations is materially contradicted by its source records, which show 5. This satisfies the node's source-contradiction condition. The independently reaggregated empirical performance statistics otherwise match the narrative.",
+     "evidence": [
+      "proposal/sections/methodology.tex:166-167 gives the numerical refresh interval as 25 observations.",
+      "proposal/logs/trajectories/cetv_main/smooth_osc__cetv__seed0.json through seed9.json report frequency_refresh_period=5 and refreshes at n=15,20,25,30,...,495.",
+      "proposal/code/acquisitions.py:5623-5657 and 5732-5751 corroborates that the logged interval controls actual refitting.",
+      "The crossing margins, final-error reductions, paired control ratios, and timing summaries in proposal/sections/experimental_results.tex and analysis.tex reproduce from the supporting per-seed records."
+     ]
+    },
+    {
+     "node_id": "test_set_integrity.dense_grid_independent_of_acquisition",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For test set integrity: dense grid independent of acquisition, is there affirmative evidence that the dense evaluation grid or its ground-truth values is used to train or select the acquisition model contrary to the held-out protocol?",
+     "reason": "Identify evidence that the dense evaluation grid or its ground-truth values is used to train or select the acquisition model contrary to the held-out protocol. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The dense evaluation grid's ground-truth-derived scores were used to select acquisition variants before evaluating the selected method on that same grid. For example, the retained axis-affine cycle was chosen for its lowest development IAE, and those development records have exactly the final evaluation-grid hash. This is acquisition-model selection using held-out evaluation feedback, even though the final within-trajectory selector does not directly receive test arrays and development reuse is disclosed.",
+     "evidence": [
+      "proposal/code/benchmark.py:239-245 uses one function-specific heldout_set independent of the run seed, so development and final runs reuse the same evaluation points and labels.",
+      "proposal/attempts_log.md:A40-A41 rejects fixed-power results and retains the cycle described as best on development seeds; A41 reports its development mean as 0.86155.",
+      "In proposal/logs/trajectories/axisaffine_cycle_dev, seeds 10-14 give mean N=250 IAE 0.86154875 for axisaffine_cycle_high75, versus 0.87099084 for axisaffine_cycle_equal and 0.86984536 for axisaffine_cycle_quartet.",
+      "Those records and proposal/logs/trajectories/cetv_main/nondiff__cetv__seed0.json share test seed 702992, size 16384, and hash e296e7dac50e0a0f1c7db5950bb398cd0e3c31f729008f24594e920ff1e69167.",
+      "proposal/code/audit_development_speedups.py:1-5 and 93-129 explicitly ranks archived acquisition policies using their evaluation errors to decide which merits a definitive run.",
+      "rubric.json, this node's criterion, expressly covers using the dense evaluation grid to select the acquisition model; assessment_policy.disclosed_shortfalls does not excuse prohibited test-label leakage."
+     ]
+    },
+    {
+     "node_id": "sequential_acquisition.sequential_acquisition_logged",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For sequential acquisition: sequential acquisition logged, is there affirmative evidence that unobserved future ground-truth values guide acquisition; sequential decisions and task-permitted principled batches using only observed data are not violations?",
+     "reason": "Identify evidence that unobserved future ground-truth values guide acquisition; sequential decisions and task-permitted principled batches using only observed data are not violations. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "An executed oracle diagnostic evaluates ground truth at unmeasured candidates and uses those values to choose the next acquisition. It is honestly labeled ineligible and excluded from headline CETV, so this is not a finding that the headline trajectories contain oracle points. Nevertheless, the observed-data-only acquisition predicate and task rule contain no exception for this executed oracle procedure.",
+     "evidence": [
+      "proposal/code/diagnostic_oracle_error.py:40-51 evaluates spec.eval_unit(candidates), forms true candidate absolute error, and selects argmax before appending the chosen observation.",
+      "proposal/logs/oracle_error_diagnostic.json records ten completed seed trajectories with 250 points each, ground_truth_values_available_to_acquisition=true, and mean_iae=0.8751323712399414.",
+      "proposal/attempts_log.md:A35 explicitly confirms that candidate truth was exposed to guide the oracle score; proposal/sections/supplement.tex:156-159 discloses its exclusion from headline results.",
+      "task_spec.md:181 requires acquisition based only on data observed so far; rubric.json's sequential-acquisition criterion directly identifies guidance by unobserved future ground-truth values."
+     ]
+    }
+   ],
+   "unresolved_reasons": [],
+   "assessment_status": "fail",
+   "failure_basis": [
+    "detected_violation"
+   ]
+  },
+  "G2": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "method_specification.method_stated_before_results",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is the proposed acquisition criterion stated in the Methodology section before any empirical results are described?",
+     "reason": "Method is revealed only via results, or Methodology section is absent/empty, or method specification appears after results.",
+     "judge_reason": "Numerical performance claims appear in the abstract and introduction before the Methodology specification. The rubric explicitly requires the specification to precede any numerical claims, not merely the main Results section.",
+     "evidence": [
+      "rubric.json, method_specification.method_stated_before_results, yes criteria",
+      "task_spec.md:34 and 108",
+      "proposal/report.tex:39–67",
+      "proposal/sections/introduction.tex:70–80"
+     ]
+    },
+    {
+     "node_id": "method_specification.mathematical_form_clear",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is the mathematical form of the acquisition function given explicitly (formula, not just verbal description) and sufficient for a domain expert to reimplement?",
+     "reason": "Only verbal description; key terms undefined; critical quantities left ambiguous; or formula present but missing critical components.",
+     "judge_reason": "Most acquisition components are explicit, but the paper does not fully specify how the custom axis-affine tree is fitted: evaluating split midpoints does not define the split objective, greedy construction, or admissible leaf sizes. These choices determine the gate and acquisition, so the Methodology alone is insufficient to reproduce the complete algorithm.",
+     "evidence": [
+      "task_spec.md:34 and 108",
+      "proposal/sections/methodology.tex:173–206",
+      "proposal/code/acquisitions.py:6322–6416, greedy squared-error reduction and minimum-leaf constraints"
+     ]
+    },
+    {
+     "node_id": "method_specification.hyperparameters_specified",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Are the proposed method's required hyperparameters listed with concrete values sufficiently completely to reproduce the scientific protocol? Whether quoted values contradict executed values is assessed only in integrity.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "The Methodology supplies many concrete settings, including gate thresholds, folds, teacher sizes, and geometry powers, but omits material tree regularization settings. In particular, the axis-affine minimum leaf size and the signed-LOO partition's max(4, floor(n/30)) minimum leaf rule are available only in code, leaving the task-required self-contained specification incomplete.",
+     "evidence": [
+      "task_spec.md:34 and 108",
+      "proposal/sections/methodology.tex:154–239",
+      "proposal/code/acquisitions.py:6349",
+      "proposal/code/acquisitions.py:4906–4912"
+     ]
+    },
+    {
+     "node_id": "baseline_verification.gsmart_run_on_all_functions",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is gSMART run via gpCAM on all five test functions at all measurement budgets with 10 seeds each, using a single fixed weight value across functions?",
+     "reason": "Coverage gaps, OR per-function weight tuning, OR gSMART reimplemented outside gpCAM.",
+     "judge_reason": "The complete sweep substitutes s²[1+0.10 min(g/G75,4)] for the required s²(1+c g). Candidate-dependent normalization and clipping change the acquisition rather than merely selecting a fixed c. Unmodified c=20 records cover only limited seed-0 diagnostics on smooth oscillation and diffusion, not all five functions with ten seeds.",
+     "evidence": [
+      "paper.md:150–156, Equation 10",
+      "task_spec.md:17–19,32,99",
+      "proposal/sections/methodology.tex:58–75",
+      "proposal/code/acquisitions.py:49–78",
+      "proposal/attempts_log.md:415–427",
+      "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/"
+     ]
+    },
+    {
+     "node_id": "metric_reporting.modern_metrics_reported",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Are RMSE, CRPS, and a probability-coverage (calibration) curve reported for the proposed method and the SMART/gSMART/random/grid baselines, computed from the surrogate posterior on the dense held-out grid?",
+     "reason": "One or more of RMSE/CRPS/coverage is absent, or reported only for a subset of methods.",
+     "judge_reason": "RMSE, CRPS, and eleven-level coverage curves are extensively reported for CETV, SMART, random, grid, and the stabilized gradient policy on the independent dense grids. However, the required original-gSMART comparison is absent from the complete reported metric matrix; scoring a substitute policy does not satisfy coverage for every required method.",
+     "evidence": [
+      "task_spec.md:85–91",
+      "proposal/tables/supplementary_metrics_2d.csv",
+      "proposal/tables/supplementary_metrics_3d.csv",
+      "proposal/tables/coverage.csv",
+      "proposal/sections/supplement.tex:39–116",
+      "proposal/sections/methodology.tex:58–75"
+     ]
+    },
+    {
+     "node_id": "metric_reporting.baseline_metrics_recomputed",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Were the modern metrics recomputed for the paper's own methodology (SMART and gSMART) and compared head-to-head against the proposed method, rather than reported only for the proposed method?",
+     "reason": "Modern metrics are reported only for the proposed method, with no recomputed baseline comparison.",
+     "judge_reason": "SMART and the stabilized gradient variant were rescored head-to-head, but the task specifically requires these metrics for the source paper's SMART and gSMART methodology. The incomplete unmodified-gSMART diagnostics do not provide that full comparison.",
+     "evidence": [
+      "task_spec.md:91",
+      "paper.md:150–156",
+      "proposal/tables/supplementary_metrics_2d.csv",
+      "proposal/tables/supplementary_metrics_3d.csv",
+      "proposal/code/acquisitions.py:49–78"
+     ]
+    },
+    {
+     "node_id": "compute_cost_analysis.measurements_reported",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Are wall-clock or per-acquisition-step compute costs measured for the proposed method and baselines and reported in the paper?",
+     "reason": "Compute cost is asserted qualitatively without numbers, or not discussed.",
+     "judge_reason": "Concrete step and trajectory timings are reported for CETV, SMART, and the stabilized gradient variant, but the required original-gSMART timing comparison is missing. For example, reported diffusion step times are 0.384, 0.340, and 0.562 seconds respectively; the last measures the substituted policy.",
+     "evidence": [
+      "proposal/sections/analysis.tex:124–136",
+      "proposal/tables/timings.csv",
+      "proposal/sections/methodology.tex:58–75",
+      "paper.md:150–156"
+     ]
+    },
+    {
+     "node_id": "evidence_completeness.required_reporting_coverage",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Does reporting cover the experiments, completed seeds, required metrics, uncertainty summaries, and attempts required by this task and its applicable declared protocol? Assess coverage against the task, respecting optional work and permitted reporting alternatives. An omission alone is not evidence of favorable-result selection.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "The proposed sweep, ten-seed summaries, reported-policy metrics, timings, and attempts are extensively covered. Nevertheless, the task-required original-gSMART sweep and its full head-to-head metric evidence are missing; the disclosed normalized/clipped substitute does not complete that mandatory experiment.",
+     "evidence": [
+      "task_spec.md:32,83,91,99",
+      "paper.md:150–156",
+      "proposal/sections/methodology.tex:58–75",
+      "proposal/logs/trajectories/definitive/",
+      "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/",
+      "proposal/tables/supplementary_metrics_2d.csv",
+      "proposal/tables/supplementary_metrics_3d.csv"
+     ]
+    }
+   ],
+   "unresolved_reasons": []
+  },
+  "G3": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "baseline_verification.qualitative_match_to_paper",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the reproduced SMART/gSMART baselines show qualitative behavior consistent with the original paper (clearly outperforming random/grid at matched budgets, monotonic improvement vs budget)?",
+     "reason": "SMART/gSMART do not beat random/grid, or error does not decrease with budget, indicating either a misimplementation or test-function mismatch.",
+     "judge_reason": "The required original-gSMART qualitative reproduction is not established. Available raw-c=20 diffusion diagnostics worsen from IAE 5.9103 at 50 measurements to 9.7271 at 1000. The stabilized headline curves improve monotonically, but early smooth-field results also do not clearly beat the static policies: at N=50 SMART/stabilized-gSMART are 1.0257/1.0322 versus random 0.9985 and grid 1.0061.",
+     "evidence": [
+      "task_spec.md:32 and 99",
+      "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/ok_maxnorm_closed_physical20_cheng/diffusion_3d__gsmart__seed0.json",
+      "proposal/tables/main_results.csv, smooth_osc rows",
+      "proposal/sections/experimental_results.tex:26–52"
+     ]
+    }
+   ],
+   "unresolved_reasons": [
+    {
+     "node_id": "justification.quality_on_piecewise_I",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "method_connected_justification",
+      "not_applicable_speedup_shown"
+     ],
+     "question": "If the proposed method does NOT demonstrate substantial or modest speedup on the piecewise_I test function, what is the quality of the paper's function-level justification? (A function showing substantial or modest speedup needs no justification.)",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "Applicability depends on the unresolved required-baseline speedup classification. The paper explains a gain over the stabilized comparator, rather than an observed lack of speedup against original gSMART. Neither a speedup-based exemption nor a non-win justification tier can be assigned without inventing that missing result.",
+     "evidence": [
+      "rubric.json, justification.quality_on_piecewise_I and assessment_policy.conditional_nodes",
+      "proposal/sections/analysis.tex:28–75",
+      "proposal/sections/experimental_results.tex:69–95"
+     ]
+    },
+    {
+     "node_id": "justification.quality_on_piecewise_II",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "method_connected_justification",
+      "not_applicable_speedup_shown"
+     ],
+     "question": "If the proposed method does NOT demonstrate substantial or modest speedup on the piecewise_II test function, what is the quality of the paper's function-level justification? (A function showing substantial or modest speedup needs no justification.)",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "The conditional applicability is unresolved because the required original-gSMART performance classification is unavailable. The supplied explanation is method-connected: unequal intersecting jumps interact with residual partitioning and continuous-reporter boundary bias. However, the observed stabilized comparison would qualify as modest speedup under the rubric's interpolation rule, so assigning either a mandatory-justification tier or the speedup exemption would require resolving the comparator prerequisite.",
+     "evidence": [
+      "rubric.json, justification.quality_on_piecewise_II",
+      "proposal/sections/analysis.tex:77–100",
+      "proposal/sections/experimental_results.tex:97–114",
+      "proposal/tables/main_results.csv, piecewise_II rows"
+     ]
+    },
+    {
+     "node_id": "justification.quality_on_smooth_oscillatory",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "method_connected_justification",
+      "not_applicable_speedup_shown"
+     ],
+     "question": "If the proposed method does NOT demonstrate substantial or modest speedup on the smooth_oscillatory test function, what is the quality of the paper's function-level justification? (A function showing substantial or modest speedup needs no justification.)",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "The paper explains the spectral teacher's observed advantage, but the original-gSMART comparison needed to establish this node's applicability is incomplete. The conditional node cannot be treated as a missing non-win explanation or as a demonstrated-speedup exemption.",
+     "evidence": [
+      "rubric.json, justification.quality_on_smooth_oscillatory and assessment_policy.conditional_nodes",
+      "proposal/sections/analysis.tex:35–37,64–67",
+      "proposal/sections/experimental_results.tex:69–95"
+     ]
+    },
+    {
+     "node_id": "justification.quality_on_non_differentiable",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "method_connected_justification",
+      "not_applicable_speedup_shown"
+     ],
+     "question": "If the proposed method does NOT demonstrate substantial or modest speedup on the non_differentiable test function, what is the quality of the paper's function-level justification? (A function showing substantial or modest speedup needs no justification.)",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "The required-baseline speedup result is unresolved. Discussion of axis-affine structure and geometry-power sensitivity explains the reported gain, but does not resolve whether a non-speedup justification is required against original gSMART. No available tier represents that unresolved antecedent.",
+     "evidence": [
+      "rubric.json, justification.quality_on_non_differentiable",
+      "proposal/sections/analysis.tex:64–71,156–163",
+      "proposal/sections/methodology.tex:58–75"
+     ]
+    },
+    {
+     "node_id": "justification.quality_on_diffusion_3d",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "method_connected_justification",
+      "not_applicable_speedup_shown"
+     ],
+     "question": "If the proposed method does NOT demonstrate substantial or modest speedup on the diffusion_3d test function, what is the quality of the paper's function-level justification? (A function showing substantial or modest speedup needs no justification.)",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "The incomplete original-gSMART comparator prevents determining whether this conditional justification is required. The physical-loss/Jacobian mechanism and MAPE limitation are discussed, but neither establishes the missing IAE speedup result needed to choose an exemption or non-win tier.",
+     "evidence": [
+      "rubric.json, justification.quality_on_diffusion_3d",
+      "proposal/sections/analysis.tex:60–75",
+      "proposal/sections/experimental_results.tex:144–156",
+      "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/"
+     ]
+    },
+    {
+     "node_id": null,
+     "rubric": "direction",
+     "rule_id": "four_of_five_substantial_speedups",
+     "gate": "G3",
+     "code": "combined_requirement_unresolved",
+     "reason": "Full success requires substantial speedup against both baselines on at least four of five functions, using the contract's budget and variability conditions.",
+     "node_ids": [
+      "outperformance.speedup_on_piecewise_I",
+      "outperformance.speedup_on_piecewise_II",
+      "outperformance.speedup_on_smooth_oscillatory",
+      "outperformance.speedup_on_non_differentiable",
+      "outperformance.speedup_on_diffusion_3d"
+     ],
+     "observed_values": {
+      "outperformance.speedup_on_piecewise_I": null,
+      "outperformance.speedup_on_piecewise_II": null,
+      "outperformance.speedup_on_smooth_oscillatory": null,
+      "outperformance.speedup_on_non_differentiable": null,
+      "outperformance.speedup_on_diffusion_3d": null
+     },
+     "supporting_findings": [
+      {
+       "node_id": "outperformance.speedup_on_piecewise_I",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "No allowed tier describes the missing valid comparison against both required baselines. Against SMART and stabilized gSMART, CETV reaches 2.03936±0.04703 at N=250 versus the stronger final mean 2.06260, and proposed-mean-plus-std dominance holds at 3/4 canonical budgets; that substitute comparison would meet substantial speedup. The original-gSMART curve is absent, so neither that positive tier nor a match/regression tier is established.",
+       "evidence": [
+        "rubric.json, outperformance.speedup_on_piecewise_I tier definitions",
+        "proposal/tables/main_results.csv, piecewise_I rows",
+        "proposal/logs/trajectories/cetv_main/piecewise_I__cetv__seed0–9.json",
+        "proposal/sections/methodology.tex:58–75",
+        "task_spec.md:32,36,99"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_piecewise_I",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the piecewise_I test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "No allowed tier describes the missing valid comparison against both required baselines. Against SMART and stabilized gSMART, CETV reaches 2.03936±0.04703 at N=250 versus the stronger final mean 2.06260, and proposed-mean-plus-std dominance holds at 3/4 canonical budgets; that substitute comparison would meet substantial speedup. The original-gSMART curve is absent, so neither that positive tier nor a match/regression tier is established.",
+        "evidence": [
+         "rubric.json, outperformance.speedup_on_piecewise_I tier definitions",
+         "proposal/tables/main_results.csv, piecewise_I rows",
+         "proposal/logs/trajectories/cetv_main/piecewise_I__cetv__seed0–9.json",
+         "proposal/sections/methodology.tex:58–75",
+         "task_spec.md:32,36,99"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_piecewise_II",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "The required original-gSMART curve is missing, and the rubric has no tier for an incomplete comparator. For the reported stabilized comparison, CETV is below both means at every canonical budget; linear interpolation from N=250 (6.51402) to N=500 (3.83524) reaches the target 6.46495 at approximately N=254.58, or 50.916% of the maximum. Thus that comparison would be modest speedup, despite the paper's noninterpolated 'insufficient' label, but cannot establish the required original-method result.",
+       "evidence": [
+        "rubric.json, outperformance.speedup_on_piecewise_II, permitted interpolation and modest_speedup criteria",
+        "proposal/tables/main_results.csv, piecewise_II rows",
+        "proposal/sections/experimental_results.tex:97–114",
+        "proposal/logs/trajectories/cetv_main/piecewise_II__cetv__seed0–9.json",
+        "proposal/sections/methodology.tex:58–75"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_piecewise_II",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the piecewise_II test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "The required original-gSMART curve is missing, and the rubric has no tier for an incomplete comparator. For the reported stabilized comparison, CETV is below both means at every canonical budget; linear interpolation from N=250 (6.51402) to N=500 (3.83524) reaches the target 6.46495 at approximately N=254.58, or 50.916% of the maximum. Thus that comparison would be modest speedup, despite the paper's noninterpolated 'insufficient' label, but cannot establish the required original-method result.",
+        "evidence": [
+         "rubric.json, outperformance.speedup_on_piecewise_II, permitted interpolation and modest_speedup criteria",
+         "proposal/tables/main_results.csv, piecewise_II rows",
+         "proposal/sections/experimental_results.tex:97–114",
+         "proposal/logs/trajectories/cetv_main/piecewise_II__cetv__seed0–9.json",
+         "proposal/sections/methodology.tex:58–75"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_smooth_oscillatory",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "The complete original-gSMART mean/std curve is unavailable, so no allowed performance tier is established against both required baselines. Against the reported stabilized comparison, CETV reaches 0.178214±0.00204 at N=250 versus the stronger final baseline mean 0.189221, with proposed-mean-plus-std dominance at 4/4 canonical budgets. Those numbers support substantial speedup only for the substitute comparison.",
+       "evidence": [
+        "proposal/tables/main_results.csv, smooth_osc rows",
+        "proposal/logs/trajectories/cetv_main/smooth_osc__cetv__seed0–9.json",
+        "proposal/sections/experimental_results.tex:69–87",
+        "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/",
+        "proposal/sections/methodology.tex:58–75"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_smooth_oscillatory",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the smooth_oscillatory test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "The complete original-gSMART mean/std curve is unavailable, so no allowed performance tier is established against both required baselines. Against the reported stabilized comparison, CETV reaches 0.178214±0.00204 at N=250 versus the stronger final baseline mean 0.189221, with proposed-mean-plus-std dominance at 4/4 canonical budgets. Those numbers support substantial speedup only for the substitute comparison.",
+        "evidence": [
+         "proposal/tables/main_results.csv, smooth_osc rows",
+         "proposal/logs/trajectories/cetv_main/smooth_osc__cetv__seed0–9.json",
+         "proposal/sections/experimental_results.tex:69–87",
+         "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/",
+         "proposal/sections/methodology.tex:58–75"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_non_differentiable",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "No complete original-gSMART curve exists for the required comparison, and missing comparator data do not imply a match or regression. Against the reported stabilized policy and SMART, CETV reaches 0.872006±0.00900 at N=250 versus the stronger final mean 0.880463 and satisfies proposed-mean-plus-std dominance at 4/4 canonical budgets. That would be substantial speedup for the substitute comparison only.",
+       "evidence": [
+        "proposal/tables/main_results.csv, nondiff rows",
+        "proposal/logs/trajectories/cetv_main/nondiff__cetv__seed0–9.json",
+        "proposal/sections/experimental_results.tex:69–87",
+        "proposal/sections/methodology.tex:58–75"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_non_differentiable",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the non_differentiable test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "No complete original-gSMART curve exists for the required comparison, and missing comparator data do not imply a match or regression. Against the reported stabilized policy and SMART, CETV reaches 0.872006±0.00900 at N=250 versus the stronger final mean 0.880463 and satisfies proposed-mean-plus-std dominance at 4/4 canonical budgets. That would be substantial speedup for the substitute comparison only.",
+        "evidence": [
+         "proposal/tables/main_results.csv, nondiff rows",
+         "proposal/logs/trajectories/cetv_main/nondiff__cetv__seed0–9.json",
+         "proposal/sections/experimental_results.tex:69–87",
+         "proposal/sections/methodology.tex:58–75"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_diffusion_3d",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "The original-gSMART evidence consists of limited diagnostics rather than the required ten-seed curve, leaving no applicable performance tier. Against the reported stabilized comparison, CETV at N=500 is 0.0142576±0.0003941 versus the stronger final mean 0.0150277, and proposed-mean-plus-std dominance holds at all five canonical budgets. This establishes the substantial-speedup arithmetic for the substitute comparison, not for both required original baselines.",
+       "evidence": [
+        "proposal/tables/main_results.csv, diffusion_3d rows",
+        "proposal/logs/trajectories/cetv_main/diffusion_3d__cetv__seed0–9.json",
+        "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/ok_maxnorm_closed_physical20_cheng/diffusion_3d__gsmart__seed0.json",
+        "proposal/sections/methodology.tex:58–75"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_diffusion_3d",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the diffusion_3d test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "The original-gSMART evidence consists of limited diagnostics rather than the required ten-seed curve, leaving no applicable performance tier. Against the reported stabilized comparison, CETV at N=500 is 0.0142576±0.0003941 versus the stronger final mean 0.0150277, and proposed-mean-plus-std dominance holds at all five canonical budgets. This establishes the substantial-speedup arithmetic for the substitute comparison, not for both required original baselines.",
+        "evidence": [
+         "proposal/tables/main_results.csv, diffusion_3d rows",
+         "proposal/logs/trajectories/cetv_main/diffusion_3d__cetv__seed0–9.json",
+         "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/ok_maxnorm_closed_physical20_cheng/diffusion_3d__gsmart__seed0.json",
+         "proposal/sections/methodology.tex:58–75"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "node_id": null,
+     "rubric": "direction",
+     "rule_id": "four_of_five_substantial_speedups",
+     "gate": "G3",
+     "code": "regression_check_unresolved",
+     "reason": "Every member needs a judgment to rule out a prohibited regression.",
+     "node_ids": [
+      "outperformance.speedup_on_piecewise_I",
+      "outperformance.speedup_on_piecewise_II",
+      "outperformance.speedup_on_smooth_oscillatory",
+      "outperformance.speedup_on_non_differentiable",
+      "outperformance.speedup_on_diffusion_3d"
+     ],
+     "observed_values": {
+      "outperformance.speedup_on_piecewise_I": null,
+      "outperformance.speedup_on_piecewise_II": null,
+      "outperformance.speedup_on_smooth_oscillatory": null,
+      "outperformance.speedup_on_non_differentiable": null,
+      "outperformance.speedup_on_diffusion_3d": null
+     },
+     "supporting_findings": [
+      {
+       "node_id": "outperformance.speedup_on_piecewise_I",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "No allowed tier describes the missing valid comparison against both required baselines. Against SMART and stabilized gSMART, CETV reaches 2.03936±0.04703 at N=250 versus the stronger final mean 2.06260, and proposed-mean-plus-std dominance holds at 3/4 canonical budgets; that substitute comparison would meet substantial speedup. The original-gSMART curve is absent, so neither that positive tier nor a match/regression tier is established.",
+       "evidence": [
+        "rubric.json, outperformance.speedup_on_piecewise_I tier definitions",
+        "proposal/tables/main_results.csv, piecewise_I rows",
+        "proposal/logs/trajectories/cetv_main/piecewise_I__cetv__seed0–9.json",
+        "proposal/sections/methodology.tex:58–75",
+        "task_spec.md:32,36,99"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_piecewise_I",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the piecewise_I test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "No allowed tier describes the missing valid comparison against both required baselines. Against SMART and stabilized gSMART, CETV reaches 2.03936±0.04703 at N=250 versus the stronger final mean 2.06260, and proposed-mean-plus-std dominance holds at 3/4 canonical budgets; that substitute comparison would meet substantial speedup. The original-gSMART curve is absent, so neither that positive tier nor a match/regression tier is established.",
+        "evidence": [
+         "rubric.json, outperformance.speedup_on_piecewise_I tier definitions",
+         "proposal/tables/main_results.csv, piecewise_I rows",
+         "proposal/logs/trajectories/cetv_main/piecewise_I__cetv__seed0–9.json",
+         "proposal/sections/methodology.tex:58–75",
+         "task_spec.md:32,36,99"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_piecewise_II",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "The required original-gSMART curve is missing, and the rubric has no tier for an incomplete comparator. For the reported stabilized comparison, CETV is below both means at every canonical budget; linear interpolation from N=250 (6.51402) to N=500 (3.83524) reaches the target 6.46495 at approximately N=254.58, or 50.916% of the maximum. Thus that comparison would be modest speedup, despite the paper's noninterpolated 'insufficient' label, but cannot establish the required original-method result.",
+       "evidence": [
+        "rubric.json, outperformance.speedup_on_piecewise_II, permitted interpolation and modest_speedup criteria",
+        "proposal/tables/main_results.csv, piecewise_II rows",
+        "proposal/sections/experimental_results.tex:97–114",
+        "proposal/logs/trajectories/cetv_main/piecewise_II__cetv__seed0–9.json",
+        "proposal/sections/methodology.tex:58–75"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_piecewise_II",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the piecewise_II test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "The required original-gSMART curve is missing, and the rubric has no tier for an incomplete comparator. For the reported stabilized comparison, CETV is below both means at every canonical budget; linear interpolation from N=250 (6.51402) to N=500 (3.83524) reaches the target 6.46495 at approximately N=254.58, or 50.916% of the maximum. Thus that comparison would be modest speedup, despite the paper's noninterpolated 'insufficient' label, but cannot establish the required original-method result.",
+        "evidence": [
+         "rubric.json, outperformance.speedup_on_piecewise_II, permitted interpolation and modest_speedup criteria",
+         "proposal/tables/main_results.csv, piecewise_II rows",
+         "proposal/sections/experimental_results.tex:97–114",
+         "proposal/logs/trajectories/cetv_main/piecewise_II__cetv__seed0–9.json",
+         "proposal/sections/methodology.tex:58–75"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_smooth_oscillatory",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "The complete original-gSMART mean/std curve is unavailable, so no allowed performance tier is established against both required baselines. Against the reported stabilized comparison, CETV reaches 0.178214±0.00204 at N=250 versus the stronger final baseline mean 0.189221, with proposed-mean-plus-std dominance at 4/4 canonical budgets. Those numbers support substantial speedup only for the substitute comparison.",
+       "evidence": [
+        "proposal/tables/main_results.csv, smooth_osc rows",
+        "proposal/logs/trajectories/cetv_main/smooth_osc__cetv__seed0–9.json",
+        "proposal/sections/experimental_results.tex:69–87",
+        "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/",
+        "proposal/sections/methodology.tex:58–75"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_smooth_oscillatory",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the smooth_oscillatory test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "The complete original-gSMART mean/std curve is unavailable, so no allowed performance tier is established against both required baselines. Against the reported stabilized comparison, CETV reaches 0.178214±0.00204 at N=250 versus the stronger final baseline mean 0.189221, with proposed-mean-plus-std dominance at 4/4 canonical budgets. Those numbers support substantial speedup only for the substitute comparison.",
+        "evidence": [
+         "proposal/tables/main_results.csv, smooth_osc rows",
+         "proposal/logs/trajectories/cetv_main/smooth_osc__cetv__seed0–9.json",
+         "proposal/sections/experimental_results.tex:69–87",
+         "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/",
+         "proposal/sections/methodology.tex:58–75"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_non_differentiable",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "No complete original-gSMART curve exists for the required comparison, and missing comparator data do not imply a match or regression. Against the reported stabilized policy and SMART, CETV reaches 0.872006±0.00900 at N=250 versus the stronger final mean 0.880463 and satisfies proposed-mean-plus-std dominance at 4/4 canonical budgets. That would be substantial speedup for the substitute comparison only.",
+       "evidence": [
+        "proposal/tables/main_results.csv, nondiff rows",
+        "proposal/logs/trajectories/cetv_main/nondiff__cetv__seed0–9.json",
+        "proposal/sections/experimental_results.tex:69–87",
+        "proposal/sections/methodology.tex:58–75"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_non_differentiable",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the non_differentiable test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "No complete original-gSMART curve exists for the required comparison, and missing comparator data do not imply a match or regression. Against the reported stabilized policy and SMART, CETV reaches 0.872006±0.00900 at N=250 versus the stronger final mean 0.880463 and satisfies proposed-mean-plus-std dominance at 4/4 canonical budgets. That would be substantial speedup for the substitute comparison only.",
+        "evidence": [
+         "proposal/tables/main_results.csv, nondiff rows",
+         "proposal/logs/trajectories/cetv_main/nondiff__cetv__seed0–9.json",
+         "proposal/sections/experimental_results.tex:69–87",
+         "proposal/sections/methodology.tex:58–75"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_diffusion_3d",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "The original-gSMART evidence consists of limited diagnostics rather than the required ten-seed curve, leaving no applicable performance tier. Against the reported stabilized comparison, CETV at N=500 is 0.0142576±0.0003941 versus the stronger final mean 0.0150277, and proposed-mean-plus-std dominance holds at all five canonical budgets. This establishes the substantial-speedup arithmetic for the substitute comparison, not for both required original baselines.",
+       "evidence": [
+        "proposal/tables/main_results.csv, diffusion_3d rows",
+        "proposal/logs/trajectories/cetv_main/diffusion_3d__cetv__seed0–9.json",
+        "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/ok_maxnorm_closed_physical20_cheng/diffusion_3d__gsmart__seed0.json",
+        "proposal/sections/methodology.tex:58–75"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_diffusion_3d",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the diffusion_3d test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "The original-gSMART evidence consists of limited diagnostics rather than the required ten-seed curve, leaving no applicable performance tier. Against the reported stabilized comparison, CETV at N=500 is 0.0142576±0.0003941 versus the stronger final mean 0.0150277, and proposed-mean-plus-std dominance holds at all five canonical budgets. This establishes the substantial-speedup arithmetic for the substitute comparison, not for both required original baselines.",
+        "evidence": [
+         "proposal/tables/main_results.csv, diffusion_3d rows",
+         "proposal/logs/trajectories/cetv_main/diffusion_3d__cetv__seed0–9.json",
+         "proposal/logs/trajectories/diagnostic_ok_cheng_seed0_a/ok_maxnorm_closed_physical20_cheng/diffusion_3d__gsmart__seed0.json",
+         "proposal/sections/methodology.tex:58–75"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "cumulative": {
+  "G1": {
+   "status": "fail",
+   "blocked_by": []
+  },
+  "G2": {
+   "status": "fail",
+   "blocked_by": [
+    "G1"
+   ]
+  },
+  "G3": {
+   "status": "fail",
+   "blocked_by": [
+    "G1",
+    "G2"
+   ]
+  }
+ },
+ "outcome": "integrity_failure",
+ "passes": {
+  "G1": false,
+  "G2": false,
+  "G3": false
+ },
+ "nodes": {
+  "integrity:code_methodology_match.hyperparameters_match_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:code_methodology_match.acquisition_optimizer_matches_paper": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:code_methodology_match.surrogate_matches_paper": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:code_methodology_match.proposed_acquisition_matches_paper": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:baseline_honesty.smart_numbers_from_logged_runs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:baseline_honesty.gsmart_numbers_from_logged_runs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:baseline_honesty.no_paper_numbers_cited_as_baselines": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:selective_reporting.speedup_claims_match_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:selective_reporting.consistent_direction_acknowledged": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:selective_reporting.speedup_reference_consistent": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:single_hyperparameter_integrity.identical_hyperparameters_in_headline_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:single_hyperparameter_integrity.per_function_tuning_clearly_labeled": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:initial_design_pairing.paired_initial_design_logged": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:integrity.execution_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:integrity.precommitment_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:trace.intext_quantitative_claims_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:trace.main_table_values_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:trace.figure_numbers_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:test_set_integrity.no_hardcoded_ground_truth_values": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:selective_reporting.all_seeds_aggregated": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:selective_reporting.no_silent_omissions": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:test_set_integrity.dense_grid_independent_of_acquisition": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:sequential_acquisition.sequential_acquisition_logged": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:no_external_code.no_undisclosed_external_code": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:integrity.originality.no_substantive_replication": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "direction:deliverables.report_pdf_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.logs_directory_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.baseline_runs_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.proposed_method_runs_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.methodology_section_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.analysis_section_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.main_results_table_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.convergence_curves_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.codebase_notes_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.attempts_log_present": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "required_and_present_substantive"
+  },
+  "direction:method_specification.method_stated_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:method_specification.mathematical_form_clear": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:method_specification.hyperparameters_specified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:method_specification.motivation_grounded_in_literature": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:method_specification.gpcam_integration": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "gpcam_integrated"
+  },
+  "direction:baseline_verification.smart_run_on_all_functions": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:baseline_verification.gsmart_run_on_all_functions": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:baseline_verification.random_grid_baselines_run": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:baseline_verification.qualitative_match_to_paper": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:experimental_completeness.all_21_configurations_run": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:experimental_completeness.ten_seeds_per_configuration": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:experimental_completeness.initial_design_paired": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:experimental_completeness.single_hyperparameter_setting": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:metric_reporting.modern_metrics_reported": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:metric_reporting.baseline_metrics_recomputed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:outperformance.speedup_on_piecewise_I": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:outperformance.speedup_on_piecewise_II": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:outperformance.speedup_on_smooth_oscillatory": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:outperformance.speedup_on_non_differentiable": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:outperformance.speedup_on_diffusion_3d": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:justification.quality_on_piecewise_I": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:justification.quality_on_piecewise_II": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:justification.quality_on_smooth_oscillatory": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:justification.quality_on_non_differentiable": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:justification.quality_on_diffusion_3d": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:mechanism_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:mechanism_analysis.mechanism_supported": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:mechanism_analysis.surrogate_vs_acquisition_ablation": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "not_applicable_surrogate_unchanged"
+  },
+  "direction:failure_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:failure_analysis.patterns_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:failure_analysis.patterns_explained_coherently": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:compute_cost_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:compute_cost_analysis.measurements_reported": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:compute_cost_analysis.tradeoff_explicit": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:originality.related_work_cited": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:originality.positioning_vs_prior_work": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:writing_quality.rendered_pdf_clean": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.neurips_style": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.main_results_table_complete": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.convergence_curves_complete": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.scatter_plots": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.limitations_discussed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.independence_from_spec": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.appendix_usage_minimized": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.prose_quality": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:supporting_quality.codebase_notes_substantive": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:contract.experiment_completeness.all_methods_logged_per_config": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.selective_reporting.per_function_curve_characterized": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.effort_evidence.attempts_log_when_partial_work_claimed": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:evidence_completeness.quantitative_sources_documented": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:evidence_completeness.required_reporting_coverage": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  }
+ }
+}

@@ -1,0 +1,174 @@
+{
+  "nodes": {
+    "number_traceability.metrics_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report attributes density 0.98 to every bump radius that activates any bump. Its source records instead give approximately 0.118–0.120 at bump radius 30 and 0.979 at radius 38. The artifact builder takes the maximum across configurations, which the prose incorrectly presents as universal. This is a substantive numerical contradiction, not rounding or missing evidence.",
+      "evidence": [
+        "proposal/sections/analysis.tex:48–50 states density \\bumpDensityDense at every active bump radius; proposal/logs/macros.tex:275 defines that value as 0.98.",
+        "proposal/logs/20_paper_pilot_bump_br30.json, sweep: estimated_density values are 0.1183253, 0.1183256, 0.1183823 and 0.1197994.",
+        "proposal/logs/20_paper_pilot_bump_br38.json, sweep: estimated_density is 0.978585.",
+        "proposal/code/build_paper_artifacts.py:565–576 computes bumpDensityDense as the maximum across the configurations; proposal/attempts_log.md:176–183 explicitly distinguishes densities 0.118 and 0.979."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_predictions": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected prediction and scoring paths compute results from fitted models and evaluation observations. No hardcoded predictions, targets or oracle outputs substituting for those computations were detected. The MNIST reference constants are explicitly attributed comparison values.",
+      "evidence": [
+        "proposal/code/motif_gp.py:339–407 constructs the covariance operator and computes posterior means and variances through linear solves.",
+        "proposal/code/run_baselines.py:223–249 fits each seed, transforms predictions back to response units and computes metrics and aggregates.",
+        "proposal/code/run_mnist_repro.py:312–385 computes predictions and Brier scores; the separate paper_brier=0.018 field is explicitly a reference value.",
+        "paper.md, Section 5.4/Table 4, supplies the cited MNIST gp2Scale Brier score 0.018 ± 0.002."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "kernel_adaptation_genuineness.claim_matches_implementation": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The stated far-field kernel uses raw occurrence features with amplitudes shared within motif families. The executed implementation divides each feature by its own training RMS. These unequal motif-specific weights cannot be absorbed into the stated shared family amplitude. Thus the full-scale covariance differs from the explicitly defined kernel.",
+      "evidence": [
+        "proposal/sections/methodology.tex:70–88 defines phi_m,r as the unnormalized sum of positional basis values and weights it by beta_g(m) and gamma_r.",
+        "proposal/code/motif_gp.py:74–83 normalizes every Phi column by its training RMS; :178–187 applies those normalizers to prediction features; :339–346 uses normalized Phi in K.",
+        "Read-only counting of proposal/data/seq_train.txt gives mean squared occurrence counts 0.038306 for CGCGCC and 0.017008 for CGCGCG. The full model_config.json places both in family 0. Normalization therefore multiplies their covariance contributions by 26.10557 and 58.79586 respectively.",
+        "proposal/logs/10_mgsf_fullscale.json records N=500000, R0=1 and the full model configuration. Its family-0 beta and 96 motifs imply normalized-feature mass 500000 × 96 × beta_0² = 324731.19574534375, matching far_mass_per_family[0]=324731.19574534363 in proposal/logs/40_structure_analysis.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "method_plan_integrity.paper_matches_method_plan": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The current plan and final report agree on the principal domain, scale, split, metrics and selected kernel configuration, and disclose pilot refinements. However, the snapshot lacks the historical committed plan needed to establish whether these were its pre-full-scale contents. The record therefore cannot determine whether an executed post-result change was falsely presented as precommitted.",
+      "evidence": [
+        "task_spec.md:39 and :109 require commitment before any full-scale run and permit disclosed refinements.",
+        "proposal/method_plan.md:3–8 identifies git history as the timing record; that history is not included in the staged submission.",
+        "proposal/sections/appendix.tex:108–126 discloses R0=3 to R0=1, vocabulary 256 to 1024, the incomplete VNNGP comparison and the expanded reference-kernel sweep.",
+        "proposal/attempts_log.md:402–407 asserts a 01:15:16 commitment preceding the 01:26:07 run. proposal/logs/10_mgsf_fullscale.json records the latter time and git_head, but does not contain the committed plan version."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_numbers_from_own_runs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The primary SVGP and Wendland scores trace to executed runs, but the report falsely attributes the largest bump-kernel density to all active reference-kernel configurations. The actual radius-30 reference measurements are approximately 0.118, not 0.98.",
+      "evidence": [
+        "proposal/sections/analysis.tex:48–50 attributes density 0.98 to every active bump radius.",
+        "proposal/logs/20_paper_pilot_bump_br30.json and 20_paper_pilot_bump_br38.json distinguish approximately 0.118–0.120 from 0.978585.",
+        "proposal/code/build_paper_artifacts.py:565–576 selects the maximum density; proposal/attempts_log.md:176–183 preserves the distinct reference results.",
+        "The separate primary-table scores in proposal/sections/tab_main.tex:13–14 match proposal/logs/20_paper_full_wendland_onehot_sweep.json and 30_baseline_full_svgp_rbfard_M2048.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The methodology explicitly defines unnormalized motif-count features, whereas model construction and prediction use motif-specific RMS normalization. Because amplitudes are shared across motifs, this changes their relative covariance weights and the interpretation of fitted family parameters. It is a material model-description mismatch rather than an equivalent reparameterization.",
+      "evidence": [
+        "proposal/sections/methodology.tex:73–88 specifies raw phi_m,r and family-shared beta_g.",
+        "proposal/code/motif_gp.py:78–83 divides Phi columns by separate col_norm values; :186–187 repeats that transformation for new inputs.",
+        "proposal/code/motif_gp.py:195–214 and :339–346 confirm there is one beta per family, not a separate free amplitude capable of absorbing each motif's normalizer.",
+        "The saved full-scale configuration assigns CGCGCC and CGCGCG to family 0; calculations on proposal/data/seq_train.txt give different RMS normalizers, 0.19571919 and 0.13041472. The normalized implementation is corroborated by the logged full-scale family covariance mass."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "Detailed records support the principal full-scale run, reproduction attempt, baseline and several repairs. However, the report explicitly claims all three reference kernels were run on both representations, while the supplied execution records cover only four of those six combinations. Execution of the two additional combinations cannot be established, and their missing logs do not affirmatively prove that the claim is false.",
+      "evidence": [
+        "proposal/sections/setup.tex:54–63 claims Wendland, bump and Wendland-delta were each run on both one-hot and motif representations.",
+        "The args fields across proposal/logs/20*.json cover Wendland/onehot, Wendland/motif, bump/motif and wendland_delta/motif; no corresponding bump/onehot or wendland_delta/onehot execution record is included.",
+        "proposal/logs/10_mgsf_fullscale.log:33–85 records the completed 500000-point chain and 5000-point prediction.",
+        "proposal/logs/20_paper_full_wendland_onehot_sweep.log:22–37 records the completed six-radius rerun; proposal/logs/05_mnist_reproduction_kw_kd.log records all three reproduction seeds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "Explicit pre-full-scale commitment claims are present, but the dated plan versions needed to assess backdating or undisclosed post-result selection are absent. The author-side verification statement and recorded run hash do not establish the historical file contents. Later JSON timestamps also cannot establish first execution because the logger overwrites JSON while appending earlier attempts to text logs.",
+      "evidence": [
+        "proposal/sections/setup.tex:34–38 and proposal/sections/appendix.tex:111–119 claim choices were fixed and committed before the full-scale run.",
+        "proposal/method_plan.md:7–8 identifies the git log as the record; no git history or historical plan snapshot is staged.",
+        "proposal/attempts_log.md:402–407 reports commitment at 01:15:16; proposal/logs/10_mgsf_fullscale.json records start_time_utc=2026-08-09T01:26:07Z and git_head=764ecd8d5a1d7e484106cf54a143b3a7a6322651.",
+        "proposal/code/runlog.py:99 and :119–120 append text but overwrite JSON. proposal/logs/06_far_field_sweep.log:1–27 preserves an earlier 24-configuration sweep, followed by another sweep at :28–46, without absolute timestamps for the earlier attempt."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.test_not_used_in_training": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The MNIST gp2Scale reproduction transfers fitted hyperparameters between newly randomized train/test splits. Consequently, labels from observations held out in a later seed have already influenced that seed's MCMC initialization through the preceding fit. Saved feature arrays and traces affirm this information flow. The separate promoter split checks do not remove this reproduction leakage.",
+      "evidence": [
+        "proposal/code/run_mnist_repro.py:251–257 redraws a 60000/10000 split of the same 70000 observations for each seed.",
+        "proposal/code/run_mnist_repro.py:282–308 initializes each later GP from h_prev, then assigns the preceding training fit's h_map to h_prev.",
+        "proposal/logs/05_mnist_reproduction_kw_kd.json: seed 1's initial trajectory value exactly equals seed 0's MAP [0.8750123983559595, 45.0, 0.19201201983880678]; seed 2 similarly starts from seed 1's MAP.",
+        "Read-only comparison of the 10000 saved 784-float image records in proposal/features/mnist_te_0.f32, mnist_te_1.f32 and mnist_te_2.f32 finds 8511 seed-1 test images absent from seed-0's test set and 8563 seed-2 test images absent from seed-1's test set. Because each split exhausts the same 70000 images, those observations belonged to the preceding training sets."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_genuine_best_effort": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No deliberate baseline weakening was detected. The submission documents and fixes a poor initialization, selects the strongest pilot-CRPS configuration, and executes it on 500000 training points for three seeds. It explicitly treats the undertrained VNNGP attempt as inconclusive rather than using it to inflate the comparison.",
+      "evidence": [
+        "proposal/attempts_log.md:163–174 documents replacing unit RBF length-scale initialization with the training-feature median heuristic, improving pilot RMSE/CRPS from approximately 2.359/1.330 to 1.9287/1.0714.",
+        "proposal/sections/tab_baseline_tuning.tex:9–15 includes the successful and failed configurations and identifies RBF-ARD with 2048 inducing points as the best pilot-CRPS configuration.",
+        "proposal/logs/30_baseline_full_svgp_rbfard_M2048.json records 500000 training points, seeds [0,1,2], 2048 inducing points and 20 epochs.",
+        "proposal/sections/setup.tex:83–88 and proposal/attempts_log.md:216–228 disclose the undertrained and incomplete VNNGP configurations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All three reported SVGP seeds and all three completed MNIST reproduction seeds enter the published aggregates. Their full per-seed results are supplied, including the weakest reproduction seed. Earlier failures and superseded runs are retained or disclosed; no concealed favorable seed selection was established.",
+      "evidence": [
+        "proposal/logs/30_baseline_full_svgp_rbfard_M2048.json gives RMSE values 1.9123613248, 1.9140935136 and 1.9128580693. Their recalculated mean/sample SD are 1.9131043026/0.0008919600, matching proposal/sections/tab_main.tex:14.",
+        "proposal/logs/05_mnist_reproduction_kw_kd.json gives Brier values 0.0788104975, 0.0787313928 and 0.0854338665. Their mean/sample SD are 0.0809919189/0.0038470428.",
+        "proposal/sections/results.tex:172–180 reports the failed reproduction aggregate explicitly.",
+        "proposal/sections/appendix.tex:128–133 and proposal/attempts_log.md, entries E1, E6 and E7, disclose failed configurations and invalidated runs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_metrics_reported": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "No concealed outcome-dependent omission of completed unfavorable metrics was established. The report includes the negligible accuracy differences, the reference kernel's better calibration error, and the failure of posterior uncertainty to rank individual errors. Configuration records also retain the differing bump densities; their incorrect prose attribution is assessed separately.",
+      "evidence": [
+        "proposal/sections/tab_all_metrics.tex:11–13 reports RMSE, CRPS, NLPD, coverage, ACE and Pearson correlation for all three principal methods, including Wendland ACE 0.0214 versus MGSF 0.0230.",
+        "proposal/sections/appendix.tex:22–34 explicitly discusses the negligible SVGP accuracy margins and Wendland's better ACE.",
+        "proposal/logs/45_calibration_significance.json and proposal/sections/results.tex:64–89 report confidence intervals crossing zero for RMSE, CRPS and NLPD.",
+        "proposal/sections/analysis.tex:178–190 reports the negative uncertainty result; proposal/logs/43_strata_analysis.json records Spearman(sd_f, absolute residual)=-0.0067134.",
+        "proposal/attempts_log.md:176–183 supplies both the 0.118 and 0.979 bump-density results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_followup.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The supplied evidence does not identify a prior contribution whose domain, kernel and analysis were substantively reproduced without acknowledgment. The report acknowledges gp2Scale and established convolution-kernel foundations. This finding is limited to the supplied record and does not certify global novelty.",
+      "evidence": [
+        "paper.md describes the original synthetic, topography, housing and MNIST demonstrations; the submission's application is regulatory-sequence regression.",
+        "proposal/sections/introduction.tex:31–38 attributes the sparse exact-GP framework to the Noack works; :65–112 states the submission's proposed contributions.",
+        "proposal/sections/methodology.tex:90–98 explicitly attributes the R-convolution construction to Haussler.",
+        "proposal/logs/00_research_notes.md:641–664 discusses nearby sequence-GP work and prior-art distinctions; no included reference establishes an unacknowledged reproduction of the submitted domain/kernel/analysis combination."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

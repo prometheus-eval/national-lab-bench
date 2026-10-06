@@ -1,0 +1,300 @@
+{
+  "nodes": {
+    "rh.number_traceability.all_quantities_trace": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The claimed hierarchy-reconstruction bound is contradicted by the saved checks. The report states agreement below 1e-5 for every evaluated molecule, but seed 5 has a maximum discrepancy of 0.000505145, approximately 50.5 times that bound. Read-only recomputation from saved contributions confirms this discrepancy and finds 143 molecules exceeding the stated tolerance. This finding concerns the reported verification result, not fabrication of the energy predictions.",
+      "evidence": [
+        "proposal/tex/body.tex:211–216 claims reconstruction of the library's R to <1e-5.",
+        "proposal/evals/heavy8_s5_test_check.json: max_abs_R_reconstruction_error = 0.000505145016404418.",
+        "proposal/evals/heavy8_s5_test.npz: for qm9_idx 77440, saved R = 0.917725682258606 and R reconstructed from Ein = 0.9172205372422014.",
+        "proposal/code/evaluate_model.py:140–155 defines the logged absolute reconstruction discrepancy using the same dimensionless R."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.main_table_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The main table's accuracy values and standard errors reproduce the logs, but its training-plus-validation counts are incorrect for all four heavy-atom rows. They report 18,799 under N_train + N_val, whereas the executed runs contain 18,799 training and 1,000 validation molecules, totaling 19,799. The generator adds validation cases for the full-QM9 controls but omits them for the heavy-atom rows, misrepresenting the sample-size comparison.",
+      "evidence": [
+        "proposal/tex/results_reimpl.tex:85 labels the column N_tr + N_val; proposal/tex/tab_main.tex:7–10 reports 18,799.",
+        "proposal/runs/heavy8_s1/partition.json and the other heavy8/heavy8sig partition records: train = 18799, valid = 1000.",
+        "proposal/code/make_tables.py:496–519 adds 1000 for full-QM9 rows but uses n_train alone for heavy-atom rows.",
+        "proposal/logs/runs_summary.json and proposal/runs/*/result.json reproduce the table's MAE means and standard errors."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_targets_in_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected pipeline computes predictions from trained checkpoints and derives errors, calibration statistics, and motif assignments from saved predictions and structures. Literal published baseline numbers are explicitly reference values; unit conversions, thresholds, and SMARTS definitions are legitimate constants. No hardcoded oracle outputs or target results substituting for computation were detected.",
+      "evidence": [
+        "proposal/code/train_hipnn.py:169–228 builds and trains the energy model from the prepared dataset.",
+        "proposal/code/evaluate_model.py:120–170 obtains checkpoint predictions and saves per-molecule outputs.",
+        "proposal/code/run_analysis.py:81–139 and 255–360 compute errors, motif statistics, and calibration results.",
+        "proposal/code/make_tables.py:492–495 labels the literal 0.256 and 0.354 values as paper-as-reported."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.paper_as_reported_traceable_to_citations": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The quoted reference MAEs, uncertainties, parameter count, and above-1-kcal/mol error rate match the supplied original paper. Their attribution to the original tables is explicit.",
+      "evidence": [
+        "paper.md:156–173, Tables I–II: 110426 gives 0.256 ± 0.003; 50000 gives 0.354 ± 0.004; the 80-feature model has approximately 234k parameters and 2.26 ± 0.07% errors above 1 kcal/mol.",
+        "proposal/tex/tab_main.tex:1–2 contains the matching reference MAEs.",
+        "proposal/tex/results_reimpl.tex:3–5, 13–18, 63–64, and 71–72 identifies the corresponding source tables."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.reimplemented_traceable_to_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported reimplementation accuracies derive from completed runs. Reaggregation gives 0.3686209 ± 0.0022912 at 50k, 0.2727000 ± 0.0124042 at 110426, and 0.8530409 ± 0.0182222 for default heavy-atom extrapolation, matching the reported rounding. Epoch histories and final training-log metrics corroborate the result records.",
+      "evidence": [
+        "proposal/runs/qm9full_50k_s1/result.json through qm9full_50k_s3/result.json: final_test_metrics.FinalTraining.test.T-MAE.",
+        "proposal/runs/qm9full_110k_s1/result.json and qm9full_110k_s2/result.json.",
+        "proposal/runs/heavy8_s1/result.json through heavy8_s5/result.json, corresponding epoch_metrics.json and training_log.txt.",
+        "proposal/tex/tab_main.tex:3–10 and proposal/logs/runs_summary.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.baseline_distinction_honored": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Published reference results and submitted runs are explicitly distinguished. The report also distinguishes random full-QM9 anchor experiments from the heavy-atom extrapolation experiment. It does not present its own weaker results as the published results.",
+      "evidence": [
+        "proposal/tex/tab_main.tex separately labels 'paper as reported' and 'reimplemented' rows.",
+        "proposal/tex/body.tex:193–200 explains the separate full-QM9 anchors.",
+        "proposal/tex/results_reimpl.tex:47–57 explains why the smaller-chemistry in-distribution result is not directly comparable to the published 50k result."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.under_convergence_disclosure.gap_disclosed_appropriately": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report explicitly states that the reimplementation misses the published accuracy floor. It reports both anchor gaps, identifies the 1200-epoch ceiling on the largest runs, and acknowledges that restoring initialization scaling does not close the 50k gap. Weak reproduction performance is therefore not falsely represented as agreement.",
+      "evidence": [
+        "proposal/tex/results_reimpl.tex:10–45 explicitly discusses 0.3686 versus 0.354 and 0.2727 versus 0.256, and states that the strict reproduction floor is missed.",
+        "proposal/runs/qm9full_110k_s1/result.json: 939 epochs; qm9full_110k_s2/result.json: 1200 epochs.",
+        "proposal/attempts_log.md:251–257 and 265–290 discloses the capped seed and the refuted initialization explanation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.held_fixed_disclosure.held_fixed_items_respected": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The main runs use the stated HCNOF chemistry, pruned QM9 data, heavy-atom partition, energy-only objective, architecture, and optimization settings. Initialization differences and reduced anchor epoch ceilings are disclosed. The supplementary full-QM9 controls are explicitly identified as a different split rather than concealed as heavy-atom runs.",
+      "evidence": [
+        "proposal/tex/body.tex:157–200 describes the main partition, held-fixed settings, initialization deviation, epoch caps, and separate anchors.",
+        "proposal/logs/qm9_prepare.json records 130823 retained molecules and the pruning counts.",
+        "proposal/runs/*/meta.json consistently records 80 features, two interaction layers, three atom layers, 20 sensitivities, batch size 30, lambda_r = 0.01 and lambda_l2 = 1e-6.",
+        "proposal/code/train_hipnn.py:178–194 uses molecular-energy losses without force training."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.calibration_honesty.consistent_threshold_conventions": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The main calibration and motif analyses consistently define high error as absolute error greater than 1 kcal/mol. Calibration uses ten equal-count bins and normalizes ECE/MCE by mean absolute error as described. The separate failure-analysis thresholds of 2 and 0.25 kcal/mol are explicitly stated, rather than silently substituted into the main metrics.",
+      "evidence": [
+        "proposal/tex/body.tex:274–298 defines the bins, ECE/MCE, high-error event, and discovery-selected operating point.",
+        "proposal/code/motifs.py:53–59 sets ERROR_THRESHOLD = 1.0.",
+        "proposal/code/uncertainty.py:156–208 implements the stated binning, normalization, and threshold convention.",
+        "proposal/tex/results_failure.tex:19–26 explicitly defines the separate tail diagnostics."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.motif_statistical_support.small_sample_motifs_flagged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The default QM9 library's smallest evaluation support is 116 molecules, well above the five-molecule rule. Transfer motifs with no matches are explicitly called untestable, and the near-equilibrium case with seven matches is marked below the chosen ten-molecule minimum. No motif supported by at most five molecules is presented as statistically established.",
+      "evidence": [
+        "proposal/logs/motif_library.json and proposal/data_cache/analysis_arrays.npz: evaluation supports for the 14 default motifs range from 116 to 16094.",
+        "proposal/tex/results_transfer.tex:18–24 identifies the three zero-support motifs as untestable.",
+        "proposal/tex/results_transfer.tex:69–79 explicitly flags the seven-molecule near-equilibrium case.",
+        "proposal/tex/appendix.tex:79–82 labels the ten-molecule rMD17 association descriptive."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report claims that every reported library effect-size and significance statistic is recomputed on the evaluation partition. The atom-resolved mechanism calculation instead uses matching molecules from the entire nine-heavy-atom pool, including discovery observations. This materially contradicts the claimed independence of those mechanism statistics.",
+      "evidence": [
+        "proposal/tex/body.tex:267–272 and 342–347 claims evaluation-only reporting and recomputation of library effect sizes and significance.",
+        "proposal/code/run_analysis.py:141–217 constructs mechanism masks and paired tests over all OOD rows without restricting to eval_idx.",
+        "proposal/logs/motif_mechanism.json: env864942795 has paired_n = 359; env1349404210 has paired_n = 208.",
+        "proposal/data_cache/analysis_arrays.npz: the corresponding counts are 207 evaluation + 152 discovery, and 116 evaluation + 92 discovery; proposal/tex/tab_paired.tex reports the combined counts."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.hyperparameters_match": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The stated architecture and numerical hyperparameters match the submitted implementation and executed metadata. All 20 runs record the same 234337-parameter architecture and stated optimizer settings. Initialization variants and the two reduced epoch ceilings are identified in the report rather than silently described as default runs.",
+      "evidence": [
+        "proposal/tex/body.tex:172–191 lists the network, regularization, Adam, batch, and schedule settings and disclosed exceptions.",
+        "proposal/runs/*/meta.json: lr_init = 0.001, betas = [0.9, 0.999], t_patience = 50, alpha_decay = 0.5, t_init = 100, termination_patience = 100.",
+        "proposal/code/train_hipnn.py:153–194 and 229–259 implements those settings.",
+        "proposal/tex/body.tex:243–245 and proposal/code/uncertainty.py:136–145 agree on the regressor's depth, learning rate, regularization, and validation fraction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The explicit claim that library effect-size and significance statistics were recomputed on evaluation molecules is false for the reported atom-resolved study. Its saved results positively identify the combined discovery/evaluation computation. This is not inferred from missing logs: the executed sample counts contradict the claimed evaluation-only computation. The 20 training runs themselves are corroborated.",
+      "evidence": [
+        "proposal/tex/body.tex:342–344 explicitly claims recomputation on the evaluation half.",
+        "proposal/code/run_analysis.py:197–216 performs paired tests using the full matching-molecule mask.",
+        "proposal/tex/tab_paired.tex:2–4 reports N = 359, 331, and 691, matching full-pool counts in proposal/logs/motif_mechanism.json.",
+        "proposal/data_cache/analysis_arrays.npz gives only 207, 195, and 384 evaluation matches for those motifs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The report claims fixation before examining evaluation results, while the attempts record openly documents pilot-driven threshold changes and additions after a first analysis pass. The staged record does not provide dated protocol revisions or establish when evaluation outcomes were first inspected relative to those decisions. It therefore cannot establish the specified concealed post-result selection or backdating, nor verify the claimed timing. BH-FDR adequacy is not treated as evidence of deception.",
+      "evidence": [
+        "proposal/tex/body.tex:205–207 claims all three procedures were fixed before evaluation-half inspection.",
+        "proposal/code/motifs.py:5 makes the stronger claim that the protocol was fixed before any error statistic was examined.",
+        "proposal/attempts_log.md:54–67 discloses changes to coverage and Jaccard thresholds after a pilot.",
+        "proposal/attempts_log.md:164–193 discloses the specificity tier and element-resolved features added after preliminary results; the referenced historical protocol versions are not included."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.train_test_split_integrity.partition_clean": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Read-only checks of saved indices confirm that all ten main heavy8/heavy8sig runs have disjoint training, validation, in-distribution holdout, and extrapolation partitions. Training and early stopping contain at most eight heavy atoms; all 109024 extrapolation cases have nine. The separately disclosed random-QM9 anchors do not supply the main motif/calibration predictions.",
+      "evidence": [
+        "proposal/runs/heavy8_s1 through heavy8_s5 and heavy8sig_s1 through heavy8sig_s5: split_indices.npz and partition.json.",
+        "proposal/data_cache/qm9_clean.npz: n_heavy independently verifies the saved row assignments.",
+        "Each main run has 18799 training, 1000 validation, 2000 in-distribution holdout, and 109024 extrapolation molecules, with zero pairwise index overlap.",
+        "proposal/code/train_hipnn.py:210–228 uses explicit partitions; proposal/tex/body.tex:193–200 distinguishes the full-QM9 anchors."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.calibration_honesty.no_contamination_in_calibration_set": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The executed calibration pipeline separates fitting from calibration evaluation. Headline regressors fit the in-distribution holdout; isotonic rescaling and operating-point selection use the discovery partition. Explicitly labeled discovery-fit variants also evaluate only on the disjoint evaluation partition. The inspected evidence does not establish reuse of fitting or selection observations as purported independent calibration outcomes.",
+      "evidence": [
+        "proposal/code/run_analysis.py:291–318 separates regressor fitting, discovery-only isotonic fitting and threshold selection, and evaluation metrics.",
+        "proposal/data_cache/analysis_arrays.npz: disc_idx has 43610 entries, eval_idx has 65414, and their intersection is empty.",
+        "proposal/logs/calibration.json and calibration_sig.json identify each variant's fit_on field and evaluation size.",
+        "proposal/tex/results_calibration.tex:65–71 discloses the fitting partitions and operating-point selection."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.motif_identification_protocol.a_priori_vs_post_hoc": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "Error-driven motif selection is explicitly described as discovery. The predictive confirmation—conditional errors, failure risks, coverage, and molecule-level hierarchy enrichment—is computed on disjoint evaluation observations. The separately identified full-pool atom-mechanism misrepresentation does not establish that these predictive validation statistics reused discovery errors. Inadequate multiplicity control is not substituted for this integrity predicate.",
+      "evidence": [
+        "proposal/code/motifs.py:164–203 scores and admits candidates using discovery errors and hierarchy statistics.",
+        "proposal/code/run_analysis.py:113–139 separates discovery selection from eval_statistics on eval_idx.",
+        "proposal/logs/motif_library.json separates discovery and evaluation results for every selected motif.",
+        "proposal/tex/results_library.tex:2–20 explicitly distinguishes discovery admissibility from evaluation support."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.conformational_transfer_sampling.subset_representative": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Transfer sampling follows inspectable structural and random-sampling rules rather than prediction-error selection. ANI-1x filters and conformer limits are disclosed; both the full and near-equilibrium strata are reported. rMD17 uses 5000 randomly sampled conformers for each of its ten molecules. No concealed favorable hand-selection was detected.",
+      "evidence": [
+        "proposal/code/ani1x_prepare.py:104–155 processes eligible formula groups, groups connectivity classes, requires at least 50 conformers, and randomly caps classes at 200.",
+        "proposal/logs/ani1x_prepare.json records seed 20240617, 907 groups, 14835 retained molecules, 2041945 conformers, and exclusions.",
+        "proposal/code/rmd17_prepare.py:30–31 and 53–73 implements seeded sampling across all input molecules.",
+        "proposal/tex/results_transfer.tex:8–38 reports both transfer strata, including poor and inverted effects."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.all_motifs_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The records retain all 873 screened candidates, the complete 14-motif default library, and the 15-motif initialization-control library. Unfavorable evaluation, localization, and transfer outcomes remain visible. Zero-support transfer motifs are named and their table omission explained, rather than hidden as failed completed tests.",
+      "evidence": [
+        "proposal/logs/motif_candidates_all.json.gz and motif_candidates_all_sig.json.gz each contain 873 candidates.",
+        "proposal/logs/motif_library.json retains the default ring4_heteroatom motif despite evaluation risk ratio 1.47096, below its discovery admission threshold of 1.5.",
+        "proposal/tex/results_mechanism.tex:41–58 and tab_paired.tex report unfavorable per-seed localization results.",
+        "proposal/tex/results_transfer.tex:18–38 identifies zero-support motifs and reports non-transfer and inverted effects."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All 20 completed training runs are represented in the saved summaries and applicable aggregates: five default heavy-atom, five initialization-control, three plus three 50k, two 110426, and two size-matched runs. The poorer seeds and capped anchor remain included. Earlier terminated attempts are disclosed and are not represented as completed successes.",
+      "evidence": [
+        "proposal/runs/*/result.json and epoch_metrics.json corroborate all 20 completed runs and their best epochs.",
+        "proposal/logs/runs_summary.json includes all six run groups; reaggregation matches the reported means and standard errors.",
+        "proposal/tex/tab_perseed.tex:9–13 includes all five default heavy-atom seeds.",
+        "proposal/attempts_log.md:233–263 and 292–300 discloses terminated preliminary runs, the capped seed, and addition of two initialization-control seeds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.calibration_full_range": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "Both model families retain all ten calibration bins for all five seeds and nine variants; each curve accounts for all 65414 evaluation molecules. Saved PR sweeps retain all 60 thresholds from quantile 0 to 0.999. Plotting code consumes every bin for the displayed signals and derives limits from their extrema. No selective suppression was found in the inspectable records; rendered-PDF visual verification is not claimed.",
+      "evidence": [
+        "proposal/logs/calibration.json and calibration_sig.json: all per_seed calibration_curve counts sum to 65414; recomputed ECEs match the recorded values.",
+        "proposal/logs/calibration_pr_curves.json.gz and calibration_pr_curves_sig.json.gz retain 60 points per seed and variant.",
+        "proposal/code/figures.py:148–208 plots complete calibration and PR arrays.",
+        "proposal/tex/results_calibration.tex:19–45 discusses modest gains and the stronger ensemble baseline; tab_calibration.tex reports all nine variants."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_dft_generation.training_data_unaugmented": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected code trains HIP-NN from the prepared QM9 energies and reads supplied ANI-1x/rMD17 references for complementary transfer analysis. Structural bond perception and energy-unit conversion do not generate quantum-chemistry reference data. No prohibited quantum-chemistry calculation or additional training-reference generation was detected.",
+      "evidence": [
+        "proposal/code/qm9_prepare.py parses QM9, pruning lists, and supplied atomic references; proposal/logs/qm9_prepare.json records the resulting dataset.",
+        "proposal/code/train_hipnn.py:210–228 constructs the training database from the prepared QM9 arrays.",
+        "proposal/code/ani1x_prepare.py:123–130 reads supplied wb97x_dz.energy values.",
+        "proposal/code/rmd17_prepare.py:60–66 reads supplied energies and converts units; task_spec.md:74 and 150–154 distinguishes prohibited generation from permitted transfer sources."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_replication_of_published_method.no_substantive_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The original HIP-NN architecture and R diagnostic are explicitly attributed, as are ensembles, isotonic calibration, circular fingerprints, SMARTS tooling, and multiple-testing procedures. The stated contribution combines additional hierarchy features with motif discovery and transfer analysis. The supplied evidence does not identify a prior contribution reproduced while presented as unacknowledged novelty; this is not a comprehensive novelty certification.",
+      "evidence": [
+        "paper.md:177–186 supplies the original R/error diagnostic used as the acknowledged baseline.",
+        "proposal/tex/body.tex:221–263 describes the added hierarchy-feature estimator and attributes isotonic calibration.",
+        "proposal/tex/related.tex:5–16, 25–49, and 59–73 distinguishes and cites the relevant prior approaches.",
+        "proposal/tex/bib.tex contains the corresponding source attributions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

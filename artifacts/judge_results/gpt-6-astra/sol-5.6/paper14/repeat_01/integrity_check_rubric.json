@@ -1,0 +1,211 @@
+{
+  "nodes": {
+    "number_traceability.observables_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported rates, errors, dispersion frequencies, propagation centers, and population-transfer quantities agree with the saved records after rounding. Independent calculations on saved statevectors recover the headline rates and dispersion frequencies to floating-point precision; no material numerical contradiction was detected.",
+      "evidence": [
+        "proposal/sections/main_results_table.tex:11-15 agrees with proposal/logs/nonlinear_summary.json, results: rates 0.030007171796801423, 0.060010390233676325, 0.11998913729933253, and 0.23972460775148047; percentage errors round to 0.024%, 0.017%, 0.009%, and 0.115%.",
+        "Calculations from full_statevectors in all 16 confirmatory nonlinear NPZ files recover logged phase frequencies within 2.8e-16. Calculations from proposal/logs/dispersion_delta0.00.npz and dispersion_delta0.25.npz recover all 18 frequencies within 3.4e-16.",
+        "proposal/report.tex:364-379 and proposal/logs/full_hilbert_population_transfer.json, final_metrics, agree: transferred population 0.7413191640454806, TV distance 0.11219848373260506, and 60 newly populated configurations. These quantities also match calculations from the saved witness statevectors."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.epsilon_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported coupling grid matches the plan, execution code, summaries, and embedded trajectory parameters. The controls explicitly distinguish the comparison's declared coupling from the zero coupling actually used for H0.",
+      "evidence": [
+        "proposal/code/method_plan.json:18 declares [0.1, 0.2, 0.4, 0.8]; proposal/sections/main_results_table.tex:11-15 reports all four and the zero baseline.",
+        "proposal/code/run_nonlinear.py:73-105 sets used_epsilon to the declared value for extended runs and to 0.0 for H0, saving both epsilon_declared and epsilon_in_hamiltonian.",
+        "Inspection of all 16 confirmatory NPZ records confirms the declared grid, the corresponding extended Hamiltonian couplings, and epsilon_in_hamiltonian=0.0 for every H0 control. proposal/logs/zero_baseline_headline.npz records epsilon=0.0."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_observables": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The substantive results are obtained from statevector evolution, observable extraction, or the independently integrated PDE. Some plotting routines draw literal zero control lines, but actual saved H0 trajectories independently yield those zeros, so these literals do not substitute for an unperformed computation.",
+      "evidence": [
+        "proposal/code/statevector.py:99-166 constructs Hamiltonian phases and applies local gates to full vectors; lines 169-204 calculate observables from amplitudes.",
+        "proposal/code/run_nonlinear.py:207-244 calculates phase-rate differences and residuals from fitted signals; proposal/code/pde_reference.py:21-96 numerically integrates the NLSE and separately evaluates its analytic homogeneous rate.",
+        "proposal/code/generate_artifacts.py:84,209,227 draws zero H0 guides. The saved nonlinear_eps*_h0.npz statevectors recover zero phase slopes at both densities and every coupling.",
+        "proposal/code/run_linear_reproduction.py:44-55 evaluates the dispersion formula and diagonalizes the Hamiltonian rather than embedding reference frequencies."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.pde_reference_independent_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The PDE predictions trace to a separate solver using declared equations and parameters. Its saved signals reproduce the reported reference rates, and the inspected data flow contains no copying or fitting to emulation outputs.",
+      "evidence": [
+        "proposal/code/pde_reference.py:14,21-52 imports declared parameters and evolves the NLSE with mu=epsilon*J and q=-2*epsilon*J; it does not load statevector results.",
+        "proposal/logs/pde_reference_precomputed.json:2-3 records execution at 18:56:22-18:56:23 UTC; proposal/logs/nonlinear_summary.json records statevector execution beginning at 18:57:57 UTC.",
+        "Phase fits recalculated from proposal/logs/pde_reference_trajectories.csv recover approximately 0.03, 0.06, 0.12, and 0.24, matching the saved split-step rates within 2.8e-17.",
+        "The PDE source hash and the reference-file hash recorded by the nonlinear run match the submitted files."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The parameters quoted for the primary results match the submitted configuration and trajectory metadata: coupling grid, densities, lattice sizes, time steps, fit samples, bulk observable, and tolerance. No material quoted-versus-used mismatch was detected.",
+      "evidence": [
+        "proposal/report.tex:233-265 specifies epsilon=(0.10,0.20,0.40,0.80), densities (0.05,0.20), tolerance 15%, N=12, delta=0.02, and 11 samples through t=0.2; proposal/code/method_plan.json:18-27 records the same choices.",
+        "All 16 confirmatory nonlinear NPZ files contain matching densities, N=12, dimension=4096, dt=0.02, and times exactly matching the plan.",
+        "proposal/report.tex:241-248 and proposal/logs/pde_reference_precomputed.json:7-11 agree on 256 grid points, step 0.0001, final time 0.2, and both densities.",
+        "proposal/report.tex:277-285 and both dispersion NPZ files agree on N=9, delta=0.8, and masses 0 and 0.25."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.pde_independent_of_emulation": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reference solver is independent of the emulation outputs, and the residual computation reads an already saved reference. Sharing predetermined physical parameters and an analytically specified mapping does not establish prohibited back-fitting.",
+      "evidence": [
+        "proposal/code/pde_reference.py:21-96 computes reference trajectories and rates solely from epsilon, J, density, and the NLSE.",
+        "proposal/code/run_nonlinear.py:173-195 loads the saved PDE reference before executing the confirmatory statevector loop; lines 207-244 subsequently calculate residuals without altering reference predictions.",
+        "proposal/code/method_plan.md:38-66 specifies the PDE coefficients and independent-reference procedure. The matching plan and PDE hashes are recorded in proposal/logs/nonlinear_summary.json.",
+        "proposal/report.tex:216-228 and 491-505 explicitly limit the test to homogeneous self-phase modulation; the adequacy of that plasma correspondence is a scientific question, not evidence of reference leakage."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.noiseless_simulation_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported linear baseline quantities are supported by the submission's own saved full-statevector runs. The report describes its eigenmode-initialized Ramsey procedure and labels the frequency comparison against exact eigenvalues; it does not pass copied reference-paper numbers off as its own results.",
+      "evidence": [
+        "proposal/report.tex:277-285 describes pairing each exact eigenmode with the vacuum. proposal/code/run_linear_reproduction.py:49-179 implements that procedure and saves both trajectory sets.",
+        "proposal/logs/dispersion_delta0.00.npz and dispersion_delta0.25.npz each contain paired arrays of shape (9,13,512). Their reconstructed frequencies match proposal/sections/dispersion_table.tex.",
+        "proposal/sections/dispersion_table.tex:3-6 explicitly identifies the comparison as error against exact eigenvalues. The source paper's localized-qubit Ramsey preparation is described in paper.md:103-124; protocol-equivalence or reproduction adequacy belongs to scientific assessment.",
+        "The three saved propagation trajectories reproduce the reported final centers 5.7099255596652885, 3.767257679288742, and 2.6825441893889024."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.h0_contrast_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The H0 contrasts are supported by separately invoked and saved controls using the same initial densities and numerical settings. Their zero phase rates are recoverable from the saved amplitudes, and the separate two-excitation control also contains nontrivial measured dynamics.",
+      "evidence": [
+        "proposal/code/run_nonlinear.py:73-107,189-196 executes and saves extended and H0 trajectories for each coupling-density combination.",
+        "All eight nonlinear_eps*_h0.npz confirmatory files contain (11,4096) statevector arrays and epsilon_in_hamiltonian=0.0; calculations from those arrays give zero fitted phase frequencies.",
+        "proposal/report.tex:342-358 reports H0 entropy 2.52e-6 bits, consistent with proposal/logs/nonlinear_summary.json, high_density_final_entropy_h0_bits=2.5217940401010253e-6.",
+        "proposal/logs/multiexcitation_transfer_eps0.80.npz contains a separate H0 trajectory; its final adjacent-pair probability is 0.28098288369875174, matching the report's 28.098%."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The described Hamiltonian, nonlinear full-space evolution, product-formula ordering, phase estimator, and PDE solver match the implementation and saved results. The single-excitation block used for linear eigenmode preparation does not replace the disclosed full-space nonlinear evolution.",
+      "evidence": [
+        "proposal/report.tex:112-138 matches proposal/code/statevector.py:99-123: the original chiral hopping and staggered Z field plus -epsilon*J/4 nearest-neighbor ZZ.",
+        "proposal/report.tex:250-265 matches proposal/code/statevector.py:126-187 and proposal/code/run_nonlinear.py:47-108: full vectors, even/odd/diagonal layers, interior-site coherence, and unwrapped phase fits.",
+        "proposal/code/statevector.py:233-237 constructs a one-excitation block for the linear reference eigenmodes; its use is in proposal/code/run_linear_reproduction.py:49-65, followed by full-512-component evolution.",
+        "proposal/report.tex:267-275,376-381 accurately describes conserved excitation-sector weights and redistribution within the two-excitation sector, consistent with the implementation and saved witness."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No claimed compliance with a held-fixed condition is materially contradicted by the inspected implementation. The original H0 structure, open boundaries, lattice sizes, zero-coupling reduction, and single ZZ structure are retained; the smaller nonlinear time step is explicitly reported.",
+      "evidence": [
+        "task_spec.md:71-79 defines the held-fixed conditions. proposal/report.tex:112-128 and proposal/code/statevector.py:99-123 retain the specified H0 and an overall epsilon factor in the ZZ extension.",
+        "proposal/report.tex:250-260,277-285 discloses N=12 and delta=0.02 for nonlinear runs, and N=9 and delta=0.8 for linear runs; saved trajectory metadata matches.",
+        "The paired dispersion and propagation NPZ arrays have exactly zero H0-versus-H(0) statevector difference.",
+        "proposal/attempts_log.md:34-46 discloses the sharp-interface correction from site 6 to site 5 and retains the earlier run; this is not an undisclosed change to the committed ZZ model."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed primary simulations, PDE calculation, symbolic identity checks, paired linear runs, population witness, and breakdown analysis have corresponding implementation and saved records. No affirmative artifact evidence establishes that a claimed execution was false.",
+      "evidence": [
+        "proposal/report.tex:241-297 describes the main executions; the submission contains 16 confirmatory nonlinear trajectories, independent PDE signals, paired dispersion arrays, three propagation records, and a (101,4096) trajectory for each witness model.",
+        "proposal/code/mapping_derivation.py:17-51 and proposal/logs/mapping_symbolic.json record the evaluated density identity, zero-coupling limit, and bulk coefficients.",
+        "proposal/report.tex:395-406 claims paired dispersion evolution. Both dispersion NPZ files contain the claimed separate arrays and signals, with exactly zero pairwise differences.",
+        "proposal/attempts_log.md:92-106 acknowledges that the first dispersion output lacked separate paired trajectories; proposal/logs/linear_summary.json records the later paired run at 19:53:44 UTC.",
+        "All seven checked methodology-source hashes match their corresponding saved run records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submitted dated records and recorded hashes are consistent with the claimed freeze before reference and validation runs. Later diagnostic additions are explicitly dated and distinguished from the confirmatory sweep. No inspected version or record establishes undisclosed post-result selection or backdating.",
+      "evidence": [
+        "proposal/report.tex:233-239 claims a pre-output freeze. proposal/code/method_plan.json records commitment at 2026-08-04T18:51:04Z, including the model, four couplings, densities, tolerance, step, and fit samples.",
+        "proposal/logs/pde_reference_precomputed.json records 18:56:22-18:56:23 UTC; proposal/logs/nonlinear_summary.json records 18:57:57-18:57:59 UTC and hashes matching the submitted plan and reference files.",
+        "proposal/attempts_log.md:48-57 labels the extension beyond t=1.6 as post-confirmatory; proposal/report.tex:441-457 reports its failures without redefining the original t=0.2 window.",
+        "The witness, zero-row convention, and paired-dispersion additions are dated in proposal/attempts_log.md:59-106 before their respective saved execution timestamps."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_points_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every declared finite-coupling point appears in the main table and sweep figure. The completed longer-window failures are also reported, and the earlier unsuccessful interface placement is retained and disclosed. No completed unfavorable result was identified as concealed while the reported set was represented as complete.",
+      "evidence": [
+        "proposal/code/method_plan.json:18 and proposal/sections/main_results_table.tex:11-15 contain the same four finite couplings plus the separately reported zero baseline.",
+        "proposal/code/generate_artifacts.py:61-98 plots all nonlinear results; the inspected proposal/figures/main_sweep.png displays all four points and their errors.",
+        "proposal/logs/additional_checks.json, postconfirmatory_breakdown, records errors 21.446%, 43.965%, and 70.267% at t=2.4,3.2,4.0. proposal/report.tex:441-457 and the inspected failure_convergence.png disclose this breakdown.",
+        "proposal/attempts_log.md:34-46 identifies the unsuccessful site-6 interface run; its saved trajectory and summary retain the unreflected final center 5.020146524014332."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.zz_structures_documented": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected nonlinear runs use the same committed attractive nearest-neighbor ZZ structure. Alternative phenomena considered before commitment are documented, and there is no affirmative evidence of a completed alternative ZZ model being hidden or selected away.",
+      "evidence": [
+        "proposal/code/method_plan.md:18-36 fixes the nearest-neighbor interaction, sign, range, and absence of counterterms.",
+        "proposal/code/statevector.py:114-116 implements that structure; the confirmatory, breakdown, and witness scripts all use this implementation.",
+        "proposal/attempts_log.md:3-32 documents consideration of modulational instability, EIT, and Raman scattering and the decision to study self-phase modulation.",
+        "proposal/attempts_log.md:48-78 identifies later time-window and witness additions as diagnostics of the same committed Hamiltonian."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The identifiable inherited techniques are acknowledged, including the source spin chain, Jordan-Wigner transformation, spin-coherent/Holstein-Primakoff correspondence, and plasma NLSE literature. The inspected submission does not establish an identifiable prior contribution reproduced as new without acknowledgment.",
+      "evidence": [
+        "proposal/report.tex:74-95 credits Sundar's spin-chain approach and differentiates the claimed local nonlinear-coefficient test from earlier modal nonlinear-wave simulations.",
+        "proposal/report.tex:140-141 cites Jordan-Wigner; lines 168-172 explicitly relate the approximation to Holstein-Primakoff and cite Zhang and Batista's coherent-state treatment.",
+        "proposal/report.tex:64-70,205-214 acknowledges Zakharov and subsequent plasma-envelope literature.",
+        "proposal/references.bib and proposal/report.bbl contain these cited works. The original paper's hard-core mapping and proposed ZZ extension are inspectable in paper.md:245-272 and 172-176."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The methodology code is inspectable and consistent with the disclosed use of local implementations and standard scientific-library primitives. No identifiable undisclosed external methodology implementation or prohibited code reuse was found in the staged evidence.",
+      "evidence": [
+        "proposal/codebase_notes.md:5-43 states the authorship of the local simulator, solver, analysis, and artifact-generation modules and describes their responsibilities.",
+        "proposal/codebase_notes.md:45-55 attributes array operations, FFTs, linear algebra, exponentials, sparse evolution, symbolic algebra, and plotting to NumPy, SciPy, SymPy, and Matplotlib.",
+        "The inspected imports and implementations in proposal/code/statevector.py, pde_reference.py, mapping_derivation.py, run_nonlinear.py, run_linear_reproduction.py, run_additional_checks.py, run_zero_baseline.py, and run_multiexcitation_witness.py use those libraries, Python's standard library, and the included local modules.",
+        "proposal/report.tex:242-243 credits the spectral split-step method; the included solver implements it locally rather than importing an undisclosed plasma-solver package."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

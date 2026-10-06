@@ -1,0 +1,217 @@
+{
+  "nodes": {
+    "number_traceability.values_trace_to_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The audited numerical results trace to saved data with consistent rounding and units. Independent read-only calculations reproduced all 95 numerical macros, paired dictionary errors, and trajectory deviations. No fabricated, altered, or materially contradictory result was established.",
+      "evidence": [
+        "proposal/code/extract_numbers.py:38-122 and proposal/logs/macros.tex:2-96: all 95 macro definitions match calculations from the saved JSON records.",
+        "proposal/logs/recovery_ism.json and recovery_ism.npz: final template objective 34.94735344291032, maximum trajectory deviation 4.060411943108373e-16, and dictionary error 1.1767994365981377e-15 were independently reproduced.",
+        "proposal/report.tex:620-662 and proposal/logs/mc_r1_cns.json, mc_r2_cns.json, mc_r2_cellB.json: objectives round correctly to 5562.3, 3784.0, and 3779.2.",
+        "proposal/logs/timing_sweeps.json, sweepA: endpoint-to-r4 timing ratios are 1.6668982599 and 1.9255883380, consistent with the reported 1.7× and 1.9×."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.trajectories_trace_to_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The plotted trajectories correspond to saved per-iteration results. Paired JSON and NPZ trajectories agree, and recalculated deviations match the reported arrays. The inspected figures retain the colour FISTA oscillations; the zero-deviation plotting floor is disclosed.",
+      "evidence": [
+        "proposal/code/make_figures.py:39-193 reads the recovery, grouped, colour, equivalence, and timing records directly.",
+        "proposal/logs/recovery_{ism,cg,cns,fista}.{json,npz}: each pair contains 50 matching objective records; recalculated maximum deviations are approximately 4.06e-16, 2.01e-16, 0, and 0.",
+        "proposal/logs/mc_r1_cns.npz, mc_r1_fista.npz, and mc_r2_cns.npz contain 100 objective values per side matching their JSON records.",
+        "Rendered inspection of proposal/figs/recovery.pdf, grouped.pdf, multichannel.pdf, equivalence.pdf, and timing.pdf; proposal/report.tex:562-567 explicitly explains clipping zero deviations to the plotting floor."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_references": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implementation computes template and reference outputs through separate solver calls. Hardcoded quantities are configuration constants and cited parameter choices, not trajectories, target objectives, or dictionaries substituted for computation.",
+      "evidence": [
+        "proposal/code/run_recovery.py:22-52 defines seeds and algorithm settings; lines 76-86 independently run and compare both solvers.",
+        "proposal/code/unicdl/dictlearn.py:59-84 constructs ConvBPDNDictLearn, calls solve(), and extracts its objective history and dictionary.",
+        "proposal/code/unicdl/template.py:229-310 performs numerical update operations without reading reference results.",
+        "proposal/code/run_multichannel.py:38-44 loads only the cached input dataset; reference outputs are computed separately at lines 61-63, 78-80, and 95-97."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported experimental settings agree with the runner code and saved configurations: the small recovery protocol, colour budgets, penalties, seed, and lambda are consistent. The reduced R2 scale is explicitly reported rather than represented as a K=40 execution.",
+      "evidence": [
+        "proposal/report.tex:521-547; proposal/code/run_recovery.py:22-29; proposal/logs/recovery_ism.json/config: seed 12345, K=5, size=64, M=16, 50 iterations, lambda=0.1, rho=3.59, sigma=4.08.",
+        "proposal/report.tex:620-625 and proposal/logs/mc_r1_cns.json/config, mc_r1_fista.json/config: K=40, size=256, C=3, M=64, 100 iterations; consensus sigma=2.2 and FISTA L=1680.",
+        "proposal/report.tex:648-652 and proposal/logs/mc_r2_cns.json/config, mc_r2_cellB.json/config: K=20.",
+        "proposal/code/unicdl/dictlearn.py:26-42 pins one inner iteration, fixed ADMM penalties, and relaxation 1.0; recovery_cg.json/config records tolerance 0.001 and cap 1000."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.results_from_actual_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported recovery, convergence, and equivalence experiments have solver-generated histories and saved outputs consistent with their execution code. No analytical estimate or interpolation was found substituted for an experimental result. The complexity arguments are presented separately as analysis.",
+      "evidence": [
+        "proposal/code/run_recovery.py:76-86 and proposal/logs/recovery_{ism,cg,cns,fista}.{json,npz} provide the four completed paired recovery records.",
+        "proposal/code/run_multichannel.py:56-131 and proposal/logs/mc_r1_cns.json, mc_r1_fista.json, mc_r2_cns.json, mc_r2_cellB.json provide 100-iteration colour histories.",
+        "proposal/code/run_equivalence.py:48-93 runs both implementations and records their comparisons; equivalence_channel3d.json contains 30 iterations and equivalence_channel3d.npz contains paired final dictionaries.",
+        "proposal/report.tex:398-426 distinguishes cost and penalty-scaling derivations from the experiments in Section 6."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.sporco_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The baseline results are attributed to runtime SPORCO comparisons and are supported by paired reference histories and dictionaries. Cited reference-paper penalty choices are distinguishable from newly computed baseline outcomes.",
+      "evidence": [
+        "proposal/report.tex:534-547 states that reference outcomes are produced at runtime and identifies the original paper as the source of the recovery penalties.",
+        "proposal/code/unicdl/dictlearn.py:59-84 calls SPORCO ConvBPDNDictLearn and extracts its own iteration statistics.",
+        "workdir_outside_proposal/code/sporco/sporco/dictlrn/cbpdndl.py:125-131 dispatches the reference families to the ISM, CG, consensus, and PGM implementations.",
+        "proposal/logs/recovery_ism.npz and mc_r1_cns.npz contain distinct template/reference dictionaries whose independently calculated relative errors match the JSON records.",
+        "paper.md:682-711, Table II, supplies the cited rho=3.59, sigma=4.08/1.29, and L=48.14 settings."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_matches_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented partitioning, quadratic or linearized updates, projected averaging, dual steps, momentum, channel folding, and objective evaluation correspond to the described implementation. The independent channel-frequency implementation also performs the dense transformed solves claimed in the paper.",
+      "evidence": [
+        "proposal/report.tex:234-309 and proposal/code/unicdl/template.py:229-310 describe and implement the master update, including the disclosed endpoint initialization conventions.",
+        "proposal/code/unicdl/template.py:40-80, 126-145, and 209-225 implement block partitions and channel folding.",
+        "proposal/report.tex:511-516 and proposal/code/unicdl/channel3d.py:81-124: the independent implementation builds the block-circulant normal matrix and calls numpy.linalg.solve.",
+        "proposal/code/unicdl/dictlearn.py:127-139 matches the AccurateDFid evaluation in workdir_outside_proposal/code/sporco/sporco/dictlrn/cbpdndl.py:502-522."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "genuine_abstraction_integrity.template_not_dispatcher": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submitted template implements a shared iteration over configurable block partitions. Its branches select declared numerical operators, while averaging, projection, dual updates, and anchoring remain shared. It does not merely dispatch the claimed template instances to SPORCO's separate dictionary-update classes.",
+      "evidence": [
+        "proposal/code/unicdl/template.py:40-80 accepts endpoint, grouped, image, channel, and explicit partitions.",
+        "proposal/code/unicdl/template.py:229-310 uses per-copy rank-r solves or linearized updates followed by the shared master step.",
+        "proposal/code/unicdl/dictlearn.py:110-112 constructs TemplateDictUpdate for template runs; stock-family dispatch is confined to the reference runner at lines 59-84.",
+        "proposal/code/run_reveal_gray.py:58-78 and proposal/logs/grouped_interior_common.json, grouped_interior_scaled.json contain executed P=2 and P=4 interior instances using that same implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "recovery_matching_integrity.match_against_actual_reference": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Recovery comparisons use separate SPORCO and template calls on matching inputs and settings. Saved outputs reproduce the reported errors, with no observed trajectory forcing, reference substitution, or hidden weakening of the objective or constraint to obtain agreement.",
+      "evidence": [
+        "proposal/code/run_recovery.py:58-86 passes the same S and copies of D0 to both sides with matching lambda, penalties, and iteration budgets.",
+        "proposal/code/unicdl/harness.py:21-30 and 56-80 computes deviations from supplied outputs and saves both sides.",
+        "proposal/logs/grouped_collapse_P1_vs_ism.{json,npz}: recalculated maximum trajectory deviation 3.8235559544701747e-16 and dictionary error approximately 1.5086648007220565e-15.",
+        "proposal/logs/grouped_collapse_P8_vs_cns.{json,npz} and colorB_small_full_vs_cns.{json,npz}: independently checked zero deviations.",
+        "proposal/code/unicdl/dictlearn.py:103-108,127-139 preserves normalization, the stock sparse-coding stage, and the shared functional evaluation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The material observed departures are disclosed: joint-over-channel normalization follows SPORCO rather than the source paper's per-channel notation, and R2 colour experiments use K=20. Fixed penalties, auxiliary coupling, lambda=0.1, and single inner iterations agree with the stated protocol. These disclosures do not establish scientific compliance, but they preclude treating these departures as concealed compliance claims.",
+      "evidence": [
+        "proposal/report.tex:445-447 explicitly discloses joint channel normalization; paper.md:506-510 states the original per-channel constraint.",
+        "proposal/code/unicdl/template.py:145 and workdir_outside_proposal/code/sporco/sporco/cnvrep.py:898-912 implement the disclosed normalization semantics.",
+        "proposal/report.tex:648-652,872-874 and proposal/attempts_log.md:6-20 disclose K=20 and state that K=40 R2 was not launched.",
+        "proposal/code/unicdl/dictlearn.py:26-42 and workdir_outside_proposal/code/sporco/sporco/dictlrn/dictlrn.py:325-338,379-389 implement the stated alternation and coupling."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_axis_switching.axes_committed_before_validation": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspectable plan and run chronology are consistent with commitment before validation. The recovered families, representations, grouped partitions, and channel-frequency check correspond to the plan. The reduced-scale fallback and subsequent interpretation change are disclosed; no affirmative evidence establishes concealed post-result switching.",
+      "evidence": [
+        "proposal/code/framework_plan.md:3-6,64-94,124-176 specifies the axes, all four recovery families, grouped cells, and channel-frequency comparison before validation.",
+        "framework_plan.md filesystem modification time is 2026-08-16T20:58:02Z; proposal/logs/recovery_summary.json records 2026-08-16T21:03:30Z and equivalence_channel3d.json records 21:07:41Z.",
+        "proposal/code/framework_plan.md:212-218 declares the K=20 fallback and fixed interior penalty choices.",
+        "proposal/attempts_log.md:6-20,34-46 records invoking the fallback and refining the cost model after the timing sweep."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The principal claimed executions have corresponding numerical records and implementations. Analysis-only and unimplemented extensions are identified as such, and the K=40 R2 case is explicitly described as unlaunched. No affirmative artifact evidence establishes a falsely claimed execution, derivation, inspection, or repair.",
+      "evidence": [
+        "proposal/report.tex:543-684 and proposal/logs/recovery_*.json, grouped_*.json, mc_*.json, equivalence_channel3d.json support the described completed comparisons.",
+        "proposal/code/unicdl/channel3d.py:81-124 and proposal/code/run_equivalence.py:48-93 support the claimed independent dense equivalence experiment.",
+        "proposal/report.tex:376-381,864-874,926-932 labels tiling/3D analysis, unimplemented masking, reduced R2 scale, and structural rather than executed parallel claims.",
+        "proposal/attempts_log.md:20 states that the K=40 R2 configuration was not launched.",
+        "proposal/report.log:668 records compilation of the submitted 12-page PDF; the PDF and its results table were inspectable."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The available dated artifacts do not contradict the claimed pre-validation commitment. The outcome-driven change that is identifiable—the revised timing cost model—is expressly acknowledged as post hoc. This is a finding about the available record, not independent authentication of the entire development history.",
+      "evidence": [
+        "proposal/code/framework_plan.md:3 states a freeze at 2026-08-16T20:55Z; its preserved modification time precedes the recorded recovery validation.",
+        "proposal/logs/recovery_summary.json/timestamp is 2026-08-16T21:03:30Z; the four recovery records follow at 21:03:33Z through 21:03:40Z.",
+        "proposal/code/framework_plan.md:138-141,185-186 commits the common and group-size-scaled penalty comparisons used in grouped_interior_common.json and grouped_interior_scaled.json.",
+        "proposal/report.tex:706-709 and proposal/attempts_log.md:34-46 explicitly identify the U-shaped timing explanation as a refinement after observing the sweep."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_cells_and_attempts_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved completed experiment sets are represented in the report or its accompanying records, including worse-performing fixed-penalty partitions and oscillatory FISTA behaviour. The attempts log discloses the scale adjustment, initialization issue, and post-hoc cost-model revision. No omitted completed unfavorable result or concealed outcome-dependent selection was identified.",
+      "evidence": [
+        "proposal/report.tex:574-599 reports all P={1,2,4,8} outcomes under both penalty rules, including fixed-sigma final objectives increasing from 51.77 to 53.47.",
+        "proposal/report.tex:664-670 and proposal/logs/colorB_small_cells.json report single, full, by-image, and by-channel partitions.",
+        "proposal/code/run_sweep_timing.py:52-87 and proposal/logs/timing_sweeps.json contain all five partition sizes and all four families at K={4,8,16,32}; proposal/figs/timing.pdf displays those series.",
+        "proposal/figs/multichannel.pdf retains the colour FISTA transients.",
+        "proposal/attempts_log.md:6-46 documents the three adjustments rather than silently omitting them."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission acknowledges the existing solver families, source-paper equivalence, standard colour representations, general consensus construction, and published multi-channel follow-up. No identifiable prior contribution in the inspected evidence was found reproduced as new without acknowledgment. This does not establish exhaustive literature novelty.",
+      "evidence": [
+        "proposal/report.tex:99-113,332-348 attributes the existing updates and original 3D/consensus correspondence.",
+        "paper.md:282-338 and 502-612 contain the source equivalence, multi-channel representations, and K–C duality acknowledged by the submission.",
+        "proposal/report.tex:389-395 explicitly describes grouped consensus as a specialization of Boyd et al.'s general-form consensus ADMM.",
+        "proposal/report.tex:884-920 discusses and differentiates the published multi-channel follow-up and adjacent proximal-gradient/MM methods; bibliographic entries appear at lines 1022-1037."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The observed nontrivial reuse comes from the supplied SPORCO implementation and named standard scientific libraries, with explicit attribution and a detailed reuse map. The inspected methodology code does not establish prohibited external reuse or unattributed presentation of an external solver as original work.",
+      "evidence": [
+        "task_spec.md:145 permits methodology code authored during the run or attributed SPORCO/named standard-library code.",
+        "proposal/codebase_notes.md:129-162 identifies reused sparse coding, alternation, layouts, projections, FFTs, linear solvers, preprocessing, and the independently implemented components.",
+        "proposal/code/unicdl/__init__.py:7-9 attributes SPORCO and its BSD-3 license; template.py:34-37,83-93 imports and identifies its numerical primitives.",
+        "proposal/code/unicdl/dictlearn.py:87-93 explicitly attributes the mirrored SPORCO initialization and objective evaluation.",
+        "proposal/code/unicdl/channel3d.py:32-36,98-114 uses named NumPy and SPORCO operations for the independent dense implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

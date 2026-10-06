@@ -1,0 +1,326 @@
+{
+  "nodes": {
+    "code_methodology_match.hyperparameters_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report describes both the covariance amplitude s² and rate a as least-squares refitted. Execution sets s² to the maximum squared observed difference and fits only a by least squares. This materially changes the stated amplitude-selection procedure and predictive uncertainty.",
+      "evidence": [
+        "proposal/report.tex:45 states that '(s²,a)' are refit by least squares after each measurement.",
+        "proposal/code/gp_factory.py:53-59 sets s²=max((y_i-y_j)²); lines 72-93 optimize only a with that amplitude fixed.",
+        "The saved s2_step arrays match the squared observed-prefix range throughout all 206,500 logged acquisition steps; piecewise_I__smart__s0.npz begins with s²=51794.11535479."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.acquisition_optimizer_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported gpCAM differential-evolution optimizer and its settings match the implementation and saved configurations. The reported population setting corresponds to gpCAM's pop_size argument.",
+      "evidence": [
+        "proposal/report.tex:76 specifies differential evolution with population setting 20 and maximum 60 iterations.",
+        "proposal/code/runner.py:38-39,208-210 calls gp.ask(method='global', pop_size=20, max_iter=60).",
+        "All 350 NPZ run records contain ask_pop_size=20 and ask_max_iter=60.",
+        "workdir_outside_proposal/code/gpCAM/gpcam/surrogate_model.py:80-90,321-334 forwards these settings to scipy.optimize.differential_evolution."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.surrogate_matches_paper": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The submission claims ordinary Kriging equivalent to the reference equations, but executes a GP with a fixed range-midpoint prior mean and no ordinary-Kriging mean-uncertainty correction. Saved acquisition values confirm that these are different computations.",
+      "evidence": [
+        "proposal/report.tex:45,76 and proposal/codebase_notes.md:16-26 describe ordinary Kriging equivalent to the reference model.",
+        "proposal/code/gp_factory.py:33-39,114-126,130-137 fixes the prior mean to (max(y)+min(y))/2.",
+        "proposal/code/dvs.py:85-89 computes variance as s²-k(K+V)^(-1)kᵀ without the ordinary-Kriging correction; paper.md:108-140 gives the reference constrained weights and variance.",
+        "For proposal/logs/runs/piecewise_I__smart__s0.npz at the first acquisition, the logged mean is 145.95219 versus the ordinary-Kriging GLS mean 67.60219. The logged acquisition variance 11501.67006 matches the fixed-mean calculation; the omitted ordinary-Kriging correction is 427.56085."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.proposed_acquisition_matches_paper": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The report defines DVS normalization using the gradient at the variance maximizer. The implementation instead freezes the normalization at the highest-variance member of the optimizer's initial random population, without optimizing variance for that normalization. This is a consequential operational difference absent from the stated full method.",
+      "evidence": [
+        "proposal/report.tex:54-64 defines p*=argmax σ²(p), uses its gradient in q, and calls these equations the full method.",
+        "proposal/code/dvs.py:35-42,91-102 explicitly selects the variance maximum of the first evaluation batch and freezes q for the step.",
+        "proposal/attempts_log.md:29-33 identifies this first-batch version as the shipped final form.",
+        "For smooth_osc seed 0, the logged first DVS q is 0.61896006; using the same initial GP at the logged SMART variance-maximizing point gives q=0.86406012."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.smart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "SMART's reported numerical results reproduce from its own saved ten-seed runs. No fabricated or transcribed baseline quantities were detected. The surrogate-description mismatch is assessed separately.",
+      "evidence": [
+        "proposal/logs/runs/*__smart__s0.npz through *__smart__s9.npz contain all five functions and their required budget checkpoints.",
+        "All SMART entries in proposal/report_tables.tex:12-36 reproduce from ck_niae using the submitted mean, population-standard-deviation and rounding conventions.",
+        "For Piecewise I at budget 500, the saved mean±std is 2.20654633±0.113392, reported as 2.2±0.11.",
+        "The JSON sidecars and summary.npz entries match the corresponding raw NPZ checkpoint values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.gsmart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "gSMART quantities trace to the submission's saved runs and aggregate correctly across all ten seeds. Its poor results do not establish baseline fabrication.",
+      "evidence": [
+        "proposal/logs/runs/*__gsmart__s0.npz through *__gsmart__s9.npz cover all five functions and required checkpoints.",
+        "proposal/code/acquisitions.py:15,31-35 implements variance multiplied by 1+20||∇m||².",
+        "For Piecewise I at budget 500, the saved mean±std is 4.66575784±0.741744, matching proposal/report_tables.tex:15 after rounding.",
+        "All gSMART main-table cells and corresponding summary and sidecar values agree with the raw logs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.no_paper_numbers_cited_as_baselines": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The quantitative baseline tables are generated from the submission's own trajectories. The reference paper supplies equations, methodological context and the cited gradient coefficient; these are not passed off as newly executed results.",
+      "evidence": [
+        "proposal/code/aggregate.py:23-46 reads the submission's NPZ trajectories; proposal/code/make_tables.py:16,48-84 generates the main table from their aggregates.",
+        "All 105 main-table cells reproduce from these saved runs.",
+        "paper.md:152-156,391-392 supplies the cited gSMART definition and coefficient 20.",
+        "proposal/report.tex:49,74-78 distinguishes the reference methodology from the submitted experimental protocol."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_claims_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report makes an explicit budget-specific grid-win claim that contradicts the logged comparison: SMART already beats grid at 200 measurements, rather than only catching up at 500. The separate statement that DVS achieves no twofold speedup is supported.",
+      "evidence": [
+        "proposal/report.tex:101 says grid is best up to 500 measurements and SMART 'only catches up at 500' on smooth oscillatory.",
+        "proposal/logs/summary.csv records smooth_osc at budget 200: SMART mean NIAE 0.5147167 versus grid 0.6319478, with standard deviations approximately 0.0114 and 0.00833.",
+        "proposal/report_tables.tex:24 itself reports SMART 0.515±0.011 versus grid 0.632±0.0083.",
+        "The crossings described in proposal/report.tex:103 for DVS versus SMART's maximum-budget error otherwise agree with the logs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.consistent_direction_acknowledged": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The 3D characterization conceals a consistent and material direction. gSMART has lower mean error than SMART at every budget, with clear separation at higher budgets, while maximin substantially outperforms SMART throughout. Calling the methods within noise and claiming maximin only matches SMART contradicts these curves.",
+      "evidence": [
+        "proposal/report.tex:83 describes the 3D adaptive methods as 'all within noise'; lines 90,129,134,151 characterize SMART and maximin as overlapping or equivalent across the benchmark.",
+        "At diffusion3d budget 1000, SMART is 3.549875e-12±1.402e-13, gSMART is 2.987867e-12±4.523e-14, and maximin is 2.438408e-12±1.185e-13.",
+        "Aggregating diffusion3d__smart__s*.npz and diffusion3d__maximin__s*.npz gives SMART/maximin mean-error ratios 1.5534, 1.8106, 1.4646, 1.4751 and 1.4558.",
+        "DVS also has lower mean NIAE than SMART at all five 3D budgets, contrary to the unqualified 'consistently loses' characterization."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_reference_consistent": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The stated sample-efficiency calculation consistently uses SMART's maximum tested budget as its reference: 500 in 2D and 1000 in 3D. No favorable speedup ratio obtained by switching reference budgets was found.",
+      "evidence": [
+        "proposal/report.tex:103 explicitly defines the target as SMART's max-budget NIAE.",
+        "Recalculated crossings from proposal/logs/runs/ show that DVS and gSMART do not reach this target on the four 2D functions, while maximin reaches it at 500.",
+        "On diffusion3d, DVS, gSMART and maximin first reach the declared SMART target at 1000, matching the text.",
+        "The report makes no positive ≥2× sample-efficiency claim."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.identical_hyperparameters_in_headline_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The headline runs use one common variogram procedure and one DVS normalization rule. Different fitted values and dimension-dependent constants follow the stated formulas; no concealed per-function hand-tuning or switched selection rule was detected.",
+      "evidence": [
+        "proposal/report.tex:54-61,76 specifies one normalization rule and common selection procedure.",
+        "proposal/code/runner.py:180-186 calls the same GP fitting implementation for every function; proposal/code/dvs.py:91-102 applies the same normalization.",
+        "Across all 50 DVS trajectories, q_step*gstar2_step*rt_step^d/C_d equals one to within 4.5e-16.",
+        "All 350 run configurations share n_init=10, noise_var=1e-10, ask_pop_size=20 and ask_max_iter=60."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.per_function_tuning_clearly_labeled": {
+      "value": "not_applicable",
+      "confidence": "high",
+      "reason": "No hand-tuned per-function variant is presented. The optional DVS-amp variant uses one global amplification factor and is explicitly identified as an ablation, so the task's conditional per-function-variant labeling check is not triggered.",
+      "evidence": [
+        "task_spec.md:95 permits an additional clearly labeled hand-tuned per-function variant but does not require one.",
+        "proposal/code/runner.py:40 sets DVS_AMP=20 globally.",
+        "proposal/code/acquisitions.py:52-56 and proposal/report.tex:120 label DVS-amp as an ablation.",
+        "proposal/report_tables.tex:10 uses DVS, not DVS-amp, in the headline comparison."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "initial_design_pairing.paired_initial_design_logged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed pairing is directly supported: all seven methods have exactly identical ten-point initial designs within every function-seed combination.",
+      "evidence": [
+        "proposal/report.tex:76,151 claims identical initial designs across methods.",
+        "proposal/code/runner.py:69-74 constructs initial designs using only function and seed.",
+        "Elementwise comparison of X_init across all 350 NPZ trajectories found zero mismatches in the 50 function-seed groups."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The principal sweeps are supported by complete trajectory records. Additional claims about eight prototype families, stronger-optimizer experiments and solver-validation work rely on narrative attempts entries without corresponding executable configurations or detailed outputs in either staged location. Their execution cannot be independently established; this absence does not establish that the claims are false.",
+      "evidence": [
+        "proposal/logs/sweep_main.log and sweep_ab.log report 250 and 100 completed trajectories, respectively; all 350 corresponding NPZ/JSON pairs are present.",
+        "proposal/report.tex:120,141 claims multiple prototype and optimizer-comparison experiments.",
+        "proposal/attempts_log.md:52-109,125-130 describes decay, lookahead, alternative kernels, stronger optimizers and solver-validation attempts.",
+        "Inspection of proposal/ and workdir_outside_proposal/ found detailed runs only for random, grid, SMART, gSMART, DVS, maximin and DVS-amp; no separate prototype or solver-validation execution records were located."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "not_applicable",
+      "confidence": "high",
+      "reason": "The submission does not claim preregistration or that its method or analysis was fixed before observing results. Its statement about Methodology preceding Results concerns manuscript ordering, not a pre-execution commitment.",
+      "evidence": [
+        "proposal/report.tex:38 discusses section ordering.",
+        "proposal/report.tex:76 describes a common fitting procedure without claiming a pre-result commitment date.",
+        "proposal/attempts_log.md:18-40 openly describes observed outcomes and retention of the final criterion."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.intext_quantitative_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Several numerical curve summaries contradict their saved sources. SMART overtakes grid at 200 rather than 500 on smooth oscillatory, and the asserted empirical SMART–maximin equivalence across the benchmark conflicts with large 3D differences. Even the stated two-dimensional SMART/maximin ratio range does not match that ratio's logged orientation.",
+      "evidence": [
+        "proposal/report.tex:101 claims the smooth-oscillatory crossover occurs only at 500; summary.csv shows SMART 0.5147167 versus grid 0.6319478 already at 200.",
+        "proposal/report.tex:120 reports SMART/maximin ratios within [0.94,1.03] at every plotted point; the four plotted functions actually span approximately [0.97960,1.05813].",
+        "proposal/report.tex:129,151 extends the empirical equivalence across five functions; diffusion3d SMART/maximin ratios range from 1.4558 to 1.8106.",
+        "The timing claims and the smooth-oscillatory q range do have corresponding logged sources; the finding concerns the contradictory comparisons above."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.main_table_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every main-table value reproduces from the saved runs under the submitted aggregation and rounding conventions. The supplementary numerical tables also match their logged inputs.",
+      "evidence": [
+        "proposal/report_tables.tex:12-36 contains all 21 rows and 105 mean±std cells.",
+        "Independent recalculation found zero formatting/value mismatches across all 105 main-table cells.",
+        "The 105 predictive-metric rows at proposal/report_tables.tex:59-183 and 25 MAPE values at lines 196-200 also reproduce exactly under make_tables.py's formatting.",
+        "The corresponding summary.npz arrays and JSON sidecars match the raw NPZ checkpoints without numerical discrepancies."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.figure_numbers_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The plotted numerical data trace to the logs, but Figure 1's caption presents a false quantitative curve comparison: it says the 3D adaptive methods overlap maximin. Maximin is absent from that figure, and its saved curve is substantially below the adaptive curves at higher budgets.",
+      "evidence": [
+        "proposal/report.tex:90 and proposal/report.pdf page 6, Figure 1 caption, claim overlap with the maximin probe.",
+        "Rendered inspection of proposal/figures/fig_convergence.pdf confirms that its five plotted methods omit maximin; proposal/code/plots.py:23-27,50-66 specifies those methods.",
+        "At diffusion3d budget 1000, maximin is 2.438408e-12±1.185e-13, versus SMART 3.549875e-12±1.402e-13, gSMART 2.987867e-12±4.523e-14 and DVS 3.400887e-12±1.516e-13; their mean±std intervals do not overlap maximin's.",
+        "The finding is the false figure-associated comparison, not fabricated plot coordinates."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.no_hardcoded_ground_truth_values": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The code evaluates the benchmark formulas at acquired locations and computes metrics from predictions. Physical constants and function-definition thresholds are legitimate inputs. Cached held-out values serve evaluation rather than substituting for acquired measurements or reported results.",
+      "evidence": [
+        "proposal/code/test_functions.py:20-98 implements the analytical benchmark functions.",
+        "proposal/code/runner.py:115-116,215-218 evaluates the selected measurement locations; proposal/code/metrics.py:37-49 computes errors.",
+        "Recalculation at all logged X_traj locations agrees with Y_traj to floating-point precision, with maximum discrepancy below 5.7e-14.",
+        "The five cached test-set Y arrays also agree with their analytical definitions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_aggregated": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All reported aggregate cells include seeds 0–9 without favorable-seed filtering. Representative location plots use seed 0 explicitly in the plotting implementation and are described as single-seed illustrations.",
+      "evidence": [
+        "All 35 function-method groups in proposal/logs/runs/ contain exactly ten trajectories with seeds 0–9.",
+        "Every one of the 142 cells in summary.npz contains all ten seeds and exactly matches the corresponding raw per-seed metric arrays.",
+        "proposal/code/aggregate.py:23-46 aggregates all loaded runs without outcome filtering.",
+        "proposal/code/plots.py:119-132 selects seed 0 for location plots; proposal/report.tex:97 describes the illustration as 'one seed'."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.no_silent_omissions": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "All headline configurations and their predictive metrics are reported, including unfavorable DVS results. The aggregate omits the optional 3D DVS-amp group, but its saved timestamp precedes those runs' completion. The narrower mechanism plots and overgeneralized interpretations do not independently establish an outcome-dependent deletion rule.",
+      "evidence": [
+        "proposal/report_tables.tex contains all 105 headline method/function/budget cells and all 105 corresponding predictive-metric rows.",
+        "summary.npz lacks diffusion3d|dvs_amp at its five budgets, while all ten raw trajectories remain in proposal/logs/runs/.",
+        "summary.npz and summary.csv have modification time 2026-09-01 08:37:36 UTC; the omitted DVS-amp outputs were written at 08:38:03–08:38:23 UTC.",
+        "proposal/code/aggregate.py:23-46 contains no outcome-dependent filtering; proposal/code/plots.py:153 explicitly limits the mechanism plot to the four 2D functions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.dense_grid_independent_of_acquisition": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Held-out coordinates and labels are used only for checkpoint evaluation. Acquisition and fitting use the observed trajectory, and no test-set feedback or training overlap was detected.",
+      "evidence": [
+        "proposal/code/runner.py:51-66 creates independently seeded test sets; lines 151-171 use them only in evaluation.",
+        "The five files under workdir_outside_proposal/data/ contain 12,000 points per 2D function and 60,000 for diffusion3d.",
+        "Exact coordinate comparisons across all 350 initial designs and trajectories found zero overlap with their saved held-out sets.",
+        "proposal/code/runner.py:180-218 fits on observed data and selects new points without passing X_test, Y_test or checkpoint errors to the acquisition routines."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "sequential_acquisition.sequential_acquisition_logged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved records and execution loop support sequential selection using previously observed data. No future ground-truth values enter the acquisition criteria.",
+      "evidence": [
+        "proposal/code/runner.py:176-218 updates the GP with the previous observation, selects x_new, and only then evaluates its ground truth.",
+        "Each 2D trajectory records 490 sequential acquisitions after ten initial points; each 3D trajectory records 990.",
+        "Across all 206,500 steps, logged mean_step and s2_step match the midpoint and squared range of the observed prefix, excluding the newly selected point.",
+        "proposal/code/acquisitions.py and dvs.py use GP predictions, observed coordinates and current fitted parameters, without future labels."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected methodology code uses the supplied gpCAM interface and allowed scientific libraries, with reuse acknowledged. No affirmative evidence of an unacknowledged external methodology implementation was found.",
+      "evidence": [
+        "proposal/codebase_notes.md:7-50,72-82 identifies gpCAM/fvGP reuse and the locally implemented kernel, criteria, runner and metrics.",
+        "proposal/code/gp_factory.py:20-24 imports NumPy, SciPy and gpCAM; the acquisition and metric modules use standard scientific-library operations.",
+        "The supplied gpCAM optimizer implementation was inspected under workdir_outside_proposal/code/gpCAM/.",
+        "All ten Python files under proposal/code/ were inspected; no additional external acquisition or experimental-design implementation was identified."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.originality.no_substantive_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The identifiable antecedents in the supplied record—gSMART gradient weighting and maximin sampling—are acknowledged. No identifiable prior contribution is shown to have been substantively reproduced without acknowledgment. This finding does not establish the scientific novelty of DVS.",
+      "evidence": [
+        "proposal/report.tex:32,47-69 attributes SMART/gSMART to Noack and positions the normalization relative to other sampling criteria.",
+        "paper.md:152-156,417,425 discusses gradient weighting and future autonomous selection of its coefficient, but does not supply the submitted density/gradient normalization.",
+        "proposal/report.tex:163-164 cites the maximin-design literature.",
+        "No supplied prior-work artifact establishes an unacknowledged match to the submission's acquisition, justification and empirical-comparison structure."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

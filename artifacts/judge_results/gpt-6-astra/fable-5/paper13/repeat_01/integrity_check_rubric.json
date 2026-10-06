@@ -1,0 +1,213 @@
+{
+  "nodes": {
+    "number_traceability.metric_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The 107/136 classification flips and median shift of 0.57 are recoverable from saved results, but are falsely attributed to recalibration on the ideal-response B=0 anchor. Their recorded source instead reuses the finite-duration calibration. This is a material attribution error, not fabricated arithmetic; the primary residuals otherwise match the logs.",
+      "evidence": [
+        "proposal/report.tex:874-884 describes the sensitivity result as arising from an anchor taken on the narrow ideal resonance.",
+        "proposal/logs/paper_numbers.md:29 identifies boundary_cells.csv class, class_ideal and d_kernel as the statistic's source; the 130 provided plus six validation cells reproduce 107 flips and median shift 0.5652167.",
+        "proposal/code/evaluate_boundary.py:174-192 fits V_full_kern only; lines 208-216 reuse that scale for V_full_ideal.",
+        "proposal/logs/boundary_cells.csv:87 gives the ideal prediction at the carbon calibration point as 0.1501119, versus the calibration target 1.3399865."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.boundary_threshold_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported threshold and classification cutoffs match the implementation and saved results. Recalculating all 165 classified rows reproduces their tolerances, residual ratios and classifications. No altered or falsely sourced threshold was detected.",
+      "evidence": [
+        "proposal/report.tex:382-404 and proposal/code/sweep_plan.md:181-198 specify tau=max(0.30*abs(gPIC),2*sigma,0.15), with holds at delta<=tau and breaks at delta>=2*tau.",
+        "proposal/code/evaluate_boundary.py:26-28 and 62-68 implement those constants and inequalities.",
+        "proposal/logs/boundary_summary.json:2-8 reports 134 holds, 27 marginal and four breaks; these match boundary_cells.csv.",
+        "proposal/logs/boundary_summary.json:39-48 records all nine sensitivity counts, which reproduce from the saved per-cell classifications."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.pic_gain_values_in_logs": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The new-run gains have inspectable simulation and analysis records, and their saved energy-series calculations reproduce the reported means and spreads. However, the original processed PIC files underlying the 130 provided-data conditions are absent from both staged trees. Their numerical provenance cannot be checked against the claimed source; this absence does not establish fabrication.",
+      "evidence": [
+        "proposal/logs/new_run_gains.csv:2-49 contains all 48 campaign runs; corresponding proposal/runs/<run_id>/ directories contain analysis.json, input.deck, run_params.json, completion records and SDF outputs.",
+        "Read-only calculations from the 48 analysis.json Fourier energy series reproduce their saved means and spreads; CSV values agree within six-decimal rounding.",
+        "proposal/report.tex:321-344 attributes the provided gains and offsets to the released processed files.",
+        "proposal/code/load_pic_data.py:21-22 and 34-67 identify data/pic_simulations/processed/PIC_processed_data as the source. Neither that directory nor the processed-data archive was found under proposal/ or workdir_outside_proposal/."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_gains_or_thresholds": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected code computes theory responses, extracts PIC gains and fits calibration scales. No hardcoded result or oracle output was found substituting for these computations. The stored classification thresholds are declared design constants, which the rubric expressly permits.",
+      "evidence": [
+        "proposal/code/vlasov_baseline.py:257-289 computes coherent transfer from coefficients; its gain calculation returns intermediate coefficients and gains.",
+        "proposal/code/evaluate_boundary.py:35-59 recomputes gains from saved coefficients and fits the anchor by bisection.",
+        "proposal/code/pic_pipeline.py implements the Fourier and real-mode gain extraction used by the saved run analyses.",
+        "proposal/code/evaluate_boundary.py:26-28 stores the same thresholds declared in proposal/code/sweep_plan.md:186-198."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.metric_definition_matches_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The primary residual formula matches, but the normalization described for the ideal-response agreement comparison materially differs from its execution. The report describes an anchor obtained on the ideal resonance; the computation transfers the finite-duration anchor to that variant without refitting.",
+      "evidence": [
+        "proposal/report.tex:300-316 defines calibration at the unmagnetized reference condition; lines 874-879 describe the ideal-response comparison using that anchoring protocol and an ideal-resonance-derived scale.",
+        "proposal/code/evaluate_boundary.py:187-190 fits only V_full_kern, while lines 208-216 apply the resulting scale to V_full_ideal.",
+        "proposal/logs/boundary_cells.csv:87 shows gV_anch_ideal=0.1501119172 at the reference cell whose gPIC=1.3399865; the finite-duration prediction matches that target.",
+        "proposal/code/evaluate_boundary.py:243-248 uses these differently normalized ideal predictions to compute the reported comparison classifications."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.vlasov_from_own_reconstruction": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The underlying baseline gains are supported by an identifiable reconstruction and saved intermediate outputs. The report acknowledges its electrostatic approximation, missing electromagnetic channel and calibration. No evidence shows published gains or another baseline being substituted and represented as this solver's output.",
+      "evidence": [
+        "proposal/report.tex:185-240 explicitly describes an independent reconstruction and its omitted physics.",
+        "proposal/code/run_vlasov_sweep.py:50-73 calls the reconstruction for six response/kernel combinations and an additional pump-model variant.",
+        "proposal/logs/vlasov_cells.json contains 172 condition records with seven variants; the response records include gains, coupling diagnostics and stored coefficients.",
+        "proposal/logs/anchor_fit.json records the fitted carbon and hydrogen scales, 2.657759857 and 1.711028515, reported in proposal/report.tex:303-316."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The ideal-response sensitivity analysis is materially misdescribed. The report attributes its result to a large scale fitted on the ideal resonance and consequent overshooting. The submitted computation instead uses the finite-duration scale, and relevant saved ideal predictions substantially underpredict the measurements.",
+      "evidence": [
+        "proposal/report.tex:874-884 states that an ideal-resonance B=0 anchor forces an enormous drive scale that overshoots broad-response conditions.",
+        "proposal/code/evaluate_boundary.py:174-216 fits the finite-duration model and reuses its scale for the ideal model.",
+        "proposal/code/make_figures.py:103-124 likewise applies the same finite-duration calibration to both plotted response variants.",
+        "proposal/logs/boundary_cells.csv:34 gives the carbon 10 MG ideal prediction as 0.1271541 against gPIC=0.9450735; line 87 gives 0.1501119 against 1.3399865 at B=0."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected parity-related changes are disclosed: reduced resolution, the failed absolute validation gate, continued self-anchored L0 comparisons, finer-fidelity checks, and analysis-port differences. The executed deck matches the staged authors' example apart from declared parameter substitutions. No additional concealed held-fixed departure was established.",
+      "evidence": [
+        "proposal/report.tex:350-377 describes the reduced configuration; lines 577-615 explicitly report the failed B=0 absolute gate and the resulting comparison limitations.",
+        "proposal/code/sweep_plan.md:331-351 discloses replacing whole-sweep ladder escalation with the two-tier design.",
+        "Comparison of proposal/runs/V1/input.deck with workdir_outside_proposal/code/magnetized_cbet_matlab/examples/cbet/input.deck finds only resolution, selected physics parameters and equivalent numeric-format changes.",
+        "proposal/codebase_notes.md:112-129 lists numerical and diagnostic differences in the Python analysis port."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The claimed kernel-flip verification explicitly includes an ideal-response anchor fit producing an approximately 24-fold drive scale. The identified execution source instead fits the finite-duration response and applies its approximately 2.66-fold carbon scale to the ideal response. Thus that specific claimed calculation is contradicted, although the actual PIC campaign has supporting execution records.",
+      "evidence": [
+        "proposal/attempts_log.md:81-88 calls this a computed verification and states that the ideal-resonance anchor forces a '~24x drive scale'; proposal/report.tex:874-879 repeats the corresponding method claim.",
+        "proposal/logs/paper_numbers.md:29 identifies the saved boundary CSV as the verification's source.",
+        "proposal/code/evaluate_boundary.py:187-216 and proposal/logs/anchor_fit.json show finite-duration-only fitting and reuse of s=2.657759857 for carbon.",
+        "proposal/logs/boundary_cells.csv:87 confirms that the saved ideal prediction does not satisfy the claimed calibration point."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The available commitment and amendment records do not establish undisclosed post-result selection or backdating. Several changes were outcome-informed, but their timing and post-hoc status are expressly disclosed. This finding does not certify compliance with every scientific preregistration deadline or multiplicity requirement.",
+      "evidence": [
+        "proposal/logs/sweep_plan_commit.log:1-10 records the initial 2026-08-16T04:09:24Z hashes and subsequent A4 and post-L1 amendments.",
+        "proposal/code/sweep_plan.md:284-351 distinguishes the model amendments from the validation-informed A4 change.",
+        "proposal/attempts_log.md:71-79 and 104-125 disclose post-residual decision branches and widening the geometry gate from 0.25 to 0.35.",
+        "proposal/report.tex:599-600 and 781-783 acknowledge post-result mechanism refinements."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.provided_pic_data_used_as_is": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The loader and resulting comparison rows are inspectable, including the stated offset corrections and hydrogen detuning selection. The original supplied processed data are not staged, preventing verification that their values and contents were preserved. There is no affirmative evidence here of undisclosed alteration or recuration.",
+      "evidence": [
+        "proposal/report.tex:326-340 claims use of the files as released and describes the detuning and offset transformations.",
+        "proposal/code/load_pic_data.py:125-197 implements enumeration, detuning selection, offset subtraction and conversion of full uncertainty spreads to half-spreads.",
+        "proposal/logs/boundary_cells.csv includes all 130 provided-cell identifiers in proposal/code/sweep_plan.json.",
+        "The source directory named at proposal/code/load_pic_data.py:22 and its processed-data archive are absent from both proposal/ and workdir_outside_proposal/."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_cells_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved records account for all planned campaign runs and all provided comparison cells. Unfavorable results remain reported. The two method-anomalous cells are retained in the CSV and explicitly excluded in the report; finer-fidelity runs are separately identified as validation material. No concealed outcome-dependent omission was detected.",
+      "evidence": [
+        "proposal/code/sweep_plan.json new_runs and proposal/logs/new_run_gains.csv contain the same 48 unique run identifiers, each with a corresponding run directory.",
+        "proposal/logs/boundary_cells.csv contains 167 cells: 165 classified and two method-anomalous; proposal/tables/full_results.tex reports all 165 classified rows.",
+        "proposal/report.tex:971-979 discloses the high-field extraction anomalies and high-intensity null-channel failure.",
+        "proposal/code/evaluate_boundary.py:116-122 identifies L1 runs as fidelity-validation material; proposal/report.tex:602-605 and 849-865 reports those checks."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All completed campaign seed realizations appear in the gain records and aggregation. The submission reports the limited ensemble coverage and borrowing of its largest seed spread. Missing three-seed coverage at other cells is a scientific-support issue, not evidence of hiding completed seeds.",
+      "evidence": [
+        "proposal/logs/new_run_gains.csv:2-11 includes V1 gains 0.715808, 0.744261 and 0.900723 and V3 gains 0.627920, 0.653350 and 0.591305 for seeds 1001, 2002 and 3003.",
+        "proposal/logs/new_run_gains.csv:7 and 49 retains both V5 seed results, 0.477384 and 0.430870.",
+        "proposal/code/evaluate_boundary.py:79-85 and 123-127 aggregates all matching seed records; proposal/logs/boundary_summary.json:130-136 records their sample standard deviations.",
+        "proposal/report.tex:610-613 states that the larger ensemble spread is propagated to all new conditions; failed infrastructure relaunches are disclosed in proposal/attempts_log.md."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.mechanism_attribution_full_set_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved mechanism output covers all 31 non-holding classified cells in 11 segments and retains the intensity-lane comparisons. The report discusses negative discriminators, unresolved alternatives and the unavailable clean high-field test. Post-hoc attribution changes are disclosed; no completed unfavorable hypothesis test or segment was found concealed.",
+      "evidence": [
+        "proposal/logs/mechanisms.json contains 11 segments and per_cell entries at lines 396-427 covering all 27 marginal and four breaking cells.",
+        "proposal/code/evaluate_mechanisms.py:51-62 and 167-180 forms segments from all non-holding rows and records their member cells and evidence.",
+        "proposal/report.tex:769-825 reports excluded ion-mode emergence and unresolved or combined mechanism explanations.",
+        "proposal/report.tex:849-865 labels the high-field attribution M1-consistent rather than confirmed because the cleaner orientation test is measurement-anomalous.",
+        "proposal/attempts_log.md:104-125 discloses the additional decision branches and post-hoc geometry threshold."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission acknowledges the parent MagCBET theory, original PIC study, gain-analysis methods and relevant prior kinetic work. It identifies the boundary characterization as its contribution. The inspected sources do not establish an identifiable prior contribution being reproduced and presented as new without acknowledgment.",
+      "evidence": [
+        "proposal/report.tex:185-240 attributes the parent theory and describes the baseline as a reconstruction.",
+        "proposal/report.tex:357-361 credits the original MATLAB analysis.",
+        "proposal/report.tex:923-944 discusses prior CBET, saturation, transient-response and magnetized-LPI work while distinguishing the validity-map contribution.",
+        "paper.md supplies the original gain-analysis and PIC-study contributions against which these attributions were checked."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The identifiable reused methodology is acknowledged, including the authors' MATLAB analysis, the three-wave eigenmode routines, EPOCH and the SDF format implementation. Standard scientific-library use is also identified. No prohibited or unacknowledged external methodology implementation was detected.",
+      "evidence": [
+        "proposal/codebase_notes.md:6-35 documents EPOCH reuse, the RNG patch and SDF source consultation.",
+        "proposal/codebase_notes.md:37-76 identifies the original MATLAB algorithms ported into pic_pipeline.py.",
+        "proposal/codebase_notes.md:78-91 explicitly acknowledges the three_wave_matlab dispersion and eigenvector conventions ported into em_eigenmodes.py.",
+        "proposal/codebase_notes.md:104-110 identifies the theoretical prefactor reference and SciPy special functions; task_spec.md:211 requires acknowledgment of adapted external implementations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

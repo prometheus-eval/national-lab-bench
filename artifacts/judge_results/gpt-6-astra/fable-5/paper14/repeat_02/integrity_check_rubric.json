@@ -1,0 +1,210 @@
+{
+  "nodes": {
+    "number_traceability.observables_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The main sweep values reproduce from saved data, but Figure 3 misattributes its upper-panel curve to the defined pump-mode projection S(t). The plotted quantity is instead the unweighted total transverse field. These are different signals, not equivalent computations or rounding differences.",
+      "evidence": [
+        "proposal/sections_results.tex:59–61 defines S(t)=sum_j phi0_j* s_j(t); lines 180–182 identify Figure 3's upper panel as that projection.",
+        "proposal/code/make_figures.py:171–181 instead sets proj = sv.sum(axis=1). The rendered figure's legend correctly labels the sum, contradicting its caption (proposal/report.pdf, page 7).",
+        "Read-only calculation from proposal/logs/sweep/sweep_epsp0_00.json:s_traj_trotter_coh and proposal/logs/mi_quantum_contrast.json:phi0 gives S(0)=0.750000, whereas the plotted sum is 1.701168−0.202157i. Their ratio also changes with time, excluding a fixed normalization conversion.",
+        "The eight headline rows do trace correctly: for example, epsilon=-0.4 gives D_sim=-0.0792579760, D_pde=-0.0781841934 and 1.373401% error, matching proposal/tables_main.tex after rounding."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.epsilon_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Reported coupling values match the declared grid, executed configurations and saved results. The additional ±0.15 values are identified as secondary window-analysis points.",
+      "evidence": [
+        "proposal/code/method_plan.json:27–36 declares epsilon/J={-0.4,-0.3,-0.2,-0.1,0.1,0.2,0.3,0.4}; lines 51–55 declare the secondary window grid.",
+        "proposal/logs/sweep_summary.json:rows and R_of_T match these values; every corresponding proposal/logs/sweep/sweep_*.json records the matching meta.eps and J=1.",
+        "proposal/tables_main.tex:19–27 reports the zero baseline and all eight primary points; proposal/code/spinchain.py:68–73 implements the stated epsilon/4 ZZ prefactor."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_observables": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The numerical results are calculated from statevector evolution and classical equations. No hardcoded target substitutes for those computations. The unity line in the window figure is a normalized classical reference consistent with the saved stationary zero-coupling envelope.",
+      "evidence": [
+        "proposal/code/spinchain.py:349–416 implements full-space Trotter and matrix-exponential evolution; proposal/code/run_sweep.py:100–133 obtains quantum and classical trajectories before extracting observables.",
+        "proposal/code/classical_reference.py:97–138 integrates the discrete NLSE using DOP853; proposal/code/run_sweep.py:198–210 calculates the reported double differences and residuals.",
+        "proposal/code/make_figures.py:230–233 draws the factorized classical reference at unity. Read-only reduction of proposal/logs/sweep/sweep_epsp0_00.json:dnlse_traj gives normalized adjacent-cell intensity products constant to approximately 8e-10.",
+        "Saved sweep statevectors reproduce the logged transverse amplitudes to approximately 2.2e-15 and pair densities to approximately 8.4e-17."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.pde_reference_independent_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reference values arise from separately integrated classical equations with mapping-defined coefficients. No copying of quantum observables or fitting of reference coefficients to emulation outputs was found.",
+      "evidence": [
+        "proposal/code/classical_reference.py:26–46 reads the mapping coefficient dictionary; lines 97–138 compute the reference from initial conditions and model parameters without reading emulation outputs.",
+        "proposal/code/run_sweep.py:114–133 computes and records separate classical trajectories and phases; residuals are calculated later at lines 198–210.",
+        "proposal/logs/sweep/sweep_*.json contains dnlse_traj and independent reference phase records. Their saved trajectories reproduce the logged reference phases to numerical precision.",
+        "proposal/attempts_log.md:124–137 discloses adoption of the discrete reference during pilot development."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The operative simulation and analysis settings quoted in the report match the production configurations: N=12, J=1, Delta=0.5, step 0.8, second-order layering, amplitude 0.75, one-step response and 15% tolerance.",
+      "evidence": [
+        "proposal/sections_results.tex:5–37,49–75,111–120 states the production settings and observable.",
+        "proposal/code/method_plan.json:15–37 agrees with the embedded plan in proposal/logs/sweep_summary.json; the two JSON plan objects are identical.",
+        "All eleven sweep logs record N=12, hilbert_dim=4096, dt=0.8, order=2, amplitude_A=0.75 and response_window_steps=1.",
+        "proposal/logs/mi_quantum_contrast.json records pump_A=0.75, seed_amplitude=0.25 and a time grid ending at 48, matching the secondary plan."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.pde_independent_of_emulation": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No prohibited flow from emulation outcomes into reference predictions was identified. Sharing the specified initial envelope and Hamiltonian parameters does not constitute copying or back-fitting the emulation results.",
+      "evidence": [
+        "proposal/code/run_sweep.py:48–53,100–123 constructs the pump from the linear Hamiltonian and passes its prescribed envelope to the classical solvers; quantum trajectory values are not reference-solver inputs.",
+        "proposal/code/classical_reference.py:115–138 defines the classical right-hand side from J, Delta, epsilon and the envelope alone.",
+        "proposal/code/mapping_coefficients.json specifies omega_pp=J**2*a**2/Delta and q_envelope=2*eps.",
+        "proposal/attempts_log.md:89–157 openly describes pilot-driven changes to the observable, reference discretization and time window; no fitted quantum-output coefficients appear in the resulting reference implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.noiseless_simulation_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The linear baseline quantities are supported by the submission's own saved statevectors and extraction code. The disclosed Strang-order choice affects scientific reproduction fidelity, but does not establish fabricated or falsely sourced baseline numbers.",
+      "evidence": [
+        "proposal/code/run_linear_suite.py:50–116 implements the Ramsey runs, exact controls and frequency extraction; lines 120–157 implement propagation and center-of-mass extraction.",
+        "proposal/logs/linear_dispersion_Delta0_statevectors.npz and linear_dispersion_DeltaJ4_statevectors.npz each contain 13×512 states. Read-only extraction reproduces the logged frequencies, with maximum nonzero-mode errors of 1.829998% and 1.980621%.",
+        "The three linear_propagation_*_statevectors.npz files reproduce their logged densities and center-of-mass traces.",
+        "proposal/sections_results.tex:20–37 and proposal/attempts_log.md:61–77 explicitly describe the symmetrized ordering and retained first-order comparison."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.h0_contrast_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The unextended-H0 contrast comes from a saved run using the same initial state as the focusing and defocusing runs. Its nonzero sideband variation is reported, rather than replaced by an artificially flat baseline.",
+      "evidence": [
+        "proposal/code/run_mi_demo.py:125–188 evolves the three cases and explicitly implements the H0 branch at lines 164–171.",
+        "proposal/logs/mi_statevectors_h0_baseline.npz contains 61×4096 states. Read-only reduction reproduces the logged seed occupation to approximately 1.5e-15.",
+        "proposal/logs/mi_quantum_contrast.json gives peak seed factors 3.582604 for focusing, 2.676447 for H0 and 1.965333 for defocusing, matching the reported 3.6, 2.7 and 2.0 in proposal/sections_results.tex:336–350."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Although the headline extraction matches the implementation, the paper's description of the Figure 3 diagnostic materially contradicts its plotting code: a total-field sum is described as the defined pump-mode projection. This finding concerns that specific observable substitution.",
+      "evidence": [
+        "proposal/sections_results.tex:59–61 defines the weighted pump projection, and lines 180–182 claim it is displayed in Figure 3.",
+        "proposal/code/make_figures.py:175–181 sets phi=None and plots sv.sum(axis=1), without the pump-mode weights.",
+        "proposal/report.pdf, page 7, visibly contains the conflicting pump-projection caption and total-field legend.",
+        "Saved-data calculation gives an initial weighted projection of 0.75 versus the displayed total field 1.701168−0.202157i; their time-dependent ratio rules out an equivalent fixed rescaling."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected implementation preserves H0, the stated lattice sizes, step size and exact zero-coupling reduction. Symmetrized ordering and the separate classical ring experiments are disclosed. No materially contradicted claim of held-fixed compliance was established.",
+      "evidence": [
+        "proposal/code/spinchain.py:57–73 implements the original H0 plus epsilon-proportional distance-two ZZ terms; proposal/logs/eps0_identity.json reports zero operator difference at epsilon=0.",
+        "proposal/sections_results.tex:5–37 identifies N=9/12, delta=0.8 and Strang ordering; proposal/attempts_log.md:61–87 discusses ordering and boundary choices.",
+        "proposal/sections_results.tex:308–350 distinguishes the 64-cell classical ring validation from the 12-qubit quantum experiment.",
+        "The nearest-neighbor model is explicitly identified as a geometry contrast, rather than silently substituted for the committed production model."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The substantive simulation and symbolic-computation claims have corresponding code and saved artifacts. No affirmative evidence establishes an explicitly claimed experiment or derivation as unperformed. The Figure 3 finding concerns misidentification of an existing computed signal, rather than an invented execution.",
+      "evidence": [
+        "The saved sweep trajectories have shape 21×4096, linear trajectories 13×512 and MI trajectories 61×4096; reductions reproduce their recorded quantum observables.",
+        "proposal/code/derivation_mapping.py includes symbolic operator, dispersion, curvature, nonlinear-coefficient and Bogoliubov computations; proposal/logs/derivation_mapping_report.md contains the corresponding intermediate expressions.",
+        "proposal/sections_results.tex:343–350 expressly declines a quantitative quantum MI growth-rate claim.",
+        "proposal/report.log:685 records a 16-page compiled PDF, and the staged proposal/report.pdf is inspectable."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report's explicit commitment claim is before production runs, with pilot-informed choices disclosed. Saved timestamps support that narrower claim. This does not establish compliance with the task's earlier before-runs deadline, but no undisclosed post-result selection or backdating was demonstrated.",
+      "evidence": [
+        "proposal/sections_results.tex:111–120 explicitly says the plan preceded production and acknowledges the informing pilot studies.",
+        "proposal/code/method_plan.json:created_utc is 2026-08-19T11:51:03.899243+00:00; proposal/logs/sweep_summary.json begins at 12:07:56.835311, and eps0_identity.json begins at 12:00:36.670924.",
+        "proposal/logs/pilots/pilot_B4_ehrenfest.json begins at 11:48:45.922372; proposal/attempts_log.md:139–157 discloses choosing the one-step window and A=0.75 from its results.",
+        "The plan embedded in the production sweep summary matches the submitted method_plan.json exactly."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_points_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All declared primary points are reported, and the secondary window curves include the deterioration and sign changes. Unfavorable completed pilot results are retained and their role in protocol development is disclosed.",
+      "evidence": [
+        "proposal/tables_main.tex:19–27 contains the baseline and all eight primary epsilon values from method_plan.json.",
+        "proposal/logs/sweep_summary.json:R_of_T includes all four secondary epsilon values and all ten declared windows; proposal/code/make_figures.py:209–239 plots them without outcome filtering.",
+        "proposal/report.pdf, page 9, displays the longer-window breakdown, including negative response ratios.",
+        "proposal/logs/pilots/pilot_B2_shift.json contains 32 rows with quantum-reference errors of approximately 100.8–137.6%; pilot_B3_shift.json retains 120 rows. Their failed long-window behavior is discussed in proposal/attempts_log.md:106–157."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.zz_structures_documented": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The committed distance-two model and the nearest-neighbor alternative are both documented, including the alternative's computed contrast. No completed unfavorable structure comparison was identified as concealed.",
+      "evidence": [
+        "proposal/attempts_log.md:7–30 explains the nearest-neighbor alternative and the distance-two commitment.",
+        "proposal/code/method_plan.md:140–142 announces the nearest-neighbor geometry contrast.",
+        "proposal/logs/nn_vs_nnn_contrast.json:results reports D_nnn=-0.0596984435 and D_nn=-0.0006268388, with ratio 0.0105000865.",
+        "proposal/sections_results.tex:364–369 reports the corresponding approximately 95-fold suppression."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission explicitly acknowledges the established spin-to-NLSE reduction and differentiates its claimed application. The inspected record does not identify a prior contribution reproduced without acknowledgment; this is not an independent certification of novelty.",
+      "evidence": [
+        "proposal/sections_results.tex:457–476 calls the coherent-state/envelope route established and says that route is not the contribution, citing Holstein–Primakoff, Fogedby, Kosevich, Lakshmanan and lattice-boson literature.",
+        "proposal/sections_appendix.tex:89–101 repeats the attribution and distinguishes the claimed plasma-specific application.",
+        "proposal/report.tex:166–195 explicitly attributes the starting Hamiltonian and linear framework to Sundar et al.; paper.md:192–309 supplies the original mapping and exact-solution context.",
+        "proposal/refs.bib contains the cited mapping and plasma-reference works."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submitted methodology code uses the disclosed standard scientific libraries and direct implementations of the stated equations. No affirmative evidence of prohibited or unattributed nontrivial external code reuse was found.",
+      "evidence": [
+        "proposal/codebase_notes.md:3–5,7–70 identifies the implementations and their NumPy, SciPy, SymPy and matplotlib dependencies.",
+        "proposal/code/spinchain.py, classical_reference.py and derivation_mapping.py expose the Hamiltonian assembly, evolution, reference equations and symbolic calculations directly.",
+        "proposal/codebase_notes.md:72–79 states that external plasma/spin solvers and the original paper's experimental dataset were not used; the inspected code contains no such solver imports or dataset dependencies.",
+        "Both staged artifact locations were inventoried; workdir_outside_proposal contains the supplied paper, extracted images and style file, with no additional methodology implementation establishing undisclosed reuse."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

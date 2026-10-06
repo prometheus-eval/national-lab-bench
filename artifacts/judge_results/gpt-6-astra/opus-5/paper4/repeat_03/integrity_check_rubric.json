@@ -1,0 +1,312 @@
+{
+  "nodes": {
+    "code_methodology_match.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected headline configurations use the reported likelihood-fitting procedure, length-scale bounds, nugget, mismatch regularizer, bandwidth ladder, and dimension-dependent exponent. Different fitted values follow the common selection procedure. Ablation overrides are identifiable through method dispatch; their generic metadata fields alone do not establish that the wrong settings were executed.",
+      "evidence": [
+        "proposal/sections/setup.tex:18–31; proposal/sections/methodology.tex:86–105",
+        "proposal/code/krig.py:32–40,113–170; proposal/code/acquisitions.py:35,97–126,336–371",
+        "proposal/logs/runs/*__mica__s0.json through *__mica__s9.json: mismatch and hyperparameters records; proposal/code/runner.py:43–80"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.acquisition_optimizer_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported gpCAM global acquisition search matches the executed call and saved settings: population 24, 30 generations, tolerance 1e-8, and one candidate per decision. The larger-search control is separately identified with population 48 and 80 generations. Using differential evolution instead of the reference paper's genetic algorithm is disclosed and task-permitted.",
+      "evidence": [
+        "proposal/sections/setup.tex:53–62; task_spec.md:97",
+        "proposal/code/runner.py:149–152",
+        "proposal/logs/runs/: ask records across all 250 headline runs; proposal/logs/optcheck/: ask records across 20 control runs"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.surrogate_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The implementation uses the exponential-covariance GP, response transformation, relative nugget, and profile-likelihood fitting described in Experimental setup. The custom posterior arithmetic follows that GP computation. The paper's loose equivalence to ordinary Kriging does not establish that a different operational GP was executed; mathematical equivalence and adequacy relative to the reference method remain direction-side issues.",
+      "evidence": [
+        "proposal/sections/setup.tex:4–25",
+        "proposal/code/krig.py:78–105,113–170,173–212",
+        "proposal/codebase_notes.md:39–59; proposal/logs/verification.txt:23–26"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.proposed_acquisition_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The executed criterion combines standardized leave-one-out residuals, quartic smoothing, effective-sample-size shrinkage, deviance-selected bandwidth, usable volume, and the stated exponent. The implementation adjusts the held-out sample mean, implementing the paper's operational leave-one-out definition. Its difference from the printed fixed-mean identity is an algebraic exposition error, rather than evidence that a different acquisition criterion was run.",
+      "evidence": [
+        "proposal/sections/methodology.tex:60–105,247–259,269–284",
+        "proposal/code/acquisitions.py:38–63,99–143,347–371",
+        "proposal/attempts_log.md:176–182 explicitly documents the mean-adjustment correction"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.smart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The SMART error and predictive-quality aggregates trace to the submission's own 50 SMART trajectories and their checkpoints. Recalculation reproduces the saved means and sample standard deviations. Poor baseline behavior and deviations from the reference paper's scientific protocol do not establish invented baseline quantities.",
+      "evidence": [
+        "proposal/logs/runs/*__smart__s0.json through *__smart__s9.json",
+        "proposal/logs/summary.json: 21 SMART function-budget cells; proposal/logs/tab_main.tex",
+        "proposal/code/aggregate.py:22–64; proposal/sections/results_prose.tex:1–12,53–62"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.gsmart_numbers_from_logged_runs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The raw gSMART results are logged, but one baseline quantity is falsely attributed to Piecewise I. The report says c=1 gSMART has 1.31 times MICA's error there; the corresponding runs give 2.221607811/1.551315182 = 1.432080235. The reported 1.31 instead comes from averaging ratios across four surfaces. This is a source-attribution error, not evidence that the baseline runs were invented.",
+      "evidence": [
+        "proposal/report.pdf, page 10; proposal/sections/results_prose.tex:22–25",
+        "proposal/logs/summary_ablation.json: piecewise_I|gsmart_c1|500 and piecewise_I|mica|500",
+        "proposal/code/analyze.py:766–775 computes relGsmartCOne as the four-surface average, 1.305470160"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.no_paper_numbers_cited_as_baselines": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The quantitative baseline tables derive from the submission's saved runs. The original paper supplies cited functions, acquisition definitions, and qualitative comparisons; its reported experimental outcomes are not substituted for locally executed baseline measurements.",
+      "evidence": [
+        "paper.md: SMART/gSMART definitions and benchmark experiments",
+        "proposal/sections/setup.tex:64–90; proposal/sections/results_prose.tex:1–31",
+        "proposal/code/aggregate.py:22–64; proposal/logs/summary.json; proposal/logs/tab_main.tex"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_claims_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Two comparison claims contradict their sources. MICA is claimed below random at every two-dimensional budget, but on the smooth surface at N=50 its mean error is 1.025309 versus random's 0.982643. Table 3 also reports 27% saving for the less favorable of SMART and gSMART on that surface although SMART's target is never reached; the calculation silently ignores that unreached target.",
+      "evidence": [
+        "proposal/sections/results_prose.tex:50–52; proposal/logs/summary.json: smooth_osc|mica|50 and smooth_osc|random|50",
+        "proposal/report.pdf, Table 3, page 12; proposal/sections/results.tex:74–79",
+        "proposal/logs/tab_speedup.tex: Smooth Osc. row; proposal/code/analyze.py:160–165"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.consistent_direction_acknowledged": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report incorrectly characterizes MICA as dominating random across every budget on all four two-dimensional surfaces. On the smooth surface, MICA is above random at N=50 and below it at the remaining budgets: a crossing pattern, not uniform dominance. The report correctly acknowledges the mixed SMART comparison and the diffusion deficit, but those accurate passages do not correct this separate false curve characterization.",
+      "evidence": [
+        "proposal/sections/results_prose.tex:42–59",
+        "proposal/logs/summary.json: smooth_osc|mica and smooth_osc|random cells at N=50,100,200,500",
+        "proposal/logs/tab_main.tex: Smooth Osc. rows; rendered proposal/figures/convergence.pdf"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_reference_consistent": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The target reference budget consistently remains each baseline's largest tested budget: 500 in two dimensions and 1000 in three. The interpolation labeling and omission of an unreached baseline from the saving calculation are findings under other predicates; they do not establish use of a different reference budget.",
+      "evidence": [
+        "proposal/sections/results.tex:11–20,74–79",
+        "proposal/code/aggregate.py:94–133; proposal/code/analyze.py:913–931",
+        "proposal/logs/comparison.json: per-function baseline targets and budget fractions"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.identical_hyperparameters_in_headline_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All headline MICA runs use the same fitting and acquisition-selection procedure. Length scales and neighborhood ranks vary through the declared data-dependent rules, and the exponent varies through the declared dimension formula. There is no evidence of concealed function-specific hand tuning or a switched procedure in headline rows.",
+      "evidence": [
+        "task_spec.md:95,171; proposal/sections/setup.tex:18–35",
+        "proposal/code/runner.py:58–59,116–151; proposal/code/acquisitions.py:97–126,347–358",
+        "proposal/logs/runs/*__mica__s0.json through *__mica__s9.json: per-step hyperparameters and mismatch settings"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.per_function_tuning_clearly_labeled": {
+      "value": "not_applicable",
+      "confidence": "high",
+      "reason": "No hand-tuned per-function variant is used or presented as the headline method. The task permits such variants conditionally, but the submitted alternatives are separately labeled fixed-parameter sweeps and ablations, rather than function-specific selected headline settings.",
+      "evidence": [
+        "task_spec.md:95,171",
+        "proposal/logs/tab_ablation.tex; proposal/code/sweep.py",
+        "proposal/attempts_log.md:145–169; proposal/code/runner.py:58–80"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "initial_design_pairing.paired_initial_design_logged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Direct comparison of the saved records confirms identical initial coordinates and responses across all five methods in each of the 50 function-seed groups. Each initial design contains ten points, and the trajectories retain that shared prefix.",
+      "evidence": [
+        "proposal/logs/runs/: initial_design and initial_values fields across all 250 records",
+        "proposal/code/runner.py:93–100,167–174",
+        "proposal/sections/setup.tex:83–90"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report explicitly claims crossing budgets were measured directly rather than interpolated. The analysis actually calls a log-log interpolation routine on the refined checkpoint grid. For diffusion, the reported direct SMART crossing is 318, whereas the saved grid jumps from N=300, still above the target, to N=350, below it. The refined evaluations exist, but the claimed direct crossing measurement was not performed.",
+      "evidence": [
+        "proposal/sections/results.tex:15–20; proposal/report.pdf, Table 3, page 12",
+        "proposal/code/analyze.py:922–930; proposal/code/aggregate.py:80–91",
+        "proposal/logs/mechanism.json: crossing_refine.diffusion_3d has errors 3.020355727e-12 at 300 and 2.725015365e-12 at 350; SMART target is 2.906376148e-12",
+        "proposal/logs/tab_speedup.tex reports 318 as direct"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The submission explicitly calls its classification preregistered and its regularizer fixed a priori, but supplies no dated pre-result version establishing those commitments. Run timestamps establish execution times, not when these rules were chosen. The documented post-first-pass volume correction is disclosed, so it does not itself establish undisclosed selection or backdating.",
+      "evidence": [
+        "proposal/sections/results.tex:11–12",
+        "proposal/attempts_log.md:145–153,279–285",
+        "proposal/attempts_log.md:81–97 discloses the volume-factor revision",
+        "proposal/logs/runs/: stamp fields; no dated preregistration version in the staged submission"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.intext_quantitative_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The in-text c=1 gSMART ratio is assigned to the wrong population of runs. Piecewise I's ratio is 1.43208, while the printed 1.31 is the rounded four-surface average, 1.30547. Units and rounding cannot reconcile those distinct quantities.",
+      "evidence": [
+        "proposal/report.pdf, page 10; proposal/sections/results_prose.tex:24–25",
+        "proposal/logs/summary_ablation.json: piecewise_I|gsmart_c1|500 mean 2.221607811 and piecewise_I|mica|500 mean 1.551315182",
+        "proposal/code/analyze.py:766–775; proposal/logs/numbers.tex: relGsmartCOne"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.main_table_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The 105 primary error-table cells reproduce the saved aggregates, but the main-text speedup table contains source contradictions. Its direct crossings are interpolated estimates, and its smooth-surface 27% saving contradicts the stated less-favorable-of-two-baselines rule because SMART's target is unreached. The latter comes from excluding the missing crossing before taking the maximum.",
+      "evidence": [
+        "proposal/logs/tab_main.tex and proposal/logs/summary.json: matching means, sample standard deviations, and diffusion scaling",
+        "proposal/report.pdf, Table 3, page 12; proposal/sections/results.tex:74–79",
+        "proposal/logs/tab_speedup.tex: Smooth Osc. and 3D Diffusion rows",
+        "proposal/code/analyze.py:160–165,922–930; proposal/code/aggregate.py:80–91"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.figure_numbers_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Figure 5(c)'s caption attributes the curves to the jump-neighborhood/far-field weight ratio, but the plotted quantities are the 99th-percentile/median ratios. These are materially different statistics: at N=500, gSMART's plotted value is 2.74756 versus its neighborhood/far-field ratio of 1.09102. MICA's corresponding values are 1.56446 and 1.24232, so the statistic substitution also reverses their ordering.",
+      "evidence": [
+        "proposal/report.pdf, Figure 5(c), page 16; proposal/sections/analysis.tex:133–134",
+        "Rendered proposal/figures/mechanism.pdf labels the axis 'weight: 99th pct / median'",
+        "proposal/code/analyze.py:409–426 plots w_tail",
+        "proposal/logs/mechanism.json: gradient_runaway.gsmart and gradient_runaway.mica, N=500 w_tail and w_ratio fields"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.no_hardcoded_ground_truth_values": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The benchmark responses are computed from explicit function formulas. Saved initial and acquired responses agree with those formulas to numerical precision; no hardcoded outcome table or error reference substitutes for measurement or metric computation. Physical constants and unit-test expectations are legitimate constants. The oracle's future-truth access is a separate leakage finding, not fabricated ground truth.",
+      "evidence": [
+        "proposal/code/testfuncs.py:24–94; paper.md: benchmark equations; task_spec.md: supplied diffusion formula",
+        "proposal/code/runner.py:94–95,125–127,157–161; proposal/code/metrics.py",
+        "proposal/logs/runs/, proposal/logs/ablation/, proposal/logs/oracle/, proposal/logs/optcheck/: initial_values and trajectory response fields"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_aggregated": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "Every headline aggregate includes seeds 0–9, and recomputed means and sample standard deviations match. A positive-count filter leaves nine seeds in two interface-growth diagnostics despite prose saying ten, but inspection does not establish the required favorable exclusion of unfavorable results: restoring the omitted SMART seed improves agreement with the stated uniform-growth prediction. This count-reporting defect is not sufficient evidence of the specified selection behavior.",
+      "evidence": [
+        "proposal/logs/summary.json: seeds and vals for all 105 cells; proposal/code/aggregate.py:31–64",
+        "proposal/code/mechanism.py:201–226; proposal/sections/analysis.tex:75–79",
+        "proposal/logs/mechanism.json: interface_growth.nondiff.methods.smart.n and gsmart.n are 9",
+        "proposal/logs/runs/nondiff__smart__s2.json: interface counts [0,2,8,27]; including it changes the SMART slope from 0.95884 to 1.00155"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.no_silent_omissions": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected results and attempts records disclose the smooth-surface non-improvement, diffusion losses to random, severe early MAPE losses, unsuccessful alternatives, and sensitivity results that outperform the chosen regularizer. No completed unfavorable experiment or configuration was identified as concealed to create a favorable reported set. Missing pilot artifacts or incomplete reporting alone do not establish this predicate.",
+      "evidence": [
+        "proposal/sections/results_prose.tex:42–62; proposal/logs/tab_mape.tex; proposal/logs/tab_ablation.tex",
+        "proposal/attempts_log.md:81–120,145–169,262–285",
+        "proposal/logs/summary_ablation.json, proposal/logs/summary_oracle.json, and proposal/logs/summary_optcheck.json",
+        "proposal/sections/analysis.tex: failure analysis; proposal/sections/appendix.tex: oracle diagnostics"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.dense_grid_independent_of_acquisition": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The dense Sobol evaluation set is generated through a separate stream and enters checkpoint metric computation, not model fitting or candidate selection. The look-ahead acquisition generates its own integration points. The oracle violation uses direct candidate-response calls rather than the dense evaluation grid, so it does not establish this grid-specific predicate.",
+      "evidence": [
+        "proposal/code/testfuncs.py:160–183",
+        "proposal/code/runner.py:35–40,90,125–127,139–161",
+        "proposal/code/acquisitions.py:385–403; proposal/code/oracle.py:39–46",
+        "proposal/logs/runs/: eval_grid records specify 16384 points in 2D and 65536 in 3D"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "sequential_acquisition.sequential_acquisition_logged": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Ten completed exact-mismatch oracle runs evaluate the true response at optimizer candidates and use that unobserved response to score acquisitions before selecting the next measurement. The appendix clearly labels these as oracle diagnostics, and the headline methods do not share this flow. Nevertheless, the task's observed-data-only acquisition rule has no oracle exception, and the rubric states that disclosure does not excuse prohibited information flow.",
+      "evidence": [
+        "task_spec.md:181; rubric.json: sequential_acquisition.sequential_acquisition_logged and assessment_policy.disclosed_shortfalls",
+        "proposal/code/oracle.py:39–46; proposal/code/runner.py:45–51,144–158",
+        "proposal/logs/oracle/piecewise_I__oracle_mica__s0.json through __s4.json and nondiff__oracle_mica__s0.json through __s4.json: completed 500-measurement trajectories",
+        "proposal/sections/appendix.tex:41–48 explicitly confirms true-response evaluation at every candidate"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected implementation uses disclosed gpCAM/fvgp and standard scientific Python dependencies, with the acquisition and analysis routines included locally. No identifiable prohibited or unacknowledged external implementation was found. This finding does not independently authenticate the authorship of every line.",
+      "evidence": [
+        "proposal/codebase_notes.md:28–65,130–136",
+        "proposal/code/krig.py, proposal/code/acquisitions.py, proposal/code/runner.py: imports and implementation",
+        "task_spec.md:189 permits provided code and standard scientific libraries"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.originality.no_substantive_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "No identifiable prior contribution in the supplied evidence is substantively reproduced while presented without acknowledgment. The report cites the SMART/gSMART source and explicitly discusses the closest weighted-error acquisition predecessor, cross-validation methods, and sampling-density precedents. This does not verify the correctness or breadth of its novelty claims.",
+      "evidence": [
+        "paper.md: original SMART/gSMART contribution",
+        "proposal/sections/methodology.tex:294–367, especially the Kyprioti comparison at 312–329",
+        "proposal/report.bbl: cited Noack, Kyprioti, cross-validation, and sampling-density references"
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

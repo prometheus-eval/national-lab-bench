@@ -1,0 +1,212 @@
+{
+  "nodes": {
+    "number_traceability.metric_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported direction of the near-perpendicular failures materially contradicts the saved results. The report says all 14 breaking co-polarized cells overpredict, but only 12 do; two completed cells underpredict. This discrepancy is not explained by rounding, normalization or units.",
+      "evidence": [
+        "proposal/sections/results.tex:331-336 states that the model overpredicts 'in every case' and that all 14 qualifying cells have R_V > R_P.",
+        "proposal/logs/boundary_summary.json:468-469 records nPerpOver=12 and nPerpBrk=14; proposal/code/summarize.py:339-344 computes these separately.",
+        "proposal/logs/sweep_cells.json, total-channel record P_C_phim15_B1000_zz_I0.50: R_V=-1.1408898642, R_P=0.6209030054, rho=2.8374687420.",
+        "proposal/logs/sweep_cells.json, total-channel record P_C_phim15_B5000_zz_I0.50: R_V=0.0112423552, R_P=0.1272539930, rho=0.7734109189. Both counterexamples also appear in proposal/logs/tab_main.tex, rows N8 and N10."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.boundary_threshold_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported primary threshold of 0.30 matches the configuration, executed classification code and all 391 saved classifications. The separately reported sensitivity calculations do not replace the primary threshold.",
+      "evidence": [
+        "proposal/sections/metric.tex:31-40 specifies R_floor=0.15 and predictive iff rho<=0.30.",
+        "proposal/code/sweep_plan.py:28-41 defines the same constants and classification function.",
+        "Read-only recalculation of proposal/logs/sweep_cells.json found zero classification mismatches: 184 predictive and 207 breaking cells.",
+        "proposal/sections/failure.tex:69-78 explicitly reports sensitivity at thresholds 0.25 and 0.40; the saved primary labels remain based on 0.30."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.pic_gain_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The claim that the hydrogen families have identically zero reported uncertainty contradicts the submission's own PIC records and tables. All 17 provided 1.2-keV hydrogen cells have nonzero uncertainty. This establishes a false uncertainty claim, without establishing alteration of the original PIC archive.",
+      "evidence": [
+        "proposal/sections/data.tex:18-21, rendered in proposal/report.pdf p.5, says the hydrogen uncertainty column is 'identically zero'.",
+        "proposal/logs/sweep_cells.json contains 26 provided 0.4-keV hydrogen cells with zero uncertainty and 17 provided 1.2-keV hydrogen cells with nonzero uncertainty.",
+        "The n3T1200/zz/gain_B0_zz.txt record has g=0.668473 and sig=0.014261; the corresponding z-y record has g=-0.182645 and sig=0.0151875.",
+        "proposal/logs/tab_main.tex:29-34 prints these nonzero hydrogen uncertainties. proposal/code/evaluate.py:163-173 defines sig as half the supplied spread, which cannot convert these nonzero spreads into zero."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_gains_or_thresholds": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected code computes theoretical gains, extracts PIC gains and calculates classifications through the documented computational chain. No hardcoded target or oracle output was found substituting for those computations. The configured boundary threshold is a legitimate declared constant.",
+      "evidence": [
+        "proposal/code/vlasov.py:99-156 implements kinetic susceptibilities; proposal/code/magcbet.py:85-161 computes coupled-mode gains.",
+        "proposal/code/pic_pipeline.py:163-230 performs filtering, eigenmode extraction and gain calculations; proposal/code/analyze_new.py:54-115 processes retained outputs and aggregates seeds.",
+        "The saved theory quantities for all 391 cells agree with their corresponding entries in proposal/logs/vlasov_cells.json.",
+        "proposal/code/sweep_plan.py:28-41 stores and applies the declared metric floor and threshold rather than storing desired classifications."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.metric_definition_matches_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The primary agreement formula and normalization agree with the executed computation. Recomputing rho from the saved responses reproduces every value exactly. The use of common B=0 references across carbon orientations is equivalent here because those saved reference gains are identical.",
+      "evidence": [
+        "proposal/sections/metric.tex:19-40 defines separate theoretical and PIC B=0, z-z, total-gain normalization and rho=abs(R_V-R_P)/max(abs(R_P),0.15).",
+        "proposal/code/sweep_plan.md:45-69 states the same protocol.",
+        "proposal/code/evaluate.py:188-222 constructs reference groups, normalizes both responses and calls the declared metric.",
+        "Read-only calculation over proposal/logs/sweep_cells.json found maximum absolute rho discrepancy 0 across all 391 records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.vlasov_from_own_reconstruction": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The baseline is explicitly attributed to the authors' own partial reconstruction, with its departures and unverified absolute coupling disclosed. The submitted solver and cached outputs support that attribution. No published numerical result was identified as falsely presented as an executed reconstruction result.",
+      "evidence": [
+        "proposal/sections/model.tex:4-13 identifies the construction as original and partial because the companion theory's full text was unavailable.",
+        "proposal/sections/model.tex:173-190 discloses the omitted warm-fluid laser correction and inability to certify the source theory's coupling constant.",
+        "proposal/code/vlasov.py and proposal/code/magcbet.py implement the reconstruction; proposal/code/evaluate.py:203-235 transfers computed baseline quantities into the comparison records.",
+        "All saved cell-level V0, V1, T1 and T2 theoretical gains match the corresponding cached configuration outputs in proposal/logs/vlasov_cells.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The paper describes adding the variance associated with sigma_seed=0.019 to every new cell, but execution uses each replicated cell's own standard deviation and channel-specific pooled RMS values for single-seed cells. The reported 0.019 is only a summary mean. This materially affects uncertainty-dependent mechanism attribution.",
+      "evidence": [
+        "proposal/sections/data.tex:66-74 and proposal/sections/newruns.tex:4-8 state sigma_seed=0.019 and say that variance is incorporated into every new cell.",
+        "proposal/code/analyze_new.py:80-84,99-112 uses cell-specific seed scatter for replicated cells and pooled channel RMS scatter for single-seed cells. Saved single-seed values are 0.02463096, 0.02812620 and 0.02635020 for total, X and O.",
+        "proposal/code/summarize.py:319-321 generates 0.019 as the mean of replicated-cell seed standard deviations, not the variance parameter used for all cells.",
+        "proposal/logs/new_runs.json, V_C_phi30_B1000_zy_I0.50 total channel: sig_internal=0.01618751, sig_seed=0.00817330, resulting sig=0.01813390. Using the stated 0.019 would give sig=0.02496068 and change the C4 measurement-floor condition for g=0.02150785."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected configurations do not establish a concealed departure from the claimed common sweep settings. The reduction, partial baseline, cold electromagnetic modes and pipeline patch are disclosed. The failed reduction-validation criterion is also explicitly reported; that scientific failure is not a false compliance claim.",
+      "evidence": [
+        "proposal/sections/data.tex:36-64 discloses Lx=250 wavelengths, 14 cells per wavelength, 12 particles per cell and shortened measurement times.",
+        "All 73 entries in proposal/runs/manifest.json and their executed decks use the same reduced numerical configuration.",
+        "proposal/codebase_notes.md:92-116 discloses the positive-wavenumber peak-search patch and cold rather than warm electromagnetic eigenmodes.",
+        "proposal/sections/newruns.tex:13-40 explicitly reports failure at 2 of 4 total-gain validation points and preserves the failed declared criterion."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The 73 main EPOCH executions are supported by retained completion records and outputs. However, the attempts record additionally claims that a dedicated same-Lx resolution pair was run; the staged artifacts provide no identifiable configurations, results or execution records for that pair. Its execution cannot be established or refuted from the allowed evidence. Absence alone does not establish a false execution claim.",
+      "evidence": [
+        "proposal/attempts_log.md:91-95 explicitly says a dedicated same-Lx resolution pair 'was run later instead' and refers to Section D; Section D does not identify that pair.",
+        "proposal/runs/manifest.json lists 73 runs, all at the same resolution; proposal/logs/new_runs_raw.json contains exactly those 73 runs.",
+        "The staged run directories contain 219 retained SDF dumps and successful timing records. For example, proposal/runs/V_C_phi30_B0_zz_I0.50_s1001/run.log:55-56 records final progress and runtime, and timing.json records rc=0.",
+        "Inspection of proposal/runs/, proposal/logs/, proposal/code/validate_reduction.py and the attempts record found no separate same-Lx resolution-pair artifacts."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "No inspected dated evidence establishes undisclosed post-result selection or backdating. The current plan files match their recorded hashes, and final sweep execution records postdate the stated freeze. Preliminary data inspection, the indicator implementation repair and post-hoc additions are disclosed. This does not independently authenticate the historical commit or establish adequate multiplicity control.",
+      "evidence": [
+        "proposal/logs/sweep_plan_timestamp.txt records a freeze at 2026-07-22T14:42:22Z; recomputed SHA-256 hashes match all three listed plan files.",
+        "proposal/code/sweep_plan.md:9-17 explicitly identifies baseline development, calibration runs and provided curves inspected before freezing.",
+        "proposal/attempts_log.md:125-141 discloses the mode-counter repair; :165-176 identifies block R as a post-hoc addition excluded from the boundary map.",
+        "Retained proposal/runs/*/deck.status execution timestamps are on 2026-07-26, after the stated freeze. proposal/sections/failure.tex:14-20 labels the background explanation post-hoc and states that it does not change classifications."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.provided_pic_data_used_as_is": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The loader and saved comparison records are inspectable, but the original processed PIC archive and source text files are absent from the staged evidence. Therefore the saved copies cannot be checked against the supplied originals for alteration or selective re-curation. No alteration is established by this absence.",
+      "evidence": [
+        "task_spec.md:154 identifies data/pic_simulations/PIC_processed_data.zip as the provided source.",
+        "proposal/code/load_provided.py:22-24 points to the unstaged processed-data directory; :58-112 reads gains and spreads directly from source columns.",
+        "proposal/code/evaluate.py:151-173 documents reference-detuning selection and conversion of full spreads to half-spreads.",
+        "proposal/logs/sweep_cells.json retains 298 records labeled provided with source filenames, but neither the original archive nor the corresponding source files is included in the permitted staged submission."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_cells_reported": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The tables retain all 391 cells, but Figure 7(c) is represented as showing every new cell while its display bounds exclude the most discrepant new total-gain result. The exclusion depends on the result's response value and is not marked or disclosed in the figure. The finding concerns this purportedly complete plot, not omission from the underlying tables.",
+      "evidence": [
+        "proposal/sections/newruns.tex:57-64 captions Figure 7(c) as predicted versus measured normalized response 'for every new cell'.",
+        "proposal/code/figures.py:293-311 supplies all 31 new total-gain cells but fixes both axes to [-0.6,1.4].",
+        "proposal/logs/sweep_cells.json, P_C_phim15_B1000_zz_I0.50 total channel, has R_P=0.620903 and R_V=-1.140890, outside the displayed range. Its rho=2.837469 is the largest among the 31 new total-gain cells; it is the only one outside those bounds.",
+        "Visual inspection of proposal/report.pdf p.16 confirms that Figure 7(c) omits that point without an overflow marker or exclusion note. The result remains in proposal/logs/tab_main.tex row N8 and the complete appendix table."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every manifested final sweep seed appears in the saved per-run results and contributes to its cell aggregate. No favorable seed filtering was detected. Single-seed limitations and the separate post-hoc resonance block are disclosed.",
+      "evidence": [
+        "proposal/runs/manifest.json and proposal/logs/new_runs_raw.json contain the same 73 run identifiers: 65 map runs and 8 resonance runs.",
+        "The map contains 17 three-seed configurations and 14 single-seed configurations, producing 93 channel records in proposal/logs/new_runs.json.",
+        "Read-only aggregation of the per-run gains reproduced all 93 saved cell means within floating-point precision.",
+        "proposal/code/analyze_new.py:75-115 groups all successful runs by tag; proposal/attempts_log.md:189-194 records the final seed-count correction and retained single-seed status."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.mechanism_attribution_full_set_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All eight registered mechanism hypotheses remain in the saved analysis and report, including negative associations, nonsignificant results and the untestable P2 comparison. The post-hoc background explanation is distinguished from the registered family. Inadequate family-wise correction is a scientific shortfall, not evidence of selective omission here.",
+      "evidence": [
+        "proposal/code/sweep_plan.md:110-140 lists all eight hypotheses and the attribution priority.",
+        "proposal/logs/tab_mech.tex:5-12 includes every hypothesis, including C2 delta=-0.76, P3 delta=-0.26 and P2 n_on=0 with undefined statistics marked.",
+        "proposal/logs/boundary_summary.json retains all eight mechanism records; proposal/code/make_tables.py:90-107 iterates over the complete family.",
+        "proposal/attempts_log.md:203-212 explains that P2 remains in the eight-hypothesis correction with adjusted p=1. proposal/sections/failure.tex:14-20 separately discloses the post-hoc background explanation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected submission acknowledges the source theory, PIC study and prior validity-mapping procedures. No identifiable prior contribution was found substantively reproduced while presented as new without acknowledgment. This finding does not certify novelty against literature outside the supplied evidence.",
+      "evidence": [
+        "paper.md, Introduction and PIC-analysis sections, supplies the acknowledged source theory context, numerical setup and gain-analysis method.",
+        "proposal/sections/model.tex:4-13 attributes the reconstruction's kinetic and coupling ingredients to prior work.",
+        "proposal/sections/related.tex:3-16 distinguishes the proposed map from the source theory and PIC study.",
+        "proposal/sections/related.tex:18-31 explicitly acknowledges Debayle, Seaton, Follett and related validity studies, describing procedural overlap rather than claiming that procedure as new."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected methodology code uses the permitted EPOCH resources, an explicitly attributed port of the supplied MATLAB analysis and standard numerical libraries. No identifiable prohibited or unattributed nontrivial external implementation was found.",
+      "evidence": [
+        "task_spec.md:147-156 provides EPOCH, the authors' MATLAB analysis code and standard numerical tools for use.",
+        "proposal/codebase_notes.md:69-90 maps MATLAB routines to their Python ports; :92-116 documents modifications and independently implemented electromagnetic modes.",
+        "proposal/codebase_notes.md:118-125 and :148-154 identify the reconstruction code and its numerical-library dependencies.",
+        "Inspection of proposal/code/vlasov.py, magcbet.py, pic_pipeline.py, evaluate.py and summarize.py found implementations consistent with those disclosed sources and dependencies."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

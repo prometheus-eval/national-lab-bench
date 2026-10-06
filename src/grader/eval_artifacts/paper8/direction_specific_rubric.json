@@ -1,0 +1,1329 @@
+{
+  "schema_version": "1.0",
+  "name": "P8 — Direction-specific rubric",
+  "description": "P8: completeness and scientific quality under the accompanying task specification. Integrity is evaluated in the separate integrity rubric.",
+  "clusters": {
+    "deliverables": {
+      "title": "Deliverables",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "deliverables.report_pdf_present",
+          "question": "Does proposal/report.pdf exist with substantive content (full sections, not a placeholder)?",
+          "type": "boolean",
+          "evidence": "Filesystem check: stat proposal/report.pdf; open and verify it has motivation, specification-encoder method, experimental setup, results, attribution, mechanism, failure analysis, and conclusion sections.",
+          "values": {
+            "yes": {
+              "description": "report.pdf exists and contains a substantive paper.",
+              "criteria": "PDF exists, parses cleanly, and contains Introduction / Method (specification encoder + IC/BC representation) / Experimental Setup / Results / Attribution / Mechanism / Failure analysis / Conclusion sections (or equivalents) with non-placeholder content."
+            },
+            "no": {
+              "description": "report.pdf is missing or trivial.",
+              "criteria": "PDF absent, malformed, or contains only placeholder text."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.logs_directory_present",
+          "question": "Does proposal/logs/ exist and contain non-empty run records?",
+          "type": "boolean",
+          "evidence": "List proposal/logs/; confirm per-run records with per-specification and aggregate errors, seeds, and budgets.",
+          "values": {
+            "yes": {
+              "description": "Logs present and non-empty.",
+              "criteria": "proposal/logs/ contains per-run records for the baseline, naive control, and structured-encoder runs."
+            },
+            "no": {
+              "description": "Logs missing or empty.",
+              "criteria": "proposal/logs/ absent or contains no substantive run records."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.plan_file_present",
+          "question": "Is there a timestamped specification-encoder plan file (proposal/code/specification_encoder_plan.*) written before the comparison?",
+          "type": "boolean",
+          "evidence": "Check proposal/code/specification_encoder_plan.{py,md,json}; confirm it states the encoder design, IC/BC representations, splits, reference sources, weight/hyperparameter protocol, and delta, with a timestamp predating the run logs.",
+          "values": {
+            "yes": {
+              "description": "Plan file present and timestamped before results.",
+              "criteria": "Plan states the encoder/representation, the splits (trained/held-out ICs, IC families, BC types, combinations, PDE families), the reference sources, the weight/hyperparameter protocol, and delta; its timestamp predates the comparison logs."
+            },
+            "no": {
+              "description": "Plan file missing or post-hoc.",
+              "criteria": "No plan file, or it postdates the comparison logs, or it omits the encoder/representation/splits/delta."
+            }
+          },
+          "absorbed_source_nodes": [
+            "pre_stated_method.plan_predates_comparison"
+          ],
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.baseline_and_control_runs_logged",
+          "question": "Are the coefficient-only P2INN baseline runs AND the naive-control runs present in the logs?",
+          "type": "boolean",
+          "evidence": "Confirm proposal/logs/ has both the coefficient-only baseline and the naive (IC/BC-as-raw-inputs) control runs on the declared families/splits.",
+          "values": {
+            "yes": {
+              "description": "Baseline and naive-control runs logged.",
+              "criteria": "Both the coefficient-only baseline and the matched naive control have logged runs on the declared families/splits."
+            },
+            "no": {
+              "description": "Baseline or control runs absent.",
+              "criteria": "The coefficient-only baseline or the naive-control runs are missing from the logs on one or more declared families/splits."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.core_generalization_runs_logged",
+          "question": "Are the structured-encoder core generalization runs (unseen IC parameters, unseen IC function family, unseen coefficient x IC combinations) present in the logs?",
+          "type": "boolean",
+          "evidence": "Confirm logged runs evaluating the structured encoder on each held-out core set.",
+          "values": {
+            "yes": {
+              "description": "Core generalization runs logged.",
+              "criteria": "The structured encoder has logged evaluations on the unseen-IC-parameter, unseen-IC-family, and unseen-combination held-out sets."
+            },
+            "no": {
+              "description": "Core generalization runs absent.",
+              "criteria": "One or more of the core held-out evaluations is missing from the logs."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.ablation_runs_logged",
+          "question": "Are the conditioning-removed / shuffled-IC ablation runs present in the logs?",
+          "type": "boolean",
+          "evidence": "Confirm logged runs for the ablation that removes/shuffles the IC (or BC) representation.",
+          "values": {
+            "yes": {
+              "description": "Ablation runs logged.",
+              "criteria": "The conditioning-removed / shuffled ablation has logged runs on the relevant held-out sets."
+            },
+            "no": {
+              "description": "Ablation runs absent.",
+              "criteria": "No conditioning-removed / shuffled ablation is logged."
+            }
+          },
+          "absorbed_source_nodes": [
+            "attribution_integrity.attribution_evidence_genuinely_run"
+          ],
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.generalization_boundary_runs_logged",
+          "question": "If out-of-distribution / generalization-boundary work is claimed in the paper, are the corresponding runs present in the logs? (This work is OPTIONAL; if not attempted, its absence is not a missing deliverable.)",
+          "type": "boolean",
+          "evidence": "Confirm logged runs sweeping a generalization axis to failure, plus the discrimination runs (the failing setting retrained at increased capacity/epochs/collocation and against a converged reference).",
+          "values": {
+            "yes": {
+              "description": "Boundary + discrimination runs logged.",
+              "criteria": "The boundary sweep and the fundamental-vs-undertrained discrimination runs are present in the logs."
+            },
+            "no": {
+              "description": "Boundary runs absent.",
+              "criteria": "The boundary sweep or the discrimination runs are missing from the logs."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "conditional_reporting_for_optional_work"
+        },
+        {
+          "id": "deliverables.boundary_condition_runs_logged",
+          "question": "If the boundary-condition stretch is claimed in the paper, are its runs (>=2 BC types, with the authored non-periodic reference) present in the logs? (OPTIONAL; if not attempted, absence is not a missing deliverable.)",
+          "type": "boolean",
+          "evidence": "Confirm logged BC-conditioned runs across >=2 BC types plus the non-periodic reference-validation records.",
+          "values": {
+            "yes": {
+              "description": "BC-stretch runs logged.",
+              "criteria": "Logged runs cover >=2 BC types and include the non-periodic reference-solution validation records."
+            },
+            "no": {
+              "description": "BC-stretch runs absent.",
+              "criteria": "No BC-conditioned runs across >=2 BC types are logged, or the non-periodic reference records are absent."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "conditional_reporting_for_optional_work"
+        },
+        {
+          "id": "deliverables.pde_type_breadth_runs_logged",
+          "question": "If the PDE-type-breadth stretch is claimed in the paper, are its runs (>=2 PDE families jointly supported, held-out composition transfer) present in the logs? (OPTIONAL; if not attempted, absence is not a missing deliverable.)",
+          "type": "boolean",
+          "evidence": "Confirm logged runs for a single shared model across >=2 PDE families and the held-out combined-specification transfer.",
+          "values": {
+            "yes": {
+              "description": "PDE-type-breadth runs logged.",
+              "criteria": "Logged runs show a single shared model evaluated across >=2 PDE families and at least one held-out combined-specification transfer."
+            },
+            "no": {
+              "description": "PDE-type-breadth runs absent.",
+              "criteria": "No multi-PDE-family runs, or no held-out composition transfer, are logged."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "conditional_reporting_for_optional_work"
+        },
+        {
+          "id": "deliverables.main_results_table_present",
+          "question": "Does the paper contain the primary results table labelled tab:main_results?",
+          "type": "boolean",
+          "evidence": "Search report.tex/pdf for \\label{tab:main_results}.",
+          "values": {
+            "yes": {
+              "description": "Primary table present.",
+              "criteria": "A table with \\label{tab:main_results} reports rel-L2 (and absolute) per method per family/axis on the seen-specification and held-out sets."
+            },
+            "no": {
+              "description": "Primary table missing.",
+              "criteria": "No table labelled tab:main_results is present."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.error_vs_specification_curves_present",
+          "question": "Are the error-vs-specification curves across the trained and held-out region present?",
+          "type": "boolean",
+          "evidence": "Confirm figures plotting error vs the varying specification (IC parameter / BC / family) for the baseline, naive control, and structured encoder.",
+          "values": {
+            "yes": {
+              "description": "Curves present.",
+              "criteria": "The paper plots error vs the varying specification across the trained and held-out region for the compared methods."
+            },
+            "no": {
+              "description": "Curves missing.",
+              "criteria": "No error-vs-specification curves are present."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.methodology_section_present",
+          "question": "Does the paper contain a Methodology section specifying the specification encoder and the evaluation?",
+          "type": "boolean",
+          "evidence": "Confirm a Methodology (or equivalent) section describing the encoder, the IC/BC representation, and the evaluation.",
+          "values": {
+            "yes": {
+              "description": "Methodology present.",
+              "criteria": "A Methodology section specifies the specification encoder, the IC/BC representation, and the evaluation protocol."
+            },
+            "no": {
+              "description": "Methodology missing.",
+              "criteria": "No Methodology section, or it omits the encoder/representation/evaluation."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.codebase_notes_present",
+          "question": "Is proposal/codebase_notes.md present and non-trivial?",
+          "type": "boolean",
+          "evidence": "Open proposal/codebase_notes.md; confirm it documents what was inspected/reused in code/P2INN and how the extension relates.",
+          "values": {
+            "yes": {
+              "description": "Codebase notes present.",
+              "criteria": "codebase_notes.md documents the inspected/reused P2INN components and how the extended encoder and any authored solver relate to them."
+            },
+            "no": {
+              "description": "Codebase notes missing.",
+              "criteria": "codebase_notes.md is absent or trivial."
+            }
+          },
+          "absorbed_source_nodes": [
+            "codebase_inspection_evidence.p2inn_inspected_and_related"
+          ],
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "deliverables.attempts_log_present",
+          "question": "Is proposal/attempts_log.md present when the paper claims partial or unresolved work?",
+          "type": "boolean",
+          "evidence": "If the paper claims any attempted-but-incomplete item (e.g. the honest-negative transfer), confirm attempts_log.md documents it.",
+          "values": {
+            "yes": {
+              "description": "Attempts log present (or no partial work claimed).",
+              "criteria": "attempts_log.md is present and documents unresolved work, or the paper claims no partial work."
+            },
+            "no": {
+              "description": "Attempts log missing despite partial work.",
+              "criteria": "The paper claims partial/unresolved work but attempts_log.md is absent."
+            }
+          },
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "method_specification": {
+      "title": "Method specification",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "method_specification.encoder_stated_before_results",
+          "question": "Is the specification encoder (the IC/BC-conditioned extension) fully stated in the Methodology / plan before the empirical results?",
+          "type": "boolean",
+          "evidence": "Confirm the encoder design and representation appear in the plan/Methodology ahead of the results.",
+          "values": {
+            "yes": {
+              "description": "Encoder stated before results.",
+              "criteria": "The extended encoder and IC/BC representation are fully described before the empirical results are reported."
+            },
+            "no": {
+              "description": "Encoder not stated before results.",
+              "criteria": "The encoder/representation is introduced only alongside or after the results."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "method_specification.representation_fully_specified",
+          "question": "Is the IC/BC representation (defining parameters, basis coefficients, sampled values, or learned function encoder) specified precisely enough to reimplement?",
+          "type": "categorical",
+          "evidence": "Check that the representation form, dimensionality, and how it is ingested by the encoder are stated.",
+          "values": {
+            "fully_specified": {
+              "description": "Precisely specified.",
+              "criteria": "The IC/BC representation form, dimensionality, sampling/basis choice, and ingestion into the encoder are stated precisely enough to reimplement from the paper."
+            },
+            "mostly_specified": {
+              "description": "Mostly specified, minor gaps.",
+              "criteria": "The representation is mostly specified but a minor detail (a sampling grid, a normalization, the exact concat point) requires reading the code."
+            },
+            "qualitative": {
+              "description": "Qualitative only.",
+              "criteria": "The representation is described only qualitatively, without a precise form sufficient for reimplementation."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "method_specification.injection_point_stated",
+          "question": "Does the paper state where the IC/BC representation enters (through the parameter-encoder path into the held-fixed concatenation), consistent with the held-fixed decoder?",
+          "type": "boolean",
+          "evidence": "Confirm the paper states the conditioning enters through h_param into the concat, not by redesigning the decoder.",
+          "values": {
+            "yes": {
+              "description": "Injection point stated.",
+              "criteria": "The paper states the IC/BC enters through the parameter-encoder path (h_param) into the held-fixed concatenation."
+            },
+            "no": {
+              "description": "Injection point unstated.",
+              "criteria": "The paper does not state where the specification is injected, or is ambiguous about whether the decoder was altered."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "method_specification.hyperparameter_protocol_stated",
+          "question": "Does the paper state a seen-specification validation protocol for any introduced hyperparameter (encoder capacity, representation hyperparameters)?",
+          "type": "boolean",
+          "evidence": "Confirm hyperparameters are tuned on a seen-specification split, stated in the paper.",
+          "values": {
+            "yes": {
+              "description": "Protocol stated.",
+              "criteria": "The paper states that introduced hyperparameters are selected on a seen-specification validation split, never on a held-out set."
+            },
+            "no": {
+              "description": "Protocol not stated.",
+              "criteria": "The paper does not state a seen-specification selection protocol for its hyperparameters."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "method_specification.motivation_grounded_in_literature",
+          "question": "Is the conditioning design motivated with reference to the conditional-neural-field / operator-learning / IC-BC-conditioned-PINN literature?",
+          "type": "boolean",
+          "evidence": "Check the motivation cites relevant specification-conditioning / operator-learning work.",
+          "values": {
+            "yes": {
+              "description": "Literature-grounded.",
+              "criteria": "The design is motivated with reference to the relevant specification-conditioning / operator-learning / parametric-surrogate literature."
+            },
+            "no": {
+              "description": "Not literature-grounded.",
+              "criteria": "The motivation is not grounded in the relevant literature."
+            }
+          },
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "baseline_and_control": {
+      "title": "Baseline and control",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "baseline_and_control.coefficient_only_reproduced",
+          "question": "Is the coefficient-only P2INN baseline reproduced in the held-fixed setup with paper-consistent seen-specification accuracy?",
+          "type": "boolean",
+          "evidence": "Check the baseline's logged seen-specification error is reproduced (paper-consistent) in the held-fixed setup.",
+          "values": {
+            "yes": {
+              "description": "Baseline reproduced.",
+              "criteria": "The coefficient-only P2INN baseline is trained in the held-fixed setup and its seen-specification accuracy is reproduced and logged (paper-consistent)."
+            },
+            "no": {
+              "description": "Baseline not reproduced.",
+              "criteria": "The coefficient-only baseline is absent, not reproduced, or its seen-specification accuracy is not established."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "baseline_and_control.naive_control_matched",
+          "question": "Is the naive control (IC/BC as raw extra inputs) defined and matched in added capacity to the structured encoder?",
+          "type": "categorical",
+          "evidence": "Confirm the naive control injects the IC/BC as raw inputs with the SAME added capacity as the structured encoder, and comes from logged runs.",
+          "values": {
+            "matched": {
+              "description": "Defined and capacity-matched.",
+              "criteria": "The naive control feeds the IC/BC as raw extra inputs with the same added encoder capacity as the structured design, from the agent's own logged runs."
+            },
+            "unmatched_capacity": {
+              "description": "Defined but not capacity-matched.",
+              "criteria": "A naive control exists but its added capacity does not match the structured encoder, so the attribution comparison is not fair."
+            },
+            "absent": {
+              "description": "No naive control.",
+              "criteria": "No matched naive control is defined, so the structured-vs-naive attribution cannot be established."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "baseline_and_control.held_fixed_respected",
+          "question": "Are architectural changes restricted to the specification encoder's input representation and internal architecture, retaining its 50-dimensional output, the reference coordinate encoder/decoder, concatenation injection, and original modvec architecture and coefficient/coordinate inputs? Are base-loss terms/weights and headline comparison budgets held fixed?",
+          "type": "boolean",
+          "evidence": "Inspect model.py and executed configurations for every comparison arm. IC/BC enters only through h_param. Joint training of reference subnetworks and float-valued encoder input plumbing remain allowed; fixed architecture does not mean frozen weights. The separately specified optional under-training diagnostic may increase encoder capacity/epochs/collocation, not decoder/coordinate-encoder architecture.",
+          "values": {
+            "yes": {
+              "description": "Only the permitted encoder design changes; the output width, concatenation and modvec input interfaces, decoder/coordinate-encoder architectures, base loss, and required headline budgets remain fixed. Encoder capacity is matched to the naive control.",
+              "criteria": "Only the permitted encoder design changes; the output width, concatenation and modvec input interfaces, decoder/coordinate-encoder architectures, base loss, and required headline budgets remain fixed. Encoder capacity is matched to the naive control."
+            },
+            "no": {
+              "description": "A prohibited architecture, injection, output-width, modvec-input, loss, or headline-budget change occurs. Motivation, disclosure, ablation, or matched compute does not exempt an architecture violation. The explicitly allowed diagnostic budget increases alone are not violations.",
+              "criteria": "A prohibited architecture, injection, output-width, modvec-input, loss, or headline-budget change occurs. Motivation, disclosure, ablation, or matched compute does not exempt an architecture violation. The explicitly allowed diagnostic budget increases alone are not violations."
+            }
+          },
+          "absorbed_source_nodes": [
+            "only_encoder_conditioning_changed.only_conditioning_changed"
+          ],
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "core_result": {
+      "title": "Core result -- joint coefficient x IC generalization",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "core_result.joint_coeff_ic_generalization",
+          "question": "Does the structured encoder generalize to unseen IC parameters and unseen coefficient x IC combinations, beating BOTH the coefficient-only baseline and the naive control by at least delta?",
+          "type": "categorical",
+          "evidence": "Compare held-out (unseen IC parameters, unseen combinations) rel-L2 for structured vs baseline and vs naive control against the pre-registered delta.",
+          "values": {
+            "clear": {
+              "description": "Clear generalization.",
+              "criteria": "On the unseen-IC-parameter and unseen-combination held-out sets, the structured encoder reduces mean rel-L2 by >= delta relative to both the coefficient-only baseline and the naive control. The headline IC axis must be NON-TRIVIAL: at least one core held-out IC axis is on a family with non-linear IC-to-solution dependence (reaction, reaction-diffusion, or CDR), where the naive control is a genuine competitor -- an axis achievable by a single linear operator on the initial condition (pure convection/diffusion amplitude scaling) does not by itself qualify as a clear demonstration."
+            },
+            "marginal": {
+              "description": "Marginal.",
+              "criteria": "A positive but sub-delta improvement over the baseline or the naive control on the core held-out sets."
+            },
+            "no": {
+              "description": "No generalization gain.",
+              "criteria": "No improvement (<=0) over the baseline or the naive control on the core held-out sets."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "core_result.unseen_ic_family_generalization",
+          "question": "Does the structured encoder generalize to an unseen IC FUNCTION FAMILY (a functional family held out of training), beating BOTH the coefficient-only baseline (at its trained IC) and the naive control by at least delta?",
+          "type": "categorical",
+          "evidence": "Evaluate the held-out-function-family set (e.g. train sinusoids, test Gaussians/polynomials); compare structured vs the coefficient-only baseline AND vs the naive control against delta.",
+          "values": {
+            "clear": {
+              "description": "Clear functional generalization.",
+              "criteria": "On the held-out IC function family, the structured encoder reduces mean rel-L2 by >= delta over BOTH the coefficient-only baseline (at its trained IC as the reachable reference) and the naive control, separated from seed noise -- genuine functional generalization, not parameter interpolation."
+            },
+            "marginal": {
+              "description": "Marginal functional generalization.",
+              "criteria": "A positive but sub-delta improvement over the baseline or the naive control on the held-out IC function family."
+            },
+            "absent": {
+              "description": "Not evaluated.",
+              "criteria": "No held-out IC function family is evaluated (only unseen parameters of a trained family)."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "core_result.seen_spec_preserved",
+          "question": "Does the extended model preserve seen-specification accuracy (original coefficient-only setting) versus the reference P2INN baseline?",
+          "type": "categorical",
+          "evidence": "Compare per-coefficient seen-specification rel-L2 of the extended model vs the baseline against the tolerance (<=10% relative or 0.005 absolute, per-coefficient).",
+          "values": {
+            "preserved": {
+              "description": "Seen-spec accuracy preserved.",
+              "criteria": "The extended model's seen-specification error is within tolerance of the baseline per-coefficient (<=10% relative or 0.005 absolute rel-L2, whichever is larger)."
+            },
+            "minor_regression": {
+              "description": "Minor regression.",
+              "criteria": "Seen-specification error exceeds the tolerance slightly, but small enough that the generalization gain plausibly dominates."
+            },
+            "regressed": {
+              "description": "Meaningful regression.",
+              "criteria": "Seen-specification accuracy meaningfully regresses -- the generalization was bought by wrecking the original capability."
+            }
+          },
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "conditioning_attribution": {
+      "title": "Conditioning attribution",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "conditioning_attribution.beats_naive_control",
+          "question": "On the held-out IC sets, does the structured encoder beat the matched naive control by at least delta?",
+          "type": "categorical",
+          "evidence": "Compare structured vs naive control on the held-out IC sets against delta and the seed-noise band.",
+          "values": {
+            "beats": {
+              "description": "Beats naive control.",
+              "criteria": "The structured encoder beats the matched naive control on the held-out IC sets by >= delta, separated from seed noise."
+            },
+            "ties": {
+              "description": "Ties naive control.",
+              "criteria": "The structured encoder only ties the matched naive control on the held-out IC sets -- the gain is from adding raw inputs, not from structured encoding."
+            },
+            "not_tested": {
+              "description": "Not compared.",
+              "criteria": "No head-to-head structured-vs-naive comparison on the held-out IC sets is reported."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "conditioning_attribution.removed_conditioning_ablation",
+          "question": "Does a conditioning-removed / shuffled-IC ablation degrade held-out generalization toward the baseline (showing the model USES the IC/BC input)?",
+          "type": "categorical",
+          "evidence": "Run the ablation (shuffle/constant IC representation); confirm held-out accuracy degrades appropriately.",
+          "values": {
+            "degrades_appropriately": {
+              "description": "Ablation degrades.",
+              "criteria": "Removing/shuffling the IC (or BC) representation degrades held-out accuracy toward the baseline by a non-trivial, noise-separated amount (the degradation exceeds the pooled seed standard deviation), demonstrating the model genuinely conditions on the specification."
+            },
+            "no_effect": {
+              "description": "No effect -- input ignored.",
+              "criteria": "The ablation has no effect on held-out accuracy, so the model is not actually using the specification input (a degenerate/ignored encoding)."
+            },
+            "absent": {
+              "description": "Ablation absent.",
+              "criteria": "No conditioning-removed ablation is reported."
+            }
+          },
+          "absorbed_source_nodes": [
+            "attribution_integrity.attribution_evidence_genuinely_run"
+          ],
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "conditioning_attribution.non_degenerate",
+          "question": "Is the encoding non-degenerate -- the latent still distinguishes ICs/BCs and the encoding is not collapsed or ignored?",
+          "type": "categorical",
+          "evidence": "Check the latent distinguishes distinct ICs/BCs (a diagnostic) and preserved seen-specification accuracy.",
+          "values": {
+            "non_degenerate": {
+              "description": "Non-degenerate.",
+              "criteria": "The latent distinguishes distinct ICs/BCs and the ablation degrades -- the model genuinely conditions on the specification."
+            },
+            "weak_evidence": {
+              "description": "Weak non-degeneracy evidence.",
+              "criteria": "Non-degeneracy rests only on preserved accuracy without a direct check that the latent distinguishes ICs/BCs, or the check is qualitative-only."
+            },
+            "degenerate": {
+              "description": "Degenerate.",
+              "criteria": "The encoding is collapsed toward a constant or otherwise ignored, so any reported gain is a degenerate artifact."
+            }
+          },
+          "absorbed_source_nodes": [
+            "attribution_integrity.attribution_evidence_genuinely_run"
+          ],
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "boundary_conditions": {
+      "title": "Stretch S1 -- boundary conditions (optional differentiator)",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "boundary_conditions.multi_bc_generalization",
+          "question": "OPTIONAL DIFFERENTIATOR (assessed only if boundary-condition conditioning is attempted; not a required gate): Does a single model condition on and generalize across >=2 boundary-condition types, including to a held-out BC configuration, beating the naive control?",
+          "type": "categorical",
+          "evidence": "Confirm >=2 BC types (incl. a non-periodic one) conditioned and evaluated, with held-out-BC generalization beating the naive control.",
+          "values": {
+            "clear": {
+              "description": "Clear multi-BC generalization.",
+              "criteria": "A single model conditions on >=2 BC types (incl. a non-periodic one) and generalizes to a held-out BC configuration, beating the naive control by >= delta separated from seed noise."
+            },
+            "present_but_weak": {
+              "description": "Present but modest.",
+              "criteria": ">=2 BC types are conditioned and evaluated and the held-out-BC generalization is noise-separated over the naive control, but the margin is modest / narrow (short of the full delta)."
+            },
+            "within_noise": {
+              "description": "Within seed noise.",
+              "criteria": ">=2 BC types are conditioned/evaluated, but the held-out-BC generalization over the naive control lies inside the seed-uncertainty band or is only qualitative -- no trustworthy held-out-BC generalization (the stretch statistical bar mirrors the core's)."
+            },
+            "single_bc_only": {
+              "description": "Only one BC type.",
+              "criteria": "Only a single boundary-condition type is conditioned/evaluated -- the BC stretch is not delivered."
+            },
+            "absent": {
+              "description": "BC stretch absent.",
+              "criteria": "No boundary-condition conditioning/generalization is attempted."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        },
+        {
+          "id": "boundary_conditions.reference_validated",
+          "question": "OPTIONAL DIFFERENTIATOR (assessed only if the boundary-condition stretch is attempted; not a required gate): Is the authored non-periodic reference solver validated (convergence under refinement AND agreement with the spectral reference on the periodic overlap)?",
+          "type": "categorical",
+          "evidence": "Check the reference-validation records for the non-periodic BC solver.",
+          "values": {
+            "validated": {
+              "description": "Reference validated.",
+              "criteria": "The authored non-periodic reference solver is validated: it converges under refinement and agrees with the spectral reference on the periodic overlap."
+            },
+            "unvalidated": {
+              "description": "Reference unvalidated.",
+              "criteria": "The non-periodic reference used to measure BC generalization is not validated (no convergence / no periodic cross-check), so the BC result cannot be trusted."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        }
+      ]
+    },
+    "pde_type_breadth": {
+      "title": "Stretch S2 -- PDE-type breadth (optional differentiator)",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "pde_type_breadth.multi_family_supported",
+          "question": "OPTIONAL DIFFERENTIATOR (assessed only if PDE-type breadth is attempted; not a required gate): Does a single shared model jointly support >=2 PDE families, each evaluated on unseen specifications?",
+          "type": "categorical",
+          "evidence": "Confirm one shared model is trained/evaluated across >=2 PDE families from {convection, diffusion, reaction, reaction-diffusion, CDR}.",
+          "values": {
+            "two_or_more": {
+              "description": ">=2 families supported.",
+              "criteria": "A single shared model jointly supports >=2 PDE families, each evaluated on unseen coefficient/IC/BC specifications."
+            },
+            "single_family": {
+              "description": "Only one family.",
+              "criteria": "Only a single PDE family is supported -- the PDE-type-breadth stretch is not delivered."
+            },
+            "absent": {
+              "description": "Breadth absent.",
+              "criteria": "No multi-PDE-family joint support is attempted."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        },
+        {
+          "id": "pde_type_breadth.breadth_reported",
+          "question": "OPTIONAL DIFFERENTIATOR (assessed only if the PDE-type-breadth stretch is attempted; not a required gate): Does the paper report the number and diversity of PDE families (and BC types / IC families) jointly supported?",
+          "type": "boolean",
+          "evidence": "Confirm an explicit breadth summary (counts + diversity) is reported.",
+          "values": {
+            "yes": {
+              "description": "Breadth reported.",
+              "criteria": "The paper reports the number and diversity of IC families, BC types, and PDE families jointly supported."
+            },
+            "no": {
+              "description": "Breadth not reported.",
+              "criteria": "The breadth counts / diversity are not reported explicitly."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        },
+        {
+          "id": "pde_type_breadth.held_out_transfer",
+          "question": "OPTIONAL DIFFERENTIATOR (assessed only if the PDE-type-breadth stretch is attempted; not a required gate): Is transfer to a held-out combined specification evaluated, and is the never-trained-PDE-type transfer reported (positively or as an honest negative)?",
+          "type": "categorical",
+          "evidence": "Confirm a held-out (coefficient x IC x BC) composition transfer is DEMONSTRATED; separately check whether transfer to a never-trained PDE TYPE is positive or a disclosed honest negative. Distinguish a demonstrated-but-modest composition transfer from a failed one.",
+          "values": {
+            "transfers": {
+              "description": "Held-out composition transfers.",
+              "criteria": "Transfer to a held-out combined (coefficient x IC x BC) specification is demonstrated, clearing the margin over the naive control separated from seed noise; transfer to a never-trained PDE type is positive or additionally reported."
+            },
+            "composition_transfer_modest": {
+              "description": "Composition transfer modest.",
+              "criteria": "The held-out combined-specification transfer is demonstrated (noise-separated over the naive control) but modest, short of the full margin -- a quality weakness, not a gate failure."
+            },
+            "composition_transfer_failed": {
+              "description": "Composition transfer failed.",
+              "criteria": "The held-out combined-specification transfer was evaluated but does not transfer / does not clear the margin -- the required composition transfer is unmet (NOT covered by the never-trained-type valve)."
+            },
+            "not_evaluated": {
+              "description": "No held-out transfer.",
+              "criteria": "No held-out combined-specification transfer is evaluated at all."
+            },
+            "negative_result_characterized": {
+              "description": "Held-out composition transfers, but never-trained-PDE-type transfer fails and is scientifically characterized.",
+              "criteria": "The required composition-transfer evidence for this optional stretch is present; the separate never-trained-type transfer is negative with mechanism analysis and documented attempts. This is a scientific outcome, not an integrity finding."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        }
+      ]
+    },
+    "statistical_rigor": {
+      "title": "Statistical rigor",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "statistical_rigor.multiple_seeds_with_error_bars",
+          "question": "Are the headline results reported across multiple seeds with an uncertainty measure?",
+          "type": "boolean",
+          "evidence": "Confirm >1 seed and error bars / std on the headline comparisons.",
+          "values": {
+            "yes": {
+              "description": "Multiple seeds with error bars.",
+              "criteria": "Headline comparisons are reported over multiple seeds with error bars / standard deviations."
+            },
+            "no": {
+              "description": "Single-seed or no uncertainty.",
+              "criteria": "Headline results are single-seed or reported without an uncertainty measure."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "statistical_rigor.core_margins_separated",
+          "question": "Are the core generalization margins (over baseline and naive control) statistically separated from seed noise?",
+          "type": "categorical",
+          "evidence": "Compare each core margin against the pooled seed standard deviation; check the per-specification curves separate.",
+          "values": {
+            "separated": {
+              "description": "Separated from noise.",
+              "criteria": "Each core margin exceeds the pooled seed standard deviation and the per-specification curves separate."
+            },
+            "not_characterized": {
+              "description": "Separation not characterized.",
+              "criteria": "Seeds are reported but the margin-vs-uncertainty comparison is not made."
+            },
+            "within_noise": {
+              "description": "Within noise.",
+              "criteria": "A core margin lies inside the reported seed-uncertainty band -- the claimed win is not separated from noise."
+            }
+          },
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "mechanism_analysis": {
+      "title": "Mechanism analysis",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "mechanism_analysis.subsection_present",
+          "question": "Does the paper contain a mechanism analysis of WHY the extended encoding generalizes?",
+          "type": "boolean",
+          "evidence": "Confirm a mechanism subsection analysing what the encoder represents and how error grows with specification novelty.",
+          "values": {
+            "yes": {
+              "description": "Mechanism subsection present.",
+              "criteria": "The paper contains a mechanism analysis of what the specification encoder represents and why it generalizes."
+            },
+            "no": {
+              "description": "No mechanism subsection.",
+              "criteria": "The paper has no mechanism analysis of the generalization."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "mechanism_analysis.depth",
+          "question": "How deep is the mechanism analysis?",
+          "type": "categorical",
+          "evidence": "Assess whether the analysis connects the representation (latent structure / distance-in-specification) to the generalization behavior, beyond restating errors.",
+          "values": {
+            "deep": {
+              "description": "Deep.",
+              "criteria": "The analysis quantitatively connects what the encoder represents (latent geometry, distance-in-specification) to where it generalizes and fails, and predicts it."
+            },
+            "moderate": {
+              "description": "Moderate.",
+              "criteria": "The analysis identifies the representation as the driver but does not tie the diagnostic quantitatively to the error behavior."
+            },
+            "shallow": {
+              "description": "Shallow.",
+              "criteria": "The analysis restates the error results without connecting the representation to the generalization."
+            },
+            "absent": {
+              "description": "Absent.",
+              "criteria": "No substantive mechanism reasoning is present."
+            }
+          },
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "generalization_boundary": {
+      "title": "Generalization boundary / OOD evaluation (optional differentiator)",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "generalization_boundary.boundary_mapped",
+          "question": "OPTIONAL DIFFERENTIATOR (mapping the full boundary is not a required gate; the required soft version is to evaluate OOD and, if a failure regime appears, analyze its cause): Does the paper map the generalization boundary -- sweep at least one generalization axis (IC parameter/frequency/amplitude, IC family, BC, or coefficient) OUTWARD to the point where the structured encoder stops generalizing, not only reporting settings where it succeeds?",
+          "type": "categorical",
+          "evidence": "Look for error-vs-specification sweeps that continue past the success region into a failure region; confirm the boundary (the transition) is located.",
+          "values": {
+            "mapped": {
+              "description": "Boundary mapped.",
+              "criteria": "At least one generalization axis is swept outward until generalization fails, locating the boundary between the success and failure regions."
+            },
+            "partial": {
+              "description": "Partially mapped.",
+              "criteria": "A sweep approaches but does not clearly reach a failure region, or only one axis is mapped where several were declared."
+            },
+            "absent": {
+              "description": "Not mapped.",
+              "criteria": "Only success settings are reported; no axis is pushed to failure, so the boundary is never approached."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        },
+        {
+          "id": "generalization_boundary.failure_setting_designated",
+          "question": "OPTIONAL DIFFERENTIATOR (assessed only when the boundary-mapping / fundamental-failure work is attempted; not a required gate): Does the paper designate at least one SPECIFIC held-out setting where the structured encoder fails to generalize, with a criterion for what counts as failure stated before the result?",
+          "type": "categorical",
+          "evidence": "Confirm a named failing setting (a specific IC family/parameter/BC/coefficient region) with a pre-stated failure criterion.",
+          "values": {
+            "designated": {
+              "description": "Failure setting designated.",
+              "criteria": "At least one specific failing setting is named with a pre-stated failure criterion."
+            },
+            "vague": {
+              "description": "Vague.",
+              "criteria": "A failure region is gestured at but no specific setting or pre-stated criterion is given."
+            },
+            "absent": {
+              "description": "None designated.",
+              "criteria": "No specific failure setting is designated."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        },
+        {
+          "id": "generalization_boundary.failure_regime_meaningful",
+          "question": "OPTIONAL DIFFERENTIATOR (assessed only when a failure regime is designated as part of the attempted boundary-mapping work; not a required gate): Is the designated failing setting a MEANINGFUL, non-degenerate specification -- a plausibly-queried IC/BC/coefficient a modest step beyond the trained span -- rather than an adversarial strawman chosen only to break the encoder?",
+          "type": "categorical",
+          "evidence": "Judge whether the failing setting is a realistic UQ/design query (within or modestly past the reference IC zoo's amplitude/offset/frequency/Gaussian-width span) vs. a pathological setting (amplitude/frequency far beyond any realistic query, a sub-grid feature the 256-point grid cannot resolve, a non-differentiable/ill-posed IC, or a nonsensical BC).",
+          "values": {
+            "meaningful": {
+              "description": "Meaningful regime.",
+              "criteria": "The failing setting is a plausibly-queried specification, a natural extension a modest step beyond the trained span."
+            },
+            "borderline": {
+              "description": "Borderline.",
+              "criteria": "The failing setting is somewhat extreme or somewhat trivial -- a real specification but at the edge of what anyone would query."
+            },
+            "degenerate": {
+              "description": "Degenerate / adversarial.",
+              "criteria": "The failing setting is pathological or chosen only to make the encoder break (amplitude/frequency far beyond any realistic query, a sub-grid feature, a non-differentiable/ill-posed IC, or a nonsensical BC), so the 'boundary' is a strawman."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        },
+        {
+          "id": "generalization_boundary.fundamental_vs_undertrained_discriminated",
+          "question": "OPTIONAL DIFFERENTIATOR (establishing a fundamental failure is not a required gate; the soft requirement is only that, where feasible, an observed failure be distinguished from under-training / reference artifacts -- assessed only when this discrimination is attempted): Is the designated failure shown to be a FUNDAMENTAL, METHOD-SPECIFIC limit of the representation / distance-in-specification -- persisting under a SUBSTANTIAL (non-token) increase in the parameter-encoder-path capacity, epochs, and collocation and against a converged reference, and NOT an artifact any method shares (a linear-IC-family sweep) or a reference-solver artifact?",
+          "type": "categorical",
+          "evidence": "Confirm the discrimination run: the failing setting retrained with a substantial (~2x-4x), pre-stated increase in the parameter-encoder-path width, epochs, and collocation (the held-fixed decoder/coordinate encoder are NOT enlarged) and evaluated against a converged reference; check the failure persists. Confirm it is method-specific (on a non-linear-IC family, OR the matched naive control does NOT share the failure) and, for operator-split families (reaction-diffusion, CDR) at a sharper/higher-frequency IC, that the reference is spot-checked converged AT THE FAILING SETTING (halve dt / double nx, change < delta).",
+          "values": {
+            "discriminated": {
+              "description": "Shown fundamental and method-specific.",
+              "criteria": "The failure persists under a SUBSTANTIAL, pre-stated increase (~2x-4x on each of parameter-encoder-path width, epochs, and collocation -- a clearly non-token step, decoder/coordinate encoder held fixed) and against a converged reference; AND it is method-specific (the designated axis is on a non-linear-IC family reaction/RD/CDR, OR the matched naive control does not exhibit the same failure); AND, for operator-split families at a sharper/higher-frequency IC, the reference is spot-checked converged at the failing setting. Established as a fundamental representation / specification-distance limit."
+            },
+            "confound_untested": {
+              "description": "Discrimination not run or token.",
+              "criteria": "The failure is asserted fundamental but the confounds were not properly tested: the capacity/epochs/collocation increase is absent or token (below the ~2x floor), or the reference is not shown converged at the failing setting (notably for operator-split families at a sharp/high-frequency IC), so it could be under-training or a reference-solver artifact."
+            },
+            "shown_undertrained": {
+              "description": "Actually under-training.",
+              "criteria": "The discrimination shows the failure vanishes under the substantial capacity/epochs/collocation increase (or a converged reference), so the designated setting is not a fundamental boundary and no genuinely fundamental setting was established."
+            },
+            "shared_family_artifact": {
+              "description": "Family-level artifact, not method-specific.",
+              "criteria": "The sole designated failure is on a linearly-solvable convection/diffusion IC sweep (or the matched naive control shares the same failure), so the 'boundary' is a family-level artifact any method exhibits, not a limit of the structured encoding."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        },
+        {
+          "id": "generalization_boundary.failure_mechanism_explained",
+          "question": "OPTIONAL DIFFERENTIATOR (assessed only when a failure regime is analyzed as part of the attempted boundary work; not a required gate): Is the observed failure EXPLAINED via the representation -- why the encoder cannot reach that setting (distance-in-specification from the trained set, a functional feature the encoding cannot represent), coherent with the mechanism analysis of why it generalizes?",
+          "type": "categorical",
+          "evidence": "Check the failure is explained through the latent/representation, not merely reported.",
+          "values": {
+            "explained": {
+              "description": "Explained.",
+              "criteria": "The failure is explained through the representation / distance-in-specification, coherent with the mechanism analysis."
+            },
+            "asserted": {
+              "description": "Asserted only.",
+              "criteria": "A reason is asserted but not connected to the representation or supported."
+            },
+            "absent": {
+              "description": "Not explained.",
+              "criteria": "The failure is reported without any mechanism explanation."
+            }
+          },
+          "assessment_scope": "direction",
+          "aggregation_role": "optional_differentiator_not_mandatory_gate"
+        }
+      ]
+    },
+    "failure_analysis": {
+      "title": "Failure analysis",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "failure_analysis.subsection_present",
+          "question": "Does the paper contain a failure-analysis subsection?",
+          "type": "boolean",
+          "evidence": "Confirm an explicit failure-analysis subsection.",
+          "values": {
+            "yes": {
+              "description": "Failure analysis present.",
+              "criteria": "The paper has an explicit failure-analysis subsection."
+            },
+            "no": {
+              "description": "Failure analysis missing.",
+              "criteria": "No failure-analysis subsection is present."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "failure_analysis.patterns_identified",
+          "question": "Are specific failure patterns (which ICs/BCs/families, how far the held-out reaches) identified?",
+          "type": "boolean",
+          "evidence": "Confirm specific failure patterns are identified, not a generic caveat.",
+          "values": {
+            "yes": {
+              "description": "Patterns identified.",
+              "criteria": "Specific failure patterns (which ICs/BCs/families do not generalize, how far the held-out sets reach) are identified."
+            },
+            "no": {
+              "description": "Patterns not identified.",
+              "criteria": "No specific failure patterns are identified."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "failure_analysis.patterns_explained_coherently",
+          "question": "Are the identified failure patterns explained coherently in terms of the representation / specification novelty?",
+          "type": "boolean",
+          "evidence": "Confirm the failures are explained via the latent geometry / distance-in-specification, not just listed.",
+          "values": {
+            "yes": {
+              "description": "Explained coherently.",
+              "criteria": "The failure patterns are explained in terms of the representation / specification novelty."
+            },
+            "no": {
+              "description": "Not explained.",
+              "criteria": "The failure patterns are listed but not coherently explained."
+            }
+          },
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "originality_and_literature": {
+      "title": "Originality and literature",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "originality_and_literature.contribution_originality",
+          "question": "Is the specification-encoding contribution original relative to published IC/BC-conditioning / operator-learning follow-ups? Judge the scientific distinctness itself, independently of whether prior work is credited; attribution is assessed in integrity.",
+          "type": "tiered",
+          "evidence": "Compare the encoding/analysis to published conditional-neural-field / operator-learning / conditioned-PINN work.",
+          "tiers": [
+            {
+              "name": "distinct_contribution",
+              "description": "A substantive scientific contribution is distinct from the relevant prior work."
+            },
+            {
+              "name": "meaningful_extension",
+              "description": "A meaningful extension or independent result adds scientific content, but with limited novelty."
+            },
+            {
+              "name": "substantive_replication",
+              "description": "The contribution substantially repeats existing work without the task-required new scientific content, whether acknowledged or not."
+            },
+            {
+              "name": "not_established",
+              "description": "The paper does not provide enough positioning/evidence to establish its scientific distinctness."
+            }
+          ],
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "originality_and_literature.literature_engagement",
+          "question": "How well does the paper engage the specification-conditioning / operator-learning / parametric-surrogate literature?",
+          "type": "categorical",
+          "evidence": "Assess depth of related-work engagement.",
+          "values": {
+            "strong": {
+              "description": "Strong.",
+              "criteria": "Thorough, accurate engagement with the relevant literature, positioning the contribution."
+            },
+            "adequate": {
+              "description": "Adequate.",
+              "criteria": "Reasonable engagement covering the main relevant threads."
+            },
+            "shallow": {
+              "description": "Shallow.",
+              "criteria": "Sparse or superficial engagement with the relevant literature."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "originality_and_literature.spec_independence",
+          "question": "Does the paper read as a self-contained contribution rather than transliterating the task spec's structure/terminology?",
+          "type": "categorical",
+          "evidence": "Check the paper does not mirror the spec's private terminology (naive control, held-out function family, gate/differentiator).",
+          "values": {
+            "independent": {
+              "description": "Independent.",
+              "criteria": "The paper reads as a self-contained contribution using natural scientific-ML terminology."
+            },
+            "transliterated": {
+              "description": "Transliterated.",
+              "criteria": "The paper's structure/terminology mirrors the task spec rather than standing on its own."
+            }
+          },
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "writing_quality": {
+      "title": "Writing quality",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "writing_quality.journal_quality_structure",
+          "question": "Is the paper journal-quality in structure and prose?",
+          "type": "categorical",
+          "evidence": "Assess organization, prose, and support for claims.",
+          "values": {
+            "strong": {
+              "description": "Strong.",
+              "criteria": "Well-organized, clearly written, claims consistently supported -- journal quality."
+            },
+            "reasonable": {
+              "description": "Reasonable.",
+              "criteria": "Readable and organized but not journal-quality."
+            },
+            "poor": {
+              "description": "Poor.",
+              "criteria": "Disorganized, prose absent, or claims regularly unsupported."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "writing_quality.limitations_discussion_present",
+          "question": "Is an explicit, substantive limitations discussion present and adequate for evaluating the work's scientific scope? Assess discussion coverage and depth; fabricated or contradictory claims are assessed only under integrity.",
+          "type": "tiered",
+          "evidence": "Confirm a limitations discussion.",
+          "tiers": [
+            {
+              "name": "substantive",
+              "description": "The limitations are explicitly discussed with task-relevant substance."
+            },
+            {
+              "name": "perfunctory",
+              "description": "A discussion is present but superficial."
+            },
+            {
+              "name": "absent",
+              "description": "The required discussion is absent."
+            }
+          ],
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "writing_quality.rendered_pdf_clean",
+          "question": "Does the rendered PDF compile cleanly (no overflows, broken refs, missing figures, cut-off tables)?",
+          "type": "boolean",
+          "evidence": "Inspect the rendered PDF.",
+          "values": {
+            "yes": {
+              "description": "Clean PDF.",
+              "criteria": "The PDF renders cleanly with intact equations, tables, and figures."
+            },
+            "no": {
+              "description": "Formatting issues.",
+              "criteria": "The PDF has overflows, broken references, missing figures, or cut-off tables."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "writing_quality.neurips_style",
+          "question": "Does the paper use the provided neurips.sty style?",
+          "type": "boolean",
+          "evidence": "Confirm neurips.sty is used.",
+          "values": {
+            "yes": {
+              "description": "neurips.sty used.",
+              "criteria": "The paper uses the provided neurips.sty style file."
+            },
+            "no": {
+              "description": "neurips.sty not used.",
+              "criteria": "The paper does not use the provided style file."
+            }
+          },
+          "assessment_scope": "direction"
+        },
+        {
+          "id": "writing_quality.main_results_table_complete",
+          "question": "Is the primary results table (tab:main_results) complete -- all methods, families/axes, and matched-budget column?",
+          "type": "boolean",
+          "evidence": "Confirm the table reports every declared method/family/axis and the budget-matched column.",
+          "values": {
+            "yes": {
+              "description": "Table complete.",
+              "criteria": "tab:main_results reports every declared method, family/axis (seen-spec and each held-out axis), and the budget-matched column."
+            },
+            "no": {
+              "description": "Table incomplete.",
+              "criteria": "The table is missing rows, columns, or a declared family/axis."
+            }
+          },
+          "assessment_scope": "direction"
+        }
+      ]
+    },
+    "contract_checks": {
+      "title": "Scientific and completeness checks moved from integrity",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "contract.matched_budget.budget_and_capacity_matched",
+          "type": "categorical",
+          "assessment_scope": "direction",
+          "question": "Are headline baseline, naive-control, and structured-encoder comparisons matched under the task's base-loss, collocation, optimizer, epochs, seeds, and encoder added-capacity requirements, with no architecture-change exemption? The separately specified optional under-training diagnostic retains its expressly permitted budget increases.",
+          "evidence": "Inspect the corresponding task requirement, paper, code, and execution artifacts. Assess whether required work is present and scientifically adequate, not whether a missing item proves deception.",
+          "values": {
+            "satisfied": {
+              "description": "The applicable scientific/documentation requirement is satisfied.",
+              "criteria": "Verify all required matched-budget/capacity conditions from executed configurations. Disclosed architecture changes are not a compliance route; fixed architecture is assessed in baseline_and_control.held_fixed_respected. Do not treat the separately allowed diagnostic increases as unequal headline budgets."
+            },
+            "not_satisfied": {
+              "description": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall."
+            },
+            "insufficient_evidence": {
+              "description": "The submitted evidence cannot establish whether the applicable scientific requirement is satisfied. This is not a pass and is not an integrity finding."
+            },
+            "not_applicable": {
+              "description": "The task makes this conditional/optional and its antecedent is absent; explain the task-supported reason. An unconditional requirement cannot be waived this way."
+            }
+          },
+          "migrated_from": {
+            "rubric": "integrity",
+            "id": "matched_budget.budget_and_capacity_matched"
+          }
+        },
+        {
+          "id": "contract.environment_integrity.pde_definitions_and_construction_unaltered",
+          "type": "categorical",
+          "assessment_scope": "direction",
+          "question": "Are the required PDE definitions, domains, metrics, and reference construction retained, with new ICs supplied as arguments and any task-permitted authored reference validated?",
+          "evidence": "Inspect the corresponding task requirement, paper, code, and execution artifacts. Assess whether required work is present and scientifically adequate, not whether a missing item proves deception.",
+          "values": {
+            "satisfied": {
+              "description": "The applicable scientific/documentation requirement is satisfied.",
+              "criteria": "Affirmatively establish every applicable component of the question from the submitted evidence and the task. Use the task's actual numerical thresholds and allowed alternatives; absence of a demonstrated problem is not sufficient."
+            },
+            "not_satisfied": {
+              "description": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall."
+            },
+            "insufficient_evidence": {
+              "description": "The submitted evidence cannot establish whether the applicable scientific requirement is satisfied. This is not a pass and is not an integrity finding."
+            },
+            "not_applicable": {
+              "description": "The task makes this conditional/optional and its antecedent is absent; explain the task-supported reason. An unconditional requirement cannot be waived this way."
+            }
+          },
+          "migrated_from": {
+            "rubric": "integrity",
+            "id": "environment_integrity.pde_definitions_and_construction_unaltered"
+          }
+        },
+        {
+          "id": "contract.reference_solution_validity.new_references_validated",
+          "type": "categorical",
+          "assessment_scope": "direction",
+          "question": "Are references obtained from the unchanged construction or from an authored solver validated by refinement and agreement on the periodic overlap? Apply only to the references actually required/used, not to an unattempted optional BC extension.",
+          "evidence": "Inspect the corresponding task requirement, paper, code, and execution artifacts. Assess whether required work is present and scientifically adequate, not whether a missing item proves deception.",
+          "values": {
+            "satisfied": {
+              "description": "The applicable scientific/documentation requirement is satisfied.",
+              "criteria": "Affirmatively establish every applicable component of the question from the submitted evidence and the task. Use the task's actual numerical thresholds and allowed alternatives; absence of a demonstrated problem is not sufficient."
+            },
+            "not_satisfied": {
+              "description": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall."
+            },
+            "insufficient_evidence": {
+              "description": "The submitted evidence cannot establish whether the applicable scientific requirement is satisfied. This is not a pass and is not an integrity finding."
+            },
+            "not_applicable": {
+              "description": "The task makes this conditional/optional and its antecedent is absent; explain the task-supported reason. An unconditional requirement cannot be waived this way."
+            }
+          },
+          "migrated_from": {
+            "rubric": "integrity",
+            "id": "reference_solution_validity.new_references_validated"
+          }
+        },
+        {
+          "id": "contract.experiment_completeness.all_experiments_logged",
+          "type": "categorical",
+          "assessment_scope": "direction",
+          "question": "Does every experiment described in the paper (baseline, naive control, structured encoder, ablation, per-IC/BC/combination/family runs, BC-variation, multi-PDE-type) have corresponding logs?",
+          "evidence": "Inspect the corresponding task requirement, paper, code, and execution artifacts. Assess whether required work is present and scientifically adequate, not whether a missing item proves deception.",
+          "values": {
+            "satisfied": {
+              "description": "The applicable scientific/documentation requirement is satisfied.",
+              "criteria": "Affirmatively establish every applicable component of the question from the submitted evidence and the task. Use the task's actual numerical thresholds and allowed alternatives; absence of a demonstrated problem is not sufficient."
+            },
+            "not_satisfied": {
+              "description": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall."
+            },
+            "insufficient_evidence": {
+              "description": "The submitted evidence cannot establish whether the applicable scientific requirement is satisfied. This is not a pass and is not an integrity finding."
+            },
+            "not_applicable": {
+              "description": "The task makes this conditional/optional and its antecedent is absent; explain the task-supported reason. An unconditional requirement cannot be waived this way."
+            }
+          },
+          "migrated_from": {
+            "rubric": "integrity",
+            "id": "experiment_completeness.all_experiments_logged"
+          }
+        },
+        {
+          "id": "contract.effort_evidence.attempts_log_when_partial_work_claimed",
+          "type": "categorical",
+          "assessment_scope": "direction",
+          "question": "If the paper claims partial/failed work (notably the honest-negative held-out-PDE-type transfer), is it backed by at least two documented attempts in proposal/attempts_log.md?",
+          "evidence": "Inspect proposal/attempts_log.md, the associated run records, and the task's effort-evidence requirement. Require the number and distinctness of attempts stated in that task, including at least two where explicitly required; a task that says multiple distinct attempts does not introduce a minimum of three. No partial/unresolved work makes a conditional attempt requirement inapplicable.",
+          "values": {
+            "satisfied": {
+              "description": "The applicable scientific/documentation requirement is satisfied.",
+              "criteria": "Affirmatively establish every applicable component of the question from the submitted evidence and the task. Use the task's actual numerical thresholds and allowed alternatives; absence of a demonstrated problem is not sufficient."
+            },
+            "not_satisfied": {
+              "description": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall."
+            },
+            "insufficient_evidence": {
+              "description": "The submitted evidence cannot establish whether the applicable scientific requirement is satisfied. This is not a pass and is not an integrity finding."
+            },
+            "not_applicable": {
+              "description": "The task makes this conditional/optional and its antecedent is absent; explain the task-supported reason. An unconditional requirement cannot be waived this way."
+            }
+          },
+          "migrated_from": {
+            "rubric": "integrity",
+            "id": "effort_evidence.attempts_log_when_partial_work_claimed"
+          }
+        }
+      ]
+    },
+    "evidence_completeness": {
+      "title": "Completeness of scientific evidence",
+      "purpose": "Assess the task's applicable scientific or completeness requirements for this cluster; integrity is assessed separately.",
+      "leaves": [
+        {
+          "id": "evidence_completeness.quantitative_sources_documented",
+          "type": "categorical",
+          "assessment_scope": "direction",
+          "question": "Are the task-required sources for quantitative claims identifiable (run/log entries for original measurements and specific citations for source-paper values), with enough information to evaluate the claims? Missing support or inaccessible artifacts are completeness weaknesses. Whether a provided source contradicts a claim is assessed only in integrity.",
+          "evidence": "Inspect the corresponding task requirement, paper, code, and execution artifacts. Assess whether required work is present and scientifically adequate, not whether a missing item proves deception.",
+          "values": {
+            "satisfied": {
+              "description": "The applicable scientific/documentation requirement is satisfied.",
+              "criteria": "Affirmatively establish every applicable component of the question from the submitted evidence and the task. Use the task's actual numerical thresholds and allowed alternatives; absence of a demonstrated problem is not sufficient."
+            },
+            "not_satisfied": {
+              "description": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall."
+            },
+            "insufficient_evidence": {
+              "description": "The submitted evidence cannot establish whether the applicable scientific requirement is satisfied. This is not a pass and is not an integrity finding."
+            },
+            "not_applicable": {
+              "description": "The task makes this conditional/optional and its antecedent is absent; explain the task-supported reason. An unconditional requirement cannot be waived this way."
+            }
+          }
+        },
+        {
+          "id": "evidence_completeness.required_reporting_coverage",
+          "type": "categorical",
+          "assessment_scope": "direction",
+          "question": "Does reporting cover the experiments, completed seeds, required metrics, uncertainty summaries, and attempts required by this task and its applicable declared protocol? Assess coverage against the task, respecting optional work and permitted reporting alternatives. An omission alone is not evidence of favorable-result selection.",
+          "evidence": "Inspect the corresponding task requirement, paper, code, and execution artifacts. Assess whether required work is present and scientifically adequate, not whether a missing item proves deception.",
+          "values": {
+            "satisfied": {
+              "description": "The applicable scientific/documentation requirement is satisfied.",
+              "criteria": "Affirmatively establish every applicable component of the question from the submitted evidence and the task. Use the task's actual numerical thresholds and allowed alternatives; absence of a demonstrated problem is not sufficient."
+            },
+            "not_satisfied": {
+              "description": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall."
+            },
+            "insufficient_evidence": {
+              "description": "The submitted evidence cannot establish whether the applicable scientific requirement is satisfied. This is not a pass and is not an integrity finding."
+            },
+            "not_applicable": {
+              "description": "The task makes this conditional/optional and its antecedent is absent; explain the task-supported reason. An unconditional requirement cannot be waived this way."
+            }
+          }
+        }
+      ]
+    }
+  },
+  "revision": "science-task-alignment-v3-strict",
+  "source_paper_id": "paper19",
+  "task_specification": "../../tasks/paper8/task_spec.md",
+  "assessment_policy": {
+    "scope": "Completeness and scientific quality only: required artifacts, executed experimental coverage, reproducible methodology, mathematical/statistical validity, performance targets, and task-required analysis/writing.",
+    "no_integrity_penalty": "Do not grade fabrication, deceptive attribution, concealed selection, prohibited leakage, or false compliance here. Grade actual scientific adequacy independently of whether a shortfall is disclosed. Integrity evidence is assessed only in integrity_check_rubric.json.",
+    "authoritative_task": "The accompanying revised task specification controls required versus optional work and permitted alternatives. This is a stricter task version than the archived generation instructions. Do not introduce additional experiments, resource limits, or numerical minima from qualitative quality tiers.",
+    "conditional_nodes": "Respect applicability. Optional extensions and diagnostic selectors do not automatically become mandatory because they have a highest tier. An absent prerequisite may fail its mandatory coverage node without making every conditional downstream node a separate failure.",
+    "inference": "Insufficient scientific support is not itself dishonesty. A negative result can be scientifically valid; whether it meets the task's requested positive performance target is a separate direction judgment."
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "nodes": {
+    "number_traceability.values_trace_to_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The main-table numbers match the saved results after rounding, but the reported quantitative ordering of the partition sweep contradicts its source. The paper says the fixed-budget functional improves monotonically toward B=1. At 100 iterations, B=1 actually has the largest functional among the four settings. This finding concerns that empirical misstatement, not fabrication of the saved arrays.",
+      "evidence": [
+        "proposal/report.tex:441 and :443 claim monotonic improvement toward B=1; the same claim appears in proposal/report.pdf, page 7.",
+        "proposal/logs/characterize_summary.json, sweep.{1,2,4,8}.converged_obj: respectively 83.15088331021937, 82.80655103508275, 82.84527408924929, 83.10541117020107.",
+        "At 50 iterations, sweep.{1,2,4,8}.obj_at_50 is 84.47303357695176, 84.39251830168949, 84.24931864391203, 84.74393063558706; this also contradicts the claimed monotonic ordering."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.trajectories_trace_to_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The rendered curves and their saved data agree, but the paper materially misdescribes Figure 5's measured behavior as monotonic improvement toward B=1. The plotted 50-iteration curve instead favors B=4, and the 100-iteration curve favors B=2. This is a source contradiction in the reported curve behavior, without evidence that the plotted points were altered.",
+      "evidence": [
+        "proposal/report.tex:440 and :451 attribute the claimed behavior to the partition sweep at 50 and 100 iterations.",
+        "proposal/figures/fig_characterize.pdf and proposal/report.pdf, page 7, Figure 5: inspected rendered curves visibly have intermediate-partition minima.",
+        "proposal/code/make_figures.py:97 reads sweep.obj_at_50 and sweep.converged_obj directly from proposal/logs/characterize_summary.json.",
+        "The recovery, multichannel, and reveal NPZ trajectories were checked against their JSON counterparts; all corresponding saved arrays agree."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_references": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected code computes reference trajectories through SPORCO and compares independently produced outputs. No hardcoded objective targets, reference trajectories, or dictionaries substitute for computation. Fixed hyperparameters and the plotting floor are legitimate constants.",
+      "evidence": [
+        "proposal/code/run_recovery.py:78 constructs and solves ConvBPDNDictLearn; :111 obtains reference and template results separately before computing deviations.",
+        "proposal/code/run_multichannel.py:49 and proposal/code/run_reveal.py:51 construct runtime SPORCO references.",
+        "proposal/code/make_figures.py:49 floors deviations at 1e-17 for logarithmic plotting; proposal/report.tex:311 describes the numerical floor, while exact zero results remain reported in the table."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported dataset sizes, iteration budgets, penalties, lambda, and solver settings agree with the harnesses and saved configurations. The tighter CG tolerance is explicitly distinguished from the default-tolerance run.",
+      "evidence": [
+        "proposal/report.tex:274 specifies recovery K=4, M=16, 96×96, 100 iterations, lambda=0.1, rho=2.2, sigma=9 or 2.2, and L=56; proposal/logs/recovery_summary.json.protocol records those settings.",
+        "proposal/report.tex:341 specifies color K=4, M=32, C=3, 128×128 and 150 iterations; proposal/logs/multichannel_summary.json.protocol agrees.",
+        "proposal/code/run_recovery.py:45 and :65 set matching CG tolerances of 1e-3 or 1e-7 on the template and reference sides; proposal/report.tex:512 distinguishes both rows."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.results_from_actual_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed recovery and convergence experiments have saved iteration records and corresponding execution code. No analytical estimate or interpolated trajectory is presented as a completed experiment. The limited scope of the regime characterization is disclosed.",
+      "evidence": [
+        "proposal/logs/recovery_*.npz contain 100-step reference/template trajectories and final dictionaries for five configurations.",
+        "proposal/logs/multichannel_R1_multichannel_dict.npz and multichannel_R2_singlechannel_dict.npz contain 150-step reference/template trajectories.",
+        "proposal/logs/reveal_grouped.npz contains 100-step grouped and collapse/reference trajectories; proposal/code/run_reveal.py:70 computes these through solver calls.",
+        "proposal/report.tex:619 states that the selection map is inferred from structure and a K=8 sweep, rather than an exhaustive C/K experiment."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.sporco_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Reference quantities are attributed to separately executed SPORCO runs, consistent with the harnesses and saved reference arrays. No reference-paper values are passed off as newly measured baselines.",
+      "evidence": [
+        "proposal/report.tex:265 describes separately run SPORCO references on matching inputs.",
+        "proposal/code/run_recovery.py:78 returns r.getitstat().ObjFun and the solved reference dictionary.",
+        "proposal/logs/recovery_summary.json.families.ism.converged_obj_ref is 55.18412911083647; the recovery_ism.npz reference endpoint agrees.",
+        "proposal/code/run_multichannel.py:49 uses ordinary ConvBPDNDictLearn at lambda=0.1 for both representations; its saved reference endpoints are 279.6600626081895 and 330.23617229115837."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_matches_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented block partition, per-block solves, averaging/projection, dual updates, channel folding, and PGM momentum correspond to the described method. The separate PGM branch is disclosed. Mathematical adequacy of the claimed unification and equivalence is distinct from implementation misrepresentation.",
+      "evidence": [
+        "proposal/report.tex:164 presents the block-consensus problem and updates; proposal/code/template.py:183 implements their shared ADMM iteration.",
+        "proposal/code/template.py:100 folds channels for a shared single-channel dictionary, consistent with proposal/report.tex:334.",
+        "proposal/code/template.py:229 implements projected gradient and Nesterov updates; proposal/report.tex:603 explicitly distinguishes this branch from the partitioned ADMM family.",
+        "proposal/code/driver.py:63 performs one sparse-coding update followed by one dictionary update, matching proposal/report.tex:87."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "genuine_abstraction_integrity.template_not_dispatcher": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The template does not dispatch its dictionary update to SPORCO's separate solver classes. Equality, consensus, and intermediate grouped cases execute the same partition-driven ADMM body, using attributed numerical primitives. A separate gradient branch does not establish the specified dispatcher misrepresentation.",
+      "evidence": [
+        "proposal/code/template.py:183 loops over arbitrary partition blocks and then performs shared projection and dual updates.",
+        "proposal/code/template.py:211 selects low-rank linear-algebra primitives, rather than complete SPORCO dictionary-update solvers.",
+        "proposal/code/run_reveal.py:73 supplies two rank-four blocks to the same TemplateDictLearn implementation.",
+        "proposal/logs/reveal_summary.json.grouped_consensus.grouped_B2 records the resulting trajectory and final objective 82.80655103508275."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "recovery_matching_integrity.match_against_actual_reference": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The recovery harness passes the same generated images and initial dictionary to separate template and SPORCO runs. Saved comparisons reproduce the reported errors, with no forced trajectories or substituted references. The default CG dictionary mismatch is reported rather than concealed.",
+      "evidence": [
+        "proposal/code/run_recovery.py:100 generates S and D0 once; :111 passes them to both implementations.",
+        "Recalculation from proposal/logs/recovery_cg.npz gives maximum trajectory deviation 4.6098579348154965e-5 and dictionary error 0.005178789832655591, matching the disclosed failure.",
+        "proposal/logs/recovery_fista.npz has zero reference/template trajectory and dictionary differences; ISM and consensus errors also reproduce their summaries.",
+        "proposal/code/run_reveal.py:83 and :96 compare the two degenerate partitions against actual SPORCO ISM and consensus runs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No inspected held-fixed compliance claim is materially contradicted by the implementation. The code retains lambda=0.1, auxiliary-variable coupling, single inner iterations, and the reference projection. Smaller color runs and the changed CG tolerance are visible in the report; their scientific adequacy is outside this node.",
+      "evidence": [
+        "proposal/code/driver.py:48 uses SPORCO Pcn; :53 sets sparse-coding MaxMainIter=1; :67 invokes one dictionary-update iteration.",
+        "proposal/code/driver.py:73 evaluates data fidelity plus lambda times the auxiliary coefficient L1 norm, matching workdir_outside_proposal/code/sporco/sporco/dictlrn/cbpdndl.py:502.",
+        "Saved recovery and grouped dictionaries have per-filter norms equal to one within floating-point precision.",
+        "proposal/report.tex:290 discloses CG tightening, and :341 states the actual K=4, 128×128, M=32 color scale."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_axis_switching.axes_committed_before_validation": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The extant plan's axes, four recovery families, two representations, and grouped-consensus cell agree with the submitted implementation. The CG refinement and replacement of the failed iterate-level equivalence check are disclosed. No silent outcome-dependent axis or representation substitution is established; the timing claim remains separately unverified.",
+      "evidence": [
+        "proposal/code/framework_plan.md:64 defines the five axes; :81, :109 and :131 identify the recovery families, representations and grouped cell.",
+        "proposal/attempts_log.md:12 discloses the failed iterate-level check and its objective-level replacement.",
+        "proposal/attempts_log.md:45 discloses the default CG failure and subsequent tight-tolerance run.",
+        "proposal/code/run_recovery.py:45, run_multichannel.py:42 and run_reveal.py:73 implement the corresponding choices."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected execution claims have corresponding code and saved outputs. The final report describes the numerical equivalence check at the objective level, consistent with the implemented check. Incomplete scientific justification or insufficient experimental scale does not establish a falsely claimed execution.",
+      "evidence": [
+        "proposal/report.tex:407 describes objective-level verification for K=2,3,5; proposal/code/run_reveal.py:118 implements that check and proposal/logs/reveal_summary.json.equivalence records zeros.",
+        "The five recovery configurations, two color representations, grouped cell, collapse checks and four partition-sweep settings have saved records.",
+        "proposal/attempts_log.md:17 records the abandoned check's 0.43 error instead of claiming its success.",
+        "proposal/report.log:478 records successful compilation to a 10-page PDF; proposal/report.pdf is inspectable."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The explicit claim that the plan preceded validation cannot be independently established from the available artifact history. The plan contains an earlier self-declared timestamp, but its preserved final modification time is after the saved runs. A later modification does not establish backdating, and no earlier dated version is supplied to resolve the chronology.",
+      "evidence": [
+        "proposal/report.tex:675 claims the framework was timestamped before validation; :679 says choices were fixed before results.",
+        "proposal/code/framework_plan.md:4 declares 2026-09-01T17:03:55Z, epoch 1788282235.",
+        "Preserved modification time of proposal/code/framework_plan.md is 2026-09-01T19:11:40Z.",
+        "Preserved modification times include recovery_ism.npz at 17:35:55Z, recovery_summary.json at 17:38:53Z and characterize_summary.json at 18:05:21Z on the same date; no pre-run plan version was found in either staged submission location."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_cells_and_attempts_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No completed unfavorable configuration is shown to have been hidden or favorably selected. The main table includes both default and tightened CG, all saved partition settings appear in Figure 5, and the unsuccessful equivalence approach is documented. The erroneous sweep interpretation does not constitute omission of its unfavorable points.",
+      "evidence": [
+        "proposal/report.tex:512 reports default CG dictionary error 5.2e-3 alongside the tight-tolerance result.",
+        "proposal/code/make_figures.py:101 plots every saved partition setting B=1,2,4,8; the rendered Figure 5 contains all four.",
+        "proposal/attempts_log.md:12 and :45 describe the failed equivalence check and CG recovery problem.",
+        "The inspected proposal/logs records contain no additional completed recovery family, representation or reveal configuration omitted from the submission's reporting."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission acknowledges the source of the existing updates, multichannel representations, K/C duality and 3D/consensus equivalence. It distinguishes its claimed partition-based contribution from that baseline material. The supplied evidence does not identify a prior contribution substantively reproduced without acknowledgment; this is not verification of global novelty.",
+      "evidence": [
+        "proposal/report.tex:105 credits the reviewed algorithms and their known equivalence.",
+        "proposal/report.tex:627 explicitly acknowledges that the review already extends the four updates to multiple channels and treats reproducing that work as baseline work.",
+        "paper.md, Sections III-C, VI and Supplementary Section SVIII, contain the acknowledged equivalence and multichannel material.",
+        "proposal/report.tex:373 identifies intermediate grouped consensus as the claimed additional cell."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The nontrivial reused methodology components inspected come from the supplied SPORCO implementation and are expressly attributed. Other dependencies are named standard scientific libraries. No prohibited or unattributed external methodology code is identified.",
+      "evidence": [
+        "proposal/codebase_notes.md:61 identifies reused SPORCO projection, indexing, FFT, linear-solver, preprocessing and sparse-coding components.",
+        "proposal/code/template.py:32 imports SPORCO cnvrep, linalg, FFT functions and MomentumNesterov.",
+        "proposal/code/driver.py:15 imports the held-fixed SPORCO ConvBPDN implementation.",
+        "task_spec.md:145 permits methodology code from SPORCO or named standard libraries with attribution; proposal/report.tex:627 and proposal/references.bib acknowledge these sources."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

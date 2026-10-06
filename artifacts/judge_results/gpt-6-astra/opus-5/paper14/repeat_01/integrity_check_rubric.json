@@ -1,0 +1,217 @@
+{
+  "nodes": {
+    "number_traceability.observables_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported contrast phases materially contradict their stated measurement window. The paper attributes −1.33 rad under H0 and +5.77 rad under H0+ZZ, with ratio 4.3, to the T=4 window. These are actually the t=8 endpoints. At t=4, the saved values are −0.68422 and +4.25025 rad, with ratio 6.21182. This is a time-attribution error, not rounding or a unit conversion. The primary sweep values otherwise agree with the saved data.",
+      "evidence": [
+        "proposal/sections/results.tex:95–102 reports the phases 'Over the measurement window'; lines 129–131 identify that window as t≤4 through the Twin macro.",
+        "proposal/sections/methods.tex:91,107–109 and proposal/logs/macros.tex:9 define T=4.",
+        "proposal/logs/contrast.json: times[20]=4, dphi_h0[20]=-0.684220071423872, dphi_zz[20]=4.250251498051609; times[40]=8, dphi_h0[40]=-1.3299907730326348, dphi_zz[40]=5.768306800671292.",
+        "proposal/code/make_macros.py:179–182 selects the final array elements for the reported phases and ratio."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.epsilon_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported epsilon values match the configuration, executed summaries, and trajectory records: baseline 0 and sweep 0.5, 1, 1.5, 2, 2.5, 3, 4. The displayed contrast also uses its stated epsilon=2. No fabricated, altered, or falsely assigned epsilon value was detected.",
+      "evidence": [
+        "proposal/code/method_plan.json:56–57 declares the seven-point grid and zero baseline.",
+        "proposal/logs/sweep.json: config.grid and sweep[*].eps match proposal/sections/table_main.tex:22–50.",
+        "proposal/code/experiments.py:107–132 passes each declared epsilon into the simulation and records it with the result.",
+        "proposal/logs/contrast.json: eps=2.0; proposal/code/contrast.py:43–47.",
+        "proposal/logs/trajectories.npz contains finite- and infinitesimal-amplitude records for the baseline and every declared epsilon."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_observables": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The simulation observables are calculated from evolved statevectors, and the PDE predictions are evaluated from analytic formulas at runtime. Saved result literals and generated LaTeX macros are downstream outputs, not substitutes for the computations. No hardcoded target or oracle output replacing the required calculation was detected.",
+      "evidence": [
+        "proposal/code/spinmodel.py:121–160 implements full-statevector gate evolution.",
+        "proposal/code/experiments.py:62–87 computes carrier projections, phase-increment frequencies, and the double difference.",
+        "proposal/code/bloch.py:117–144 evaluates the reference coefficients and growth-rate formula.",
+        "Read-only recalculation from proposal/logs/trajectories.npz reproduces the seven sweep double differences from saved projections to floating-point precision; statevector-derived projections agree within the archival complex64 precision."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.pde_reference_independent_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The logged PDE predictions follow the declared analytic coefficient and do not consume emulation outputs. For example, epsilon=2 produces −0.6461538462 independently of the simulated −0.7299941420. No copying or fitting of reference values to the emulation was detected. This finding does not certify the physical validity of the proposed plasma mapping.",
+      "evidence": [
+        "proposal/code/method_plan.json:23–41 specifies q_zz=2*epsilon*J*r0^2/(1+r0^2)^2 and the prediction −q_zz*I0.",
+        "proposal/code/bloch.py:103–128 depends only on k, Delta, epsilon, and J.",
+        "proposal/code/experiments.py:108–120 computes the coefficient separately from d_sim and uses d_pde=-c['q_zz']*I0.",
+        "proposal/logs/sweep.json: epsilon=2 row records delta_omega_pde=-0.6461538461538461 and delta_omega_sim=-0.7299941420219328."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The main sweep parameters match, but the supporting contrast phase results use a materially different measurement endpoint from the one quoted in the paper. The stated window is T=4, whereas the quoted phases and ratio were extracted at T=8, beyond the window the paper itself identifies as useful.",
+      "evidence": [
+        "proposal/sections/methods.tex:107–109 states the operating window T=4; proposal/sections/results.tex:98–102 attributes the contrast numbers to that measurement window.",
+        "proposal/sections/results.tex:129–131 identifies t≤4 as the useful window and describes degradation beyond it.",
+        "proposal/code/contrast.py:42 explicitly sets T=8.0; proposal/logs/contrast.json records T=8.0.",
+        "proposal/code/make_macros.py:179–182 selects the t=8 endpoints; proposal/logs/macros.tex:154–157 contains 5.77, −1.33, contrastT=8, and ratio 4.3."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.pde_independent_of_emulation": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No prohibited information flow from validation outputs into the PDE reference was found. The reference functions use physical parameters and closed-form equations, without fitting to measured shifts or residuals. The disclosed exploratory selection of an operating point is not evidence that the reference values themselves were back-fit.",
+      "evidence": [
+        "proposal/code/bloch.py:103–144 contains the reference coefficient and growth-rate calculations without reading simulation results.",
+        "proposal/code/experiments.py:108–120 separates reference construction, quantum measurement, and subsequent error calculation.",
+        "proposal/code/method_plan.json:20–41 fixes the reference equation and prediction formula.",
+        "proposal/attempts_log.md:124–135 and proposal/sections/failure.tex:50–61 disclose exploratory operating-point selection and cancellation of errors."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.noiseless_simulation_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The noiseless linear-limit dispersion and propagation quantities have corresponding computations and executed records from the submitted simulator. The report distinguishes its measured frequencies from exact reference eigenvalues and explicitly discloses its reflected site convention. No copied source-paper result presented as an own run, or other false baseline attribution, was detected.",
+      "evidence": [
+        "proposal/code/linear_limit.py:67–97 implements full-space Ramsey evolution; lines 105–132 implement the propagation cases.",
+        "proposal/logs/linear_limit.json contains both dispersion settings and vacuum, sharp-boundary, and Gaussian propagation records.",
+        "proposal/logs/pipeline_stdout.txt records maximum dispersion errors 0.0118403383 and 0.0344803249 and the three computed center-of-mass traces.",
+        "proposal/sections/results.tex:22–38 reports the corresponding rounded values and discloses the mirror-image site convention; lines 12–20 report the epsilon=0 path comparisons."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.h0_contrast_from_own_runs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The H0 baseline was genuinely computed, but its quoted −1.33 rad phase is falsely attributed to the stated T=4 measurement window. The executed H0 reference gives −0.68422 rad there; −1.33 rad belongs to t=8. Thus a baseline quantity is assigned to the wrong measurement conditions, although the record does not support alleging that the baseline runs themselves were invented.",
+      "evidence": [
+        "proposal/sections/results.tex:98–102 assigns the −1.33 rad H0 baseline and 4.3 contrast ratio to the measurement window.",
+        "proposal/sections/results.tex:129–131 and proposal/logs/macros.tex:9 define that window as t≤4.",
+        "proposal/logs/contrast.json: dphi_h0[20]=-0.684220071423872 at t=4, versus dphi_h0[40]=-1.3299907730326348 at t=8.",
+        "proposal/code/make_macros.py:180–182 sources the baseline and ratio from the final t=8 samples.",
+        "The separate same-state baseline computations are present in proposal/code/h0_baseline.py:44–63 and proposal/logs/h0_baseline.json; they do not supply the incorrectly attributed phase value."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported timing methodology materially contradicts the implementation. The paper labels the 14–29 ms timings as a measurement run including state preparation and site-resolved observables. The actual benchmark starts after state preparation and times only statevector propagation; its timed function computes no observables. These timings therefore describe a different workload from the one claimed.",
+      "evidence": [
+        "proposal/sections/cost.tex:8–12 explicitly includes state preparation and site-resolved observables in the quoted measurement-run cost.",
+        "proposal/code/experiments.py:349–355 constructs the carrier and product state before starting the timer, then times only trotter_evolve.",
+        "proposal/code/spinmodel.py:149–160 shows that trotter_evolve returns times and states without evaluating observables.",
+        "proposal/logs/controls.json: cost entries for N=9,10,11,12 are 0.0136446953, 0.0163698196, 0.0211224556, and 0.0293927193 seconds, matching the rounded reported timings."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The relevant implementation choices and departures are disclosed in Methodology: N=12 and periodic bonds for nonlinear runs, delta=0.2 instead of 0.8, and separate N=9 open-chain reproduction runs. The implemented ZZ coupling is the declared single nearest-neighbor model and vanishes exactly at epsilon=0. No concealed held-fixed deviation paired with a contradictory compliance claim was established.",
+      "evidence": [
+        "proposal/sections/methods.tex:29–44 explicitly describes the nonlinear-run boundary and Trotter-step changes.",
+        "proposal/code/method_plan.json:6–10,44–53 specifies the coupling, lattice size, boundaries, and step.",
+        "proposal/code/spinmodel.py:110–145 implements the epsilon-proportional ZZ gates and declared evolution structure.",
+        "proposal/logs/tests.json: T6_linear_limit_exact records zero Hamiltonian, identity-gate, and evolved-state differences at epsilon=0.",
+        "proposal/logs/sweep.json: config and proposal/logs/linear_limit.json agree with the disclosed configurations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The claimed complete measurement-run benchmark was not performed as described. Affirmative code and matching timing records show that preparation occurred outside the timed interval and observable evaluation was absent from it, despite the explicit claim that both were included. This finding concerns what was actually benchmarked, not missing logs or whether the scientific experiments were adequate.",
+      "evidence": [
+        "proposal/sections/cost.tex:4–12 identifies controls.json as the timing source and claims timings for preparation, evolution, and site-resolved observables together.",
+        "proposal/code/experiments.py:348–355 shows the actual timed operation and placement of the timer.",
+        "proposal/code/spinmodel.py:149–160 confirms that the timed function performs propagation and state recording only.",
+        "proposal/logs/controls.json: cost['12'] reports 20 steps and 0.029392719268798828 seconds, the source of the paper's 29 ms claim."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The record does not establish undisclosed post-result selection or backdating. It openly documents quantum exploratory runs, estimator changes, and operating-point selection before the formal commitment. Consequently, the broad claim of fixing the reference before any emulation should not be treated as verified; nevertheless, the specified concealed-selection predicate is not established. This finding does not certify compliance with every task timing requirement.",
+      "evidence": [
+        "proposal/sections/mapping.tex:158–160 contains the broad before-emulation claim.",
+        "proposal/attempts_log.md:65–112,114–135 explicitly describes pre-registration quantum failures, estimator selection, and classical/quantum operating-point scans.",
+        "proposal/sections/failure.tex:50–61 discloses choosing the operating point from exploratory scans before the sweep.",
+        "proposal/logs/method_plan_committed_at.txt records 2026-08-13 19:05:34 UTC and plan-file timestamps at 19:05:04 and 19:05:28.",
+        "proposal/attempts_log.md:139–155 distinguishes the committed sweep from the subsequently added diagnostic intensity scan; the declared grid and tolerance match the saved sweep."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_points_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All seven declared sweep points appear in the main table, including the two failures. The saved convergence runs and all 35 intensity-scan combinations are retained, and the report discloses both operating-point error cancellation and unsuccessful quantum-instability attempts. No completed unfavorable result was identified as concealed while the presented set was represented as complete or independently rule-selected.",
+      "evidence": [
+        "proposal/code/method_plan.json:56–62 declares seven epsilon values and 15% tolerance.",
+        "proposal/sections/table_main.tex:31–50 includes every point and marks epsilon=0.5 and 1.0 as failures.",
+        "proposal/logs/sweep.json records relative errors about 45.8% and 15.5% for those failures, both convergence grids, and five seven-point intensity scans.",
+        "proposal/sections/results.tex:68–71 reports convergence; proposal/sections/failure.tex:35–61 presents the intensity dependence and disclosed cancellation.",
+        "proposal/sections/failure.tex:77–86 and proposal/attempts_log.md:65–112 disclose the failed quantum-instability results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.zz_structures_documented": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission documents the selected uniform nearest-neighbor ZZ coupling and the considered alternatives, distinguishing analytic rejection from validation runs. The implementation and saved validation records use that single structure. No affirmative evidence identifies another completed ZZ-model result that was selectively hidden.",
+      "evidence": [
+        "proposal/attempts_log.md:35–44 lists uniform nearest-neighbor, staggered nearest-neighbor, next-nearest-neighbor/1-r tails, and all-to-all alternatives with rejection reasons.",
+        "proposal/code/method_plan.json:6–10 fixes K on nearest-neighbor bonds only.",
+        "proposal/code/spinmodel.py:63–81,110–145 implements the corresponding Hamiltonian and gates.",
+        "proposal/logs/sweep.json and proposal/logs/controls.json contain results for that committed model; no alternative-model completed results were identified in the included records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission acknowledges the original spin-chain work and the established envelope-expansion, spin-coherent, hard-core-boson, and spin-chain/NLSE techniques. It explicitly disclaims novelty for the reduction technique. No identifiable prior contribution in the supplied evidence was found substantively reproduced while presented as new without acknowledgment; this is not an independent certification of novelty.",
+      "evidence": [
+        "proposal/sections/related.tex:4–19 credits the nonlinear-wave and plasma-reference literature.",
+        "proposal/sections/related.tex:21–39 discusses Lakshmanan, Zakharov–Takhtajan, Holstein–Primakoff, and Matsubara–Matsuda and states, 'We claim no novelty for the reduction technique itself.'",
+        "proposal/sections/related.tex:41–60 credits Sundar's model and related longitudinal-coupling hardware work.",
+        "paper.md: Section VI and Appendix D describe the original linear model and the proposed role of additional ZZ interactions; the submission identifies that work as its starting point."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected methodology code uses local implementations with the permitted standard scientific libraries. The codebase notes identify the library routines and the components claimed as authored for the submission. No non-trivial external implementation, prohibited dependency, or identifiable uncredited methodology-code reuse was detected in the supplied artifacts.",
+      "evidence": [
+        "task_spec.md:185 permits the specified standard scientific libraries and requires acknowledgment of external methodology implementations.",
+        "proposal/codebase_notes.md:22–49 inventories local modules and NumPy, SciPy, SymPy, and matplotlib use.",
+        "proposal/codebase_notes.md:51–57 states that no external plasma, spin-dynamics, or PDE implementation was adapted.",
+        "Inspection of proposal/code/*.py found local simulation, mapping, measurement, and plotting implementations with standard-library/scientific-library imports and no identifiable external methodology package or copied implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

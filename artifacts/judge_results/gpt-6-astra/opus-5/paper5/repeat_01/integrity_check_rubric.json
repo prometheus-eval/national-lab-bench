@@ -1,0 +1,210 @@
+{
+  "nodes": {
+    "number_traceability.fidelity_values_in_logs": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The reported final fidelities and fidelity differences agree with the saved JSON values after rounding. However, the underlying per-step fidelity arrays for the published trajectories are absent: none of the 52 runs has its referenced companion NPZ file. Final, minimum and mean fidelities cannot establish the traceability of the complete curves. This absence does not establish fabrication.",
+      "evidence": [
+        "proposal/logs/tables.tex:12,21: MFIM h_z=0 fidelities 0.99961 and 0.99966 match final.fidelity=0.99961124171768 in uncon__mfim_hz0.json and 0.9996643655538342 in sweep__mfim_hz0__B__eta0.2.json.",
+        "proposal/logs/runs/uncon__lsm_hz1.6.json and variant__lsm_hz1.6__A.json, final.fidelity: their difference is 0.0003014309344682, consistent with the reported 0.030 percentage-point difference.",
+        "proposal/code/figures.py:50-59,88-107 loads fidelity trajectories from *_series.npz; proposal/sections/appendix.tex:46-55 identifies those files as the per-step sources. No NPZ files are present in the staged proposal."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.cnot_counts_in_logs": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The tabulated CNOT counts trace to the saved records, and arithmetic checks found no inconsistency across 120 circuits and 16,803 recorded prefix counts. Nevertheless, the published CNOT-versus-time curves require the missing time-to-ansatz-size arrays. Their temporal traceability cannot be assessed fully from the saved prefix counts alone; no count fabrication is established.",
+      "evidence": [
+        "proposal/logs/tables.tex:12-22,38-48 agrees with the corresponding circuits.*.n_cx records in proposal/logs/runs/.",
+        "All 120 saved circuits and all 16,803 circuits.*.curve entries satisfy N_CX=2*N_weight2+3*N_SWAP when checked against their saved operator_sequence prefixes.",
+        "proposal/code/figures.py:65-71 maps prefix counts onto series['ntheta'] and series['t']; lines 120-142 use this mapping for the published curves. The referenced *_series.npz files are absent."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.overhead_multipliers_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported multipliers follow from the logged counts and depths using the corresponding unconstrained run as denominator. Independent arithmetic reproduces the per-cell ratios and aggregate means, including the disclosed minimum used for the oracle baseline. No unexplained rescaling or contradictory multiplier was found.",
+      "evidence": [
+        "proposal/logs/tables.tex:54-87 defines and reports the ratios; the unconstrained denominators are CNOT counts 136, 230, 116 and 122, with depths 126, 202, 192 and 189.",
+        "proposal/logs/summary.json, meta.overhead_agg.B: independently calculated mean CNOT multipliers are 1.8699164912, 1.8140021690 and 1.2424773631 for naive, oracle-placed naive and CRAG, respectively, matching 1.87, 1.81 and 1.24.",
+        "proposal/code/aggregate.py:64-70 applies the disclosed minimum between a-priori and oracle placements. proposal/logs/timing_controlled.json also supports the reported classical-time multiplier: mean_ratio=1.2517236811 rounds to 1.25."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_ground_truth": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected implementation computes exact reference evolution and overlaps rather than substituting hardcoded scientific outputs. The numerical reference results embedded in the reporting code are explicitly identified as published comparison values. Initial-state constants, gate costs and accuracy thresholds do not substitute for the reported computations.",
+      "evidence": [
+        "proposal/code/benchmarks.py:73-135 computes MFIM evolution by eigendecomposition and LSM evolution by midpoint/Taylor propagation; lines 141-146 compute fidelity and energy from states.",
+        "proposal/code/driver.py:94-128 obtains exact states for observable logging and advances the variational state through one_step.",
+        "proposal/code/macros.py:66-72 labels PUB={mfim_hz0:134,mfim_hz0.5:210} as published values; proposal/sections/results.tex:16-23 explicitly distinguishes them from the submission's 136 and 230. The cited values appear in paper.md:191."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper specifies an oracle-placement reranking shortlist of 128, but all 12 oracle circuit records underlying the comparisons specify 64. This is a twofold difference in the baseline search budget, not a rounding difference. Taking the better of the stored oracle and a-priori circuits does not perform the additional rerankings.",
+      "evidence": [
+        "proposal/report.pdf, §2.6; proposal/sections/method.tex:250-259 says the best 128 placements, together with the a-priori placement, are rerouted under every router configuration.",
+        "All four proposal/logs/runs/uncon__*.json files, circuits.naive_oracle_{A,B,C}.oracle_info: scanned=40320 and shortlist=64. For example, uncon__mfim_hz0.json records the Topology-B result as n_cx=289, depth=210, shortlist=64.",
+        "proposal/code/embeddings.py:64-93 now defaults to shortlist=128 and records that argument. proposal/attempts_log.md:182-198 says the unconstrained results remain from the old code; proposal/code/aggregate.py:64-70 only selects the better existing circuit."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.unconstrained_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The unconstrained quantities are supported by four dedicated reference-run records and agree with the reported baseline rows. The submission explicitly distinguishes its own counts from the original paper's counts. No fabricated or falsely attributed baseline quantity was identified.",
+      "evidence": [
+        "proposal/logs/runs/uncon__mfim_hz0.json, uncon__mfim_hz0.5.json, uncon__lsm_hz-0.7.json and uncon__lsm_hz1.6.json record 2775, 1971, 5207 and 7101 steps, respectively, reaching times 3, 3, 6 and 6.",
+        "Their circuits.all_to_all.n_cx values are 136, 230, 116 and 122, matching proposal/logs/tables.tex:12,38.",
+        "proposal/code/experiments.py:116-118 requests plain=True; proposal/code/driver.py:45-50 selects AuthorsAnsatz for that path. proposal/sections/results.tex:12-30 distinguishes these results from the cited reference results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.naive_baseline_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The naive baseline is produced by post-processing each saved unconstrained trajectory, and its reported quantities match those records. The side-by-side operation records support the stated SWAP-insertion transformation. No fabricated quantity or falsely attributed independent simulation was found.",
+      "evidence": [
+        "proposal/code/experiments.py:203-223 compiles the unconstrained result's operator sequence and parameters into the naive and oracle-placement circuits.",
+        "proposal/logs/naive_routing_side_by_side.txt contains all 12 benchmark/topology comparisons. Summing its recorded two-qubit operations reproduces every corresponding naive CNOT total.",
+        "proposal/logs/runs/uncon__*.json, circuits.naive_B: MFIM counts are 307 and 515, and LSM counts are 173 and 182, matching proposal/logs/tables.tex:14,40."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "honest_overhead_reporting.swaps_counted_in_cnot_total": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "SWAPs are expanded into three CNOT primitives, and the reported totals count those primitives. Every saved final circuit and prefix count satisfies the stated decomposition identity. No executed routing cost is omitted from these totals.",
+      "evidence": [
+        "proposal/code/compiler.py:55-66 emits three CX gates per SWAP and counts CX entries in the complete gate list; lines 119-139 emit two CX gates per weight-two Pauli rotation.",
+        "proposal/logs/runs/sweep__mfim_hz0__B__eta0.2.json, circuits.variant_B: 51 two-qubit rotations and 28 SWAPs give 2*51+3*28=186 CNOTs.",
+        "proposal/logs/runs/uncon__mfim_hz0.json, circuits.naive_B: 68 rotations and 57 SWAPs give 307 CNOTs. The same identity holds across all 120 circuits and 16,803 saved prefix entries."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "honest_overhead_reporting.depth_includes_routing": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The depth calculation schedules the full primitive gate list, including decomposed SWAPs and one-qubit basis changes. The report uses this full depth rather than the separately logged CNOT-only depth. No concealed routing or decomposition depth was identified.",
+      "evidence": [
+        "proposal/code/compiler.py:55-77 expands SWAPs and advances the scheduling frontier for every one-qubit gate and CX gate; lines 79-86 separately define CNOT-only depth.",
+        "proposal/code/experiments.py:190-199 stores both circ.depth() and circ.cx_depth(); proposal/sections/setup.tex:139-153 states the same distinction.",
+        "proposal/logs/runs/sweep__mfim_hz0__B__eta0.2.json records depth=183 and cx_depth=113 for variant_B; proposal/logs/tables.tex:21 reports 183. The naive MFIM h_z=0 Topology-B row reports its routed depth of 264."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The methodology describes a 128-candidate oracle reranking procedure, while the results were produced using a 64-candidate procedure. Although the final source now implements the larger default, the attempts record confirms that the earlier baseline executions were retained. The aggregation adjustment is not equivalent to executing the described larger search.",
+      "evidence": [
+        "proposal/sections/method.tex:250-259 describes rerouting the best 128 placements under every router configuration.",
+        "proposal/logs/runs/uncon__*.json, all circuits.naive_oracle_*.oracle_info.shortlist fields, record 64.",
+        "proposal/attempts_log.md:182-198 acknowledges that the four unconstrained runs completed under the old code. proposal/code/aggregate.py:64-70 merely takes the better stored result, while proposal/code/embeddings.py:64-93 contains the revised 128-candidate implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.topology_aware_logic_matches": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The CRAG ansatz-growth rule and its routing logic match the described implementation: McLachlan feasibility, preference for sufficient candidates, an eta tolerance band otherwise, and lexicographic selection by hardware cost and conditioning. The online placement updates and shared post-hoc router are implemented as described. No contradiction in this variant-specific logic was found.",
+      "evidence": [
+        "proposal/sections/method.tex, cost-oracle and acceptance-rule equations and Algorithm 1; proposal/code/topo_ansatz.py:232-267 implements the feasible set, sufficient set, tolerance band and lexicographic key.",
+        "proposal/code/topo_ansatz.py:91-128 configures the online router, assigns zero cost to weight-one operators, and updates the placement on each commitment.",
+        "proposal/code/compiler.py, RouterState.gate_cost, RouterState.apply, ROUTER_CONFIGS and best_route implement the distance-based cost, shortest-path routing and shared six-configuration search. proposal/logs/compliance_audit_{A,B,C}.json records zero edge violations across 12, 44 and 12 constrained circuits."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper claims that the oracle baseline was obtained by rerouting the best 128 placements under every router configuration. Affirmative execution records specify a shortlist of 64, and the attempts log explains that the old executions were retained with a reporting-time minimum. Thus the claimed 128-candidate reranking for the reported comparisons is contradicted by the artifacts; this finding does not rely on missing logs.",
+      "evidence": [
+        "proposal/report.pdf, §2.6; proposal/sections/method.tex:253-255 explicitly describes rerouting the best 128 placements.",
+        "proposal/logs/runs/uncon__mfim_hz0.json, circuits.naive_oracle_B.oracle_info: scanned=40320, shortlist=64, n_cx=289; the other 11 oracle circuit records likewise specify shortlist=64.",
+        "proposal/attempts_log.md:194-198 states that the four unconstrained runs had completed under the old code and their stored oracle records remain. proposal/code/aggregate.py:64-70 performs only a minimum over existing circuits."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The paper explicitly calls the selection rule fixed in advance and pre-registered. The final picker follows the stated rule, but the attempts log acknowledges that the tuning set was narrowed partway through the work. The available records do not establish that revision's timing relative to observed results. They therefore neither substantiate the temporal claim nor establish undisclosed post-result selection or backdating.",
+      "evidence": [
+        "proposal/sections/method.tex:313-326 specifies a rule fixed in advance using MFIM h_z=0 on Topology B; proposal/sections/results.tex:69-71 calls it pre-registered.",
+        "proposal/attempts_log.md:137-154 says the tuning configuration was narrowed partway through the work for computational reasons, without establishing when this occurred relative to result inspection.",
+        "proposal/code/aggregate.py:117-160 and proposal/logs/eta_star.json implement the final MFIM-only rule. proposal/code/run_rest.sh:8-23 places selection before priority jobs, but these final artifacts provide no dated version history establishing when the rule itself was fixed."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "variational_simulation_integrity.ansatz_growth_uses_classical_signals": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected growth path uses variational-state derivatives, Hamiltonian quantities, McLachlan improvement, conditioning and hardware cost. Exact-state overlaps are logged separately and are not supplied to the growth selector. No prohibited exact-state information flow into ansatz growth was found.",
+      "evidence": [
+        "proposal/code/topo_ansatz.py:139-185 constructs candidate McLachlan quantities from the current variational state and Hamiltonian; lines 232-267 select using those quantities and routing cost.",
+        "proposal/code/driver.py:105-121 computes exact-state fidelity and observables for logging; lines 125-131 independently advance the variational state through anz.one_step(h, dtmax_eff, dthmax).",
+        "proposal/code/driver.py:73-90 uses the specified product state or LSM ground state for initialization. proposal/code/benchmarks.py:73-135 supplies the separate exact-evolution validator."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission acknowledges the original AVQDS method and the routing primitives it reuses, and discusses closely related hardware-aware adaptive methods. The claimed contribution is confined to its acceptance-set selection rule. The supplied evidence does not identify a substantively reproduced prior contribution presented without acknowledgment; this is not a determination of global scientific novelty.",
+      "evidence": [
+        "paper.md describes the original McLachlan-based AVQDS method; proposal/sections/method.tex:297-311 and 331-341 attribute the reference implementation and explicitly disclaim a new variational principle or router.",
+        "proposal/sections/intro.tex:138-171 discusses SABRE, other routing/compilation methods, ADAPT-VQE and AVQDS(T).",
+        "proposal/sections/intro.tex:173-198 explicitly identifies Co-ADAPT-VQE and connectivity-restricted adaptive pools as close prior work and explains the claimed distinction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.variant_configurations_all_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The completed saved configurations are accounted for by the main results, full eta sweep, component ablations and placement-sensitivity reporting. Unfavorable outcomes are explicitly reported, including cases where distance awareness increases CNOT count and where the frozen eta is inferior to another sweep value. No completed unfavorable configuration was identified as selectively hidden.",
+      "evidence": [
+        "proposal/logs/runs/ contains 4 unconstrained runs, 24 eta-sweep runs, 8 additional A/C headline runs, 8 component-ablation runs and 8 placement-sensitivity runs; proposal/logs/tables.tex and tables_appendix.tex report these groups.",
+        "proposal/sections/analysis.tex:89-102 reports that the cost-blind variant beats the full method on two benchmarks. The saved MFIM h_z=0.5 counts are 356 versus 385, and LSM h_z=1.6 counts are 102 versus 108.",
+        "proposal/logs/tables_appendix.tex, Table 4, includes all six eta values on all four benchmarks, including MFIM h_z=0.5 at eta=0.5 with 334 CNOTs versus 385 at the selected eta=0.2.",
+        "proposal/logs/stage1_summary.json records the failed LSM h_z=1.6, eta=0.5 attempt; proposal/logs/retry_eta05.log and proposal/attempts_log.md:301-320 document its retry rather than concealing the failure."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.embedding_choices_documented": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The headline placement rule is deterministic and based on the Hamiltonian interaction graph, and the same placement is supplied to the naive baseline and variant. All eight completed placement-sensitivity runs are represented in the reported spreads, including the unfavorable placement that loses to the oracle baseline. No outcome-dependent hiding or selection of a weaker naive embedding was identified.",
+      "evidence": [
+        "proposal/sections/method.tex:233-248 and proposal/code/embeddings.py:31-42 specify minimization of total bond distance, nonlocal-bond count and then lexicographic placement order.",
+        "proposal/code/experiments.py:93-101 selects four placements by a deterministic stride through each optimal tier; proposal/logs/runs/embsens__*.json records all eight executed choices.",
+        "proposal/logs/tables_appendix.tex, Table 6, reports the placement spreads; proposal/sections/analysis.tex:239-269 explicitly acknowledges that the headline placements are favorable and that the worst LSM h_z=-0.7 placement loses.",
+        "The four LSM h_z=-0.7 placement records contain CNOT counts 121, 177, 126 and 121. The reported maximum 177/116=1.53 exceeds the disclosed oracle-baseline ratio 173/116=1.49."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

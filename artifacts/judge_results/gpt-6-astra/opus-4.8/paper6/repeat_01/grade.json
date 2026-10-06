@@ -1,0 +1,2130 @@
+{
+ "model": "opus-4.8",
+ "paper": 6,
+ "repeat": 1,
+ "rubric_revision": "science-task-alignment-v2-scope",
+ "grading_policy_version": "science-gates-v2-g1-unresolved-fail",
+ "context": {
+  "incomplete_work_in_appendix": true,
+  "partial_work_claimed": true
+ },
+ "gates": {
+  "G1": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "rh.code_paper_alignment.scheme",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code paper alignment: scheme, is there affirmative evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence?",
+     "reason": "Identify evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The stated thermostat equation gives the same noise-variance prescription for the raw A and E Fourier components. The implementation instead divides the A-component variance by omega_k squared. This changes the implemented stochastic law materially; the report does not define a rescaled A variable that would make the two prescriptions equivalent.",
+     "evidence": [
+      "proposal/report.tex:551–563, Eq. (7), specifies <|xi_k|^2> = Acal*omega_k/(exp(omega_k/T)-1) for X_k in {A_y,k, E_y,k}.",
+      "proposal/code/run_thermalization.py:55–73 specifies varA=Ebe/wk**2 and varE=Ebe, then applies those different variances to the raw Fourier coefficients.",
+      "proposal/logs/therm_fix_dx0.08.npz, wk[32]=9.85407811413063: the implemented A/E noise-variance ratio is 0.0102983583, rather than the common variance stated in Eq. (7)."
+     ]
+    },
+    {
+     "node_id": "rh.code_paper_alignment.gauge",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code paper alignment: gauge, is there affirmative evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence?",
+     "reason": "Identify evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The claimed exact Appendix-B implementation includes a Lorenz-gauge option, but that option retains temporal-gauge formulas for the electric field and longitudinal gauge-field update. The required spatial A0-gradient terms are absent. This finding concerns the claimed Lorenz capability; the reported physics runs use temporal gauge.",
+     "evidence": [
+      "proposal/report.tex:121–122 claims the temporal-gauge scheme, with a Lorenz-gauge option, is implemented 'exactly as in their Appendix B'.",
+      "paper.md:72 defines E_x=Delta_t A_x-Delta_x A0; paper.md:315–318 includes the A0-gradient contribution in the spatial-link update.",
+      "proposal/code/lattice.py:165–188 updates A0 in Lorenz mode but advances Ax without an A0-gradient term; lines 201–206 compute E solely from time differences in every gauge."
+     ]
+    },
+    {
+     "node_id": "rh.code_paper_alignment.integration",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code paper alignment: integration, is there affirmative evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence?",
+     "reason": "Identify evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The claimed Appendix-B Lorenz time advance differs from the submitted recurrence. The routine advances from A0_prev and then shifts the stored levels, so subsequent calls omit the immediately preceding accumulated update. Appendix B requires advancing from the most recent half-time level. The temporal-gauge leapfrog and reported time steps otherwise match the implementation.",
+     "evidence": [
+      "proposal/report.tex:121–122 claims exact Appendix-B implementation, including the Lorenz option.",
+      "paper.md:298–300 gives A0_new=A0_previous_half_step+C_x*div(Ax).",
+      "proposal/code/lattice.py:156–161 computes A0_new=self.A0_prev+C_x*div, then assigns self.A0_prev=self.A0 and self.A0=A0_new. Starting with both temporal levels zero, two calls produce A0=d2 rather than d1+d2.",
+      "proposal/code/lattice.py:163–195 contains no intervening correction to this recurrence."
+     ]
+    },
+    {
+     "node_id": "rh.number_traceability.main_results_table_cells_in_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: main results table cells in logs, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The sustained-field row reports the non-compact current as monotonic, but its underlying saved series has substantial downward excursions. Absence of a sign reversal is supported; the stronger, unqualified monotonicity claim is not. The other principal scalar cells generally match their sources after rounding and aggregation.",
+     "evidence": [
+      "proposal/report.tex:305–311, Table 1, gives the fix outcome as 'non-compact: monotonic'.",
+      "proposal/logs/bloch_demo.npz: J_noncompact[130870]=722.2957914718337 at t=654.36, followed by 687.6257162550179 at t=654.365, a 4.80% decrease.",
+      "Read-only inspection of the full saved J_noncompact series finds 64921 decreasing adjacent intervals, while all current values remain positive.",
+      "proposal/code/run_bloch.py:52–59 and 106–113 tests sign reversal, not monotonicity."
+     ]
+    },
+    {
+     "node_id": "rh.number_traceability.outcome_column_claims_in_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: outcome column claims in logs, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The outcome column turns a supported no-sign-reversal result into a materially stronger monotonic-current claim. The stored current remains positive but repeatedly decreases by finite amounts; no averaging transformation is specified for the claimed outcome.",
+     "evidence": [
+      "proposal/report.tex:309–310 states 'fix non-compact: monotonic'.",
+      "proposal/logs/bloch_summary.json:2–10 reports noncompact_reverses=false, which does not establish monotonicity.",
+      "proposal/logs/bloch_demo.npz, indices 130870–130871, records a decrease from 722.2957915 to 687.6257163 over one saved time step.",
+      "proposal/code/run_bloch.py:44–49 saves the direct evolved current without smoothing."
+     ]
+    },
+    {
+     "node_id": "rh.number_traceability.figures_regenerable_from_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: figures regenerable from logs, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The plotted datasets are traceable and the submitted PDFs were inspectable, but Figure 7's caption materially misdescribes its green curve as monotonic. Its source is the unsmoothed, non-monotonic current series. This finding concerns the explicit curve claim, not fabricated plotting data or inability to regenerate the figures.",
+     "evidence": [
+      "proposal/report.tex:513–521 and proposal/report.pdf, page 9, Figure 7, explicitly call the non-compact green curve monotonic.",
+      "proposal/code/figures.py:172–179 plots J_noncompact directly from bloch_demo.npz.",
+      "proposal/logs/bloch_demo.npz: the current falls 4.80% between t=654.36 and 654.365 and has 64921 decreasing adjacent intervals.",
+      "The eight figure PDFs were inspected; figures.py identifies saved-array or explicitly analytic sources for their plotted curves."
+     ]
+    },
+    {
+     "node_id": "rh.number_traceability.intext_quantitative_claims_in_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: intext quantitative claims in logs, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The prose explicitly describes the simulated non-compact current as monotonic, contradicting its saved time series. The narrower statement that it never changes sign is supported. Other checked numerical claims, including energy ratios, spectral centroids and dispersion statistics, reproduce the saved values.",
+     "evidence": [
+      "proposal/report.tex:494–497 says the current is 'now monotonic and never reverses', referring to the simulated green curve.",
+      "proposal/logs/bloch_demo.npz, J_noncompact[130870:130872], decreases from 722.2957914718337 to 687.6257162550179.",
+      "proposal/logs/laser_a16.npz gives Uphi_final/Uphi_initial=7.7309046269, supporting the reported factor 7.7.",
+      "Read-only calculations from therm_*.npz reproduce the reported centroids and Bose–Einstein error statistics; dispersion and pair-plasma NPZ peak statistics reproduce their JSON summaries."
+     ]
+    }
+   ],
+   "unresolved_reasons": [
+    {
+     "node_id": "integrity.precommitment_claims",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "insufficient_evidence",
+     "observed_value": "insufficient_evidence",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "Is there affirmative evidence that a method, threshold, split, hypothesis, or analysis is explicitly claimed as fixed before results but dated versions or trajectory evidence establish undisclosed post-result selection or backdating?",
+     "reason": "Essential inspection evidence is absent or inconclusive. Record what is missing without labeling it fabrication or declaring the submission verified clean.",
+     "judge_reason": "The report explicitly calls a signature preregistered, but the staged record contains no independently dated pre-result specification or version history establishing when it was fixed. Final-document section order and file modification times cannot establish either genuine preregistration or undisclosed backdating.",
+     "evidence": [
+      "proposal/report.tex:157–161 says predictions precede results and tolerances are fixed once.",
+      "proposal/report.tex:537–543 calls the thermalization signature 'the signature we pre-registered'.",
+      "proposal/attempts_log.md:3–5 supplies a common working-session date, but no chronology fixing hypotheses or thresholds before results.",
+      "The staged submission contains the final report, scripts and result files, but no separate dated preregistration or earlier specification versions."
+     ]
+    },
+    {
+     "node_id": "rh.citations_and_derivations.resolve_to_real_sources",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "insufficient_evidence",
+     "observed_value": "insufficient_evidence",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For citations and derivations: resolve to real sources, is there affirmative evidence that a citation is fabricated, with affirmative bibliographic evidence rather than merely an inaccessible link or unsuccessful lookup?",
+     "reason": "Essential inspection evidence is absent or inconclusive. Record what is missing without labeling it fabrication or declaring the submission verified clean.",
+     "judge_reason": "The supplied source paper corroborates many bibliographic entries, but authoritative records for the additional references are not staged. With external lookup prohibited, the complete bibliography cannot be independently resolved. There is no affirmative evidence here that a citation was fabricated.",
+     "evidence": [
+      "proposal/report.tex:691–930 contains the bibliography.",
+      "paper.md:324–386 corroborates numerous author, journal, volume and page/article identifiers used by the submission.",
+      "Added references such as Ceriotti et al. (2009), Fedotov et al. (2023) and Berges et al. (2021) appear at proposal/report.tex:767–769, 913–914 and 920–922, but their bibliographic source records are not included."
+     ]
+    },
+    {
+     "node_id": "rh.citations_and_derivations.contain_attributed_results",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "insufficient_evidence",
+     "observed_value": "insufficient_evidence",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For citations and derivations: contain attributed results, is there affirmative evidence that a cited source materially contradicts the result attributed to it or does not contain that attributed result?",
+     "reason": "Essential inspection evidence is absent or inconclusive. Record what is missing without labeling it fabrication or declaring the submission verified clean.",
+     "judge_reason": "The original paper supports the main variational-method, multispecies-dispersion and laser-budget attributions. Essential texts for other substantive attributions, including the dressed-mass/transparency relation and quantum-thermostat justification, are absent. Their actual contents cannot be established from citation titles alone.",
+     "evidence": [
+      "proposal/report.tex:115–132 and 180–189 are supported by paper.md:81–118 and 136–146.",
+      "The reference laser energy-budget attribution is supported by paper.md:283.",
+      "proposal/report.tex:163–173 attributes the dressed-mass/transparency relation to Eliasson and Shukla (2011) and Shi et al. (2016); their full texts are not staged.",
+      "proposal/report.tex:551–563 cites Kubo (1966) and Ceriotti et al. (2009) for the thermostat justification, but neither source text is included."
+     ]
+    }
+   ],
+   "assessment_status": "fail",
+   "failure_basis": [
+    "detected_violation",
+    "unresolved_integrity_check"
+   ]
+  },
+  "G2": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "deliverables.logs_organized_under_proposal",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Are run logs organized under proposal/logs/ as required, including inputs, time-series of conserved quantities, and outputs for each experiment described in the paper?",
+     "reason": "proposal/logs/ is empty, missing key experiments, or lacks required diagnostics.",
+     "judge_reason": "Logs exist for the headline settings, but required contents are incomplete. The reproductions lack full phi/A histories; the laser runs lack EM spectra. Most tests retain conservation maxima instead of time series, and completed-seed records, timestamps, and uncertainty summaries are incomplete.",
+     "evidence": [
+      "proposal/logs/dispersion_main.npz:keys",
+      "proposal/logs/laser_a1.npz:keys",
+      "proposal/logs/laser_a16.npz:keys",
+      "proposal/logs/pairplasma_main.npz:keys",
+      "proposal/logs/therm_nofix_dx0.04.npz:keys",
+      "task_spec.md:Deliverables—Codebase, logs, and attempts log"
+     ]
+    },
+    {
+     "node_id": "test_boundary_test_1.primary_diagnostic_identified",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the paper explicitly identify which bug class this test primarily exercises (gauge invariance, charge or energy conservation, dispersion fidelity, or non-trivial φ–A coupling), with the identification stated in Methodology and consistent with what the test measures?",
+     "reason": "The diagnostic is not named, or the named diagnostic does not match what the test actually exercises.",
+     "judge_reason": "Gauge invariance is named, but the primary current-reversal signature measures finite-band dispersion. The compact update remains gauge invariant through the reversal; it is not a test demonstrating failure of that symmetry.",
+     "evidence": [
+      "proposal/report.tex:194-212,458-475",
+      "proposal/code/lattice.py:111-119,145-150",
+      "proposal/code/run_bloch.py:37-59"
+     ]
+    },
+    {
+     "node_id": "test_boundary_test_2.primary_diagnostic_identified",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the paper explicitly identify which bug class this test primarily exercises (gauge invariance, charge or energy conservation, dispersion fidelity, or non-trivial φ–A coupling), with the identification stated in Methodology and consistent with what the test measures?",
+     "reason": "The diagnostic is not named, or the named diagnostic does not match what the test actually exercises.",
+     "judge_reason": "The named primary class is energy conservation, but the declared failure is an occupation-spectrum shape and centroid error even when total energy is conserved. Energy partition is not itself a conservation-law diagnostic.",
+     "evidence": [
+      "proposal/report.tex:214-232,529-535",
+      "proposal/code/run_thermalization.py:96-102,117-121"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.fix_implementation_completeness",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "partially_implemented",
+     "accepted_values": [
+      "fully_implemented"
+     ],
+     "question": "Is the proposed fix implemented in code under proposal/code/ in a form that runs and produces logs?",
+     "reason": "Some code is present but verification is incomplete; works in one regime but not others.",
+     "judge_reason": "The OU thermostat runs and produces logs, but verification is limited to qA approximately 0.05 rather than the qA approximately 1.5 failing regime. The attempts log records unresolved strong-field failures, and adaptive mode-dependent treatment is not completed.",
+     "evidence": [
+      "proposal/code/run_thermalization.py:55-73,109-146",
+      "proposal/attempts_log.md:113-134",
+      "proposal/report.tex:674-678"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.fix_documented_at_action_level",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is the fix documented at the same mathematical level as the original scheme — with modified action or Lagrangian, modified equations of motion, and conservation properties of the fixed scheme all stated?",
+     "reason": "The fix is described as 'we added X' without action-level mathematical specification.",
+     "judge_reason": "The report explicitly describes the thermostat as an equation-level modification rather than a conservative-action modification. No modified action or bath Lagrangian is supplied, so the required action/Lagrangian, EOM, and conservation documentation is incomplete.",
+     "evidence": [
+      "proposal/report.tex:551-575",
+      "task_spec.md:Contract—Boundary test requirement 5"
+     ]
+    },
+    {
+     "node_id": "contract.citations_and_derivations.present_when_claimed",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Are the derivations needed to support the paper's scientific results present with reproducible steps? Missing derivation steps are a completeness issue.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Several required derivation components are absent. In particular, the thermostat lacks a modified action or bath Lagrangian and a derivation establishing detailed balance for the interacting scheme; its noise normalization is not fully specified by the paper's equation.",
+     "evidence": [
+      "proposal/report.tex:551-580",
+      "proposal/code/run_thermalization.py:55-86",
+      "task_spec.md:Contract—Boundary test requirement 5"
+     ]
+    },
+    {
+     "node_id": "contract.log_paper_consistency.claimed_runs_have_log_evidence",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Is every simulation run the paper claims to have performed backed by log evidence?",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Headline runs have records, but the report also claims several abandoned thermostat normalizations and other attempted configurations. The supplied thermalization files contain only the retained configurations, and the multiple described two-stream alternatives are not individually backed by execution records.",
+     "evidence": [
+      "proposal/report.tex:682-686,936-942",
+      "proposal/attempts_log.md:60-84,113-134",
+      "proposal/logs/thermalization_summary.json",
+      "proposal/logs/twostream_summary_main.json"
+     ]
+    },
+    {
+     "node_id": "contract.effort_evidence.attempts_match_logs",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Are attempt records linked to the associated execution records so the work tried can be evaluated? An absent link or log is missing evidence, not proof that the attempt was invented.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "References predominantly point to final summary files rather than records of each attempted configuration. The unstable thermostat normalizations, strong-field bath attempts, and multiple beam alternatives lack corresponding saved execution records. This is an evidence shortfall, not proof the attempts were invented.",
+     "evidence": [
+      "proposal/attempts_log.md:60-84,90-107,113-134",
+      "proposal/logs/twostream_summary_main.json",
+      "proposal/logs/bloch_summary.json",
+      "proposal/logs/thermalization_summary.json"
+     ]
+    },
+    {
+     "node_id": "evidence_completeness.required_reporting_coverage",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Does reporting cover the experiments, completed seeds, required metrics, uncertainty summaries, and attempts required by this task and its applicable declared protocol? Assess coverage against the task, respecting optional work and permitted reporting alternatives. An omission alone is not evidence of favorable-result selection.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Required reporting is incomplete: full reproduction phi/A histories and laser spectra are absent; most tests lack conservation time-series traces; uncertainty and completed-seed records are incomplete; timestamps and failed-attempt execution records are missing. Neither fixed scheme has the required original-demo regression verification.",
+     "evidence": [
+      "task_spec.md:Deliverables",
+      "proposal/code/run_dispersion.py:54-70",
+      "proposal/code/run_laser.py:83-110",
+      "proposal/code/run_pairplasma.py:58-71",
+      "proposal/code/run_bloch.py:94-142",
+      "proposal/code/run_thermalization.py:109-148",
+      "proposal/logs/:JSON and NPZ contents",
+      "proposal/attempts_log.md"
+     ]
+    }
+   ],
+   "unresolved_reasons": [
+    {
+     "node_id": "deliverables.scope_test_1_designated",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the paper explicitly designate a Scope Test 1 by name in both the body text and the main results table?",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "The dressed-mass test is identifiable as P1 and has a corresponding physics-named table row. The rubric demands 'Scope Test 1' by name in both body and table, while the task's independence requirement instructs table labels to use physics nomenclature rather than specification terminology. Adjudication is needed on the literal naming requirement.",
+     "evidence": [
+      "rubric.json:deliverables.scope_test_1_designated",
+      "task_spec.md:Paper quality—Independence from this task spec",
+      "proposal/report.tex:163-178,295-299",
+      "proposal/attempts_log.md:38-54"
+     ]
+    },
+    {
+     "node_id": "deliverables.scope_test_2_designated",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the paper explicitly designate a Scope Test 2 by name in both the body text and the main results table?",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "The pair-plasma test is identifiable as P2 with a corresponding table row. Literal 'Scope Test 2' naming is required by this rubric question but conflicts with the task's instruction to use physics-based table labels instead of specification terminology.",
+     "evidence": [
+      "rubric.json:deliverables.scope_test_2_designated",
+      "task_spec.md:Paper quality—Independence from this task spec",
+      "proposal/report.tex:180-192,300-304",
+      "proposal/attempts_log.md:58-84"
+     ]
+    },
+    {
+     "node_id": "deliverables.boundary_test_1_designated",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the paper explicitly designate a Boundary Test 1 by name in both the body text and the main results table?",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "B1 and the sustained-field transport row unambiguously identify the first boundary setting. The rubric's requirement for category-based naming in both places conflicts with the task's requirement for physics-based table labels.",
+     "evidence": [
+      "rubric.json:deliverables.boundary_test_1_designated",
+      "task_spec.md:Paper quality—Independence from this task spec",
+      "proposal/report.tex:194-212,305-311"
+     ]
+    },
+    {
+     "node_id": "deliverables.boundary_test_2_designated",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the paper explicitly designate a Boundary Test 2 by name in both the body text and the main results table?",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "B2 and the late-time thermalization row identify the second boundary setting. Whether literal 'Boundary Test 2' naming is mandatory requires adjudication because the task expressly calls for physics-based labels rather than specification terminology.",
+     "evidence": [
+      "rubric.json:deliverables.boundary_test_2_designated",
+      "task_spec.md:Paper quality—Independence from this task spec",
+      "proposal/report.tex:214-232,312-316"
+     ]
+    }
+   ]
+  },
+  "G3": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "reproduction_iii_1.matches_analytic_within_tolerance",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "matches_qualitatively_only",
+     "accepted_values": [
+      "matches_within_stated_tolerance"
+     ],
+     "question": "Does the actual simulated dispersion spectrum reproduce the analytic dispersion relations (paper Eqs. 21 and 22) within the stated tolerance, with quantitative evidence available to assess agreement? Grade reproduction and evidence completeness; a false report of agreement is assessed in integrity.",
+     "reason": "Visual or qualitative agreement is shown but no specific numerical tolerance and agreement value is reported.",
+     "judge_reason": "The spectra support qualitative transverse and longitudinal agreement. However, the quantitative comparison covers only the transverse branch: its continuum RMS error is 1.170%, with a 2.727% maximum. No quantitative Eq. 22 branch-error test establishes agreement within tolerance for the full reproduction.",
+     "evidence": [
+      "proposal/report.pdf:6, Figure 1",
+      "proposal/logs/dispersion_summary_main.json:main",
+      "proposal/logs/dispersion_main.npz:Pxx,Pyy,omega,k",
+      "proposal/code/run_dispersion.py:71-108",
+      "paper.md:134-157"
+     ]
+    },
+    {
+     "node_id": "reproduction_iii_2.wakefield_at_a1",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the figures and logs for the a≈1 configuration show wakefield acceleration of the qualitative form the paper reports (longitudinal field structure consistent with paper figures)?",
+     "reason": "Figures do not show wakefield structure; logs do not show the expected amplitudes.",
+     "judge_reason": "The charge-density plot shows wake-like oscillations, but the required longitudinal-field amplitude comparison is not documented. Neither the saved arrays nor the figure provides Ex(t,x) or a measured Ex/Ec confirming the quoted approximately 0.3Ec benchmark.",
+     "evidence": [
+      "proposal/report.pdf:7, Figure 3",
+      "proposal/report.tex:351-357",
+      "proposal/logs/laser_a1.npz:snaps_rho,Q,Uphi,UA,Utot",
+      "proposal/code/run_laser.py:58-79,102-110",
+      "paper.md:168-174"
+     ]
+    },
+    {
+     "node_id": "reproduction_iii_2.pair_production_at_a16",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the figures and logs for the a≈16 configuration show electron-positron pair production above the Schwinger threshold, with spectral broadening and annihilation peaks the paper reports?",
+     "reason": "No pair production observed in figures or logs.",
+     "judge_reason": "Charge-density patterns and a 7.731-fold charged-field energy increase are supplied, but the required spectral broadening or annihilation-peak evidence is absent. No saved longitudinal-field threshold diagnostic establishes the claimed Schwinger-field comparison either.",
+     "evidence": [
+      "proposal/logs/laser_summary.json:a16",
+      "proposal/logs/laser_a16.npz:keys",
+      "proposal/report.pdf:6-7, Figures 2-3",
+      "proposal/code/figures.py:92-128",
+      "paper.md:176-185"
+     ]
+    },
+    {
+     "node_id": "algorithm_fidelity.bianchi_identities_by_construction",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the code preserve the Bianchi identities (∇·B = 0 and ∇×E = −∂ₜ B, i.e. the discrete Faraday's law) by geometric construction, with logs showing the residuals at machine-precision level across all runs?",
+     "reason": "Code does not preserve the identities by construction, or logs show residuals exceeding 1e-8.",
+     "judge_reason": "The baseline field-difference construction supports the identities and one validation run reports a 9.2371e-14 Faraday residual. The additional requirement for residual logs across all runs is unmet, including the thermostat-modified runs.",
+     "evidence": [
+      "proposal/code/lattice.py:201-212",
+      "proposal/code/validate.py:115-131",
+      "proposal/logs/validation.json:faraday_max_residual",
+      "proposal/logs/thermalization_summary.json"
+     ]
+    },
+    {
+     "node_id": "algorithm_fidelity.resolution_constraints_respected",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the resolution choices in every run respect the paper's stated constraints (mΔt ≪ 1, Δt < Δx, qAΔ < 2π), or are explicit and intentional violations identified for tests that probe those limits?",
+     "reason": "At least one run violates a required resolution condition without a scientifically justified role in a stated limit/boundary test. Merely disclosing an accidental violation does not make it a valid test.",
+     "judge_reason": "The timestep choices and intentional sustained-field limit test are documented. However, the other nonlinear runs lack gauge-field histories or maximum link-phase diagnostics, so the required qAΔ bound throughout every run is not established by the submitted evidence.",
+     "evidence": [
+      "proposal/report.tex:244-259",
+      "proposal/code/run_bloch.py:88-126",
+      "proposal/logs/laser_a16.npz:keys",
+      "proposal/logs/therm_nofix_dx0.04.npz:keys",
+      "task_spec.md:Background—Resolution constraints"
+     ]
+    },
+    {
+     "node_id": "test_boundary_test_1.energy_conservation_holds",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the logs for this test show energy conservation drift within the test's stated tolerance, or for boundary tests targeting energy conservation, show the expected violation pattern?",
+     "reason": "Logged energy behavior is inconsistent with stated expectations.",
+     "judge_reason": "The sustained-field run saves currents but no energy or external-work budget. The table's energy cell instead references local charge/Gauss-law relaxation, which cannot establish the expected energy balance of a driven system.",
+     "evidence": [
+      "proposal/logs/bloch_demo.npz:keys",
+      "proposal/logs/bloch_summary.json:keys",
+      "proposal/code/run_bloch.py:37-49,103-113",
+      "proposal/report.tex:305-321"
+     ]
+    },
+    {
+     "node_id": "scope_scope_test_2.simulation_agrees_with_prediction_within_tolerance",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the measured simulation observable agree with the stated analytic prediction within the pre-stated tolerance, with the quantitative evidence needed to assess it?",
+     "reason": "The actual error exceeds tolerance, or the scientific comparison lacks necessary numerical evidence. False claims are assessed separately in integrity.",
+     "judge_reason": "The pre-stated continuum comparison is supposed to fit within the lattice discretization error. At dx=0.04 that budget is 0.3068%, while the measured continuum RMS error is 0.9310% and the maximum is 2.352%. The reported 0.57% instead compares against the lattice law, so it does not establish the stated continuum agreement.",
+     "evidence": [
+      "proposal/report.tex:190-192,434-437",
+      "proposal/logs/pairplasma_summary_main.json:main",
+      "proposal/logs/pairplasma_main.npz:Pyy,omega,k",
+      "proposal/code/run_pairplasma.py:85-100"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_1.violated_assumption_identification",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "named_but_wrong",
+     "accepted_values": [
+      "correctly_identified"
+     ],
+     "question": "Does the paper identify a specific framework assumption whose violation drives the failure, and is the identification correct?",
+     "reason": "The named assumption is not the one driving the failure in this regime.",
+     "judge_reason": "The report treats compact gauge topology as a violated fundamental assumption, but the compact update's gauge symmetry remains intact. The observed reversal comes from finite-spacing band dispersion as accelerated momentum approaches the grid limit, a resolution restriction explicitly excluded from fundamental boundary failures by the task.",
+     "evidence": [
+      "proposal/report.tex:194-209,458-479",
+      "proposal/code/lattice.py:111-119,145-150",
+      "task_spec.md:Contract—Two boundary tests",
+      "paper.md:195"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_1.failure_vs_bug_discrimination",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "partially_convincing",
+     "accepted_values": [
+      "convincing_both_checks"
+     ],
+     "question": "Has the agent provided convincing evidence that the failure is fundamental rather than an implementation bug — via convergence study persistence AND successful reproduction of paper demos in the same implementation?",
+     "reason": "Convergence study OR reproduction cross-check is present but not both, or one is partial.",
+     "judge_reason": "Reversal is measured at multiple spacings, but the run duration increases with 1/dx and the failure recedes to later physical time. Furthermore, the complete Eq. 21/22 and laser spectral reproduction checks are not established, so the required two-demo cross-check is incomplete.",
+     "evidence": [
+      "proposal/code/run_bloch.py:116-126",
+      "proposal/logs/bloch_summary.json:convergence",
+      "proposal/logs/dispersion_summary_main.json",
+      "proposal/logs/laser_a16.npz:keys",
+      "task_spec.md:Contract—Boundary test requirements 3 and mandatory reproductions"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_1.first_principles_reasoning_soundness",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "incorrect_or_missing",
+     "accepted_values": [
+      "mostly_correct_with_minor_issues",
+      "rigorous_and_correct"
+     ],
+     "question": "Is the first-principles reasoning about why the framework assumption's violation produces the observed failure mathematically and physically correct?",
+     "reason": "The reasoning is mathematically or physically wrong, or only a vague statement is provided.",
+     "judge_reason": "The finite-band reversal formula is sound, but the central inference of fundamental nonconvergence is incorrect: t_rev proportional to 1/dx tends to infinity, so any fixed physical acceleration interval can avoid reversal under refinement. Exact gauge invariance also does not fail when the current reverses.",
+     "evidence": [
+      "proposal/report.tex:207-209,458-479,596-608",
+      "proposal/logs/bloch_summary.json:convergence",
+      "proposal/code/run_bloch.py:116-126"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_1.fix_resolves_failure_in_logs",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the logs for the fixed implementation, when run on the regime that originally failed, show the original failure mode resolved, with traceable verification? Additionally, when run on regimes that originally passed, do the logs show that the fixed implementation still passes the original tests, with traceable verification?",
+     "reason": "Logs do not show resolution, or no verification run was performed.",
+     "judge_reason": "The fixed current does not reverse in the saved failing-regime demonstration. However, the node additionally requires regression verification on originally passing regimes; the original demonstrations were not rerun with the noncompact solver.",
+     "evidence": [
+      "proposal/logs/bloch_summary.json:demo.noncompact_reverses",
+      "proposal/logs/bloch_demo.npz:J_noncompact",
+      "proposal/code/run_dispersion.py:31",
+      "proposal/code/run_laser.py:42",
+      "proposal/code/lattice.py:52"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.failure_vs_bug_discrimination",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "partially_convincing",
+     "accepted_values": [
+      "convincing_both_checks"
+     ],
+     "question": "Has the agent provided convincing evidence that the failure is fundamental rather than an implementation bug — via convergence study persistence AND successful reproduction of paper demos in the same implementation?",
+     "reason": "Convergence study OR reproduction cross-check is present but not both, or one is partial.",
+     "judge_reason": "Multiple-resolution spectra are supplied, but the excitation band is a fixed fraction of Nyquist and independently initialized adjacent A levels make the initial electric excitation depend on dt. This is not a controlled fixed-physics refinement. The mandatory full demonstration cross-check is also incomplete.",
+     "evidence": [
+      "proposal/code/run_thermalization.py:36-51,109-125",
+      "proposal/logs/thermalization_summary.json",
+      "proposal/logs/dispersion_summary_main.json",
+      "proposal/logs/laser_a16.npz:keys"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.first_principles_reasoning_soundness",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "hand_wavy_or_partial",
+     "accepted_values": [
+      "mostly_correct_with_minor_issues",
+      "rigorous_and_correct"
+     ],
+     "question": "Is the first-principles reasoning about why the framework assumption's violation produces the observed failure mathematically and physically correct?",
+     "reason": "Steps are skipped; the connection between assumption and failure is asserted but not derived.",
+     "judge_reason": "The equipartition-versus-Bose–Einstein argument is sound, but its connection to the observed scaling has substantial gaps: physical initialization changes with refinement, energy drifts approach 12%, and the assertion that a bug must converge is false. Three increasing fixed-run centroids also do not establish a finite continuum limit.",
+     "evidence": [
+      "proposal/report.tex:529-549,565-569,633-640",
+      "proposal/code/run_thermalization.py:36-51",
+      "proposal/logs/thermalization_summary.json"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.fix_resolves_failure_in_logs",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the logs for the fixed implementation, when run on the regime that originally failed, show the original failure mode resolved, with traceable verification? Additionally, when run on regimes that originally passed, do the logs show that the fixed implementation still passes the original tests, with traceable verification?",
+     "reason": "Logs do not show resolution, or no verification run was performed.",
+     "judge_reason": "The verification changes excitation from 1.5 to 0.05, so it does not resolve the original failing regime. Even there, median Bose–Einstein errors worsen from 6.4% to 22.1% and 93.9%, with centroids increasing from 2.58 to 4.00. Passing-regime regression runs with the thermostat are absent.",
+     "evidence": [
+      "proposal/code/run_thermalization.py:113,130-142",
+      "proposal/logs/thermalization_summary.json:thermostat_fix",
+      "proposal/attempts_log.md:118-134",
+      "proposal/code/run_dispersion.py",
+      "proposal/code/run_laser.py"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.fix_preserves_claimed_invariants",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "If the paper claims the fix preserves specific invariants (charge conservation, gauge invariance, etc.), do the logs confirm these invariants are preserved in the fixed scheme?",
+     "reason": "Logs contradict the claim, or the paper doesn't address which invariants are preserved.",
+     "judge_reason": "Charge conservation is logged, but the report also claims preserved gauge invariance and replacement of time reversal by detailed balance. No gauge-covariance or detailed-balance verification is supplied for the thermostat, so the full set of claimed properties is not confirmed.",
+     "evidence": [
+      "proposal/report.tex:571-580",
+      "proposal/logs/thermalization_summary.json:thermostat_fix",
+      "proposal/code/run_thermalization.py:55-102"
+     ]
+    },
+    {
+     "node_id": "coverage.bug_classes_count",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "three",
+     "accepted_values": [
+      "all_four"
+     ],
+     "question": "How many of the four bug classes (gauge invariance, charge/energy conservation, dispersion fidelity, non-trivial φ–A coupling) are exercised by the four tests collectively?",
+     "reason": "Three distinct bug classes are exercised, with one omitted.",
+     "judge_reason": "The suite exercises nonlinear phi–A coupling, dispersion, and charge/energy conservation through its measurements and invariant checks. The claimed fourth primary diagnostic, gauge invariance, is not independently established by a Bloch reversal that occurs while the compact symmetry remains intact.",
+     "evidence": [
+      "proposal/report.tex:154-232",
+      "proposal/code/run_transparency.py",
+      "proposal/code/run_pairplasma.py",
+      "proposal/code/run_bloch.py:62-85",
+      "proposal/code/run_thermalization.py:87-102"
+     ]
+    },
+    {
+     "node_id": "writing_quality.paper_structure_independent_of_spec",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "mixed",
+     "accepted_values": [
+      "fully_physics_driven"
+     ],
+     "question": "Is the paper's structure (section headings, subsection titles, table labels, terminology) physics-driven rather than a direct transliteration of the task spec's structure and terminology (e.g., sections literally titled 'scope tests' and 'boundary tests', tests labeled 'S1/S2/B1/B2', introduction paragraphs announcing 'we choose four tests, two scope and two boundary')?",
+     "reason": "Spec terminology appears in some labels but not all; some effort to use physics-driven structure is evident.",
+     "judge_reason": "Most results subsections and table test names are physics-based, but Methodology retains P1/P2/B1/B2 organization, enumerates the four diagnostic classes, and the table retains verification/scope/boundary categories.",
+     "evidence": [
+      "proposal/report.tex:154-238,285-316,388-527"
+     ]
+    },
+    {
+     "node_id": "writing_quality.rendered_pdf_formatting_correct",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "When the LaTeX is rendered to PDF, does the formatting come out cleanly — no equations overflowing the page margins, no tables wrapping unreadably, no figures cut off, no missing or broken references?",
+     "reason": "Visual inspection of the rendered PDF reveals equations overflowing margins, tables wrapping awkwardly, figures cut off, or unresolved references — indicating the agent did not visually verify the rendered output before submitting.",
+     "judge_reason": "Visual inspection of the rendered main table shows colliding column content, particularly the dressed-mass prediction and adjacent tolerance, and nearly joined charge/energy entries. The table is not cleanly readable.",
+     "evidence": [
+      "proposal/report.pdf:5, Table 1",
+      "proposal/report.tex:280-316",
+      "proposal/report.log:373-663, table overfull-box warnings"
+     ]
+    },
+    {
+     "node_id": "contract.citations_and_derivations.mathematically_sound",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Are the agent-derived mathematical results correct, with no critical errors in the derivation steps? Mathematical mistakes alone are not integrity violations.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Critical conclusions are unsupported or incorrect: reversal time diverging as 1/dx does not prove failure at fixed physical time, and nonconvergence does not uniquely rule out bugs. The thermostat equation also assigns the same noise variance form to A and E, whereas the implemented oscillator variance for A contains an essential 1/omega² factor.",
+     "evidence": [
+      "proposal/report.tex:466-479,537-563,633-640",
+      "proposal/code/run_thermalization.py:55-70",
+      "proposal/logs/bloch_summary.json:convergence"
+     ]
+    },
+    {
+     "node_id": "contract.main_appendix_placement_integrity.main_paper_work_is_deep",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Does the work in the main paper meet the task's required scientific depth, with reasoning, verification, and analysis adequate for the claimed contribution?",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "The main-paper completion standard is not met: the full mandatory reproductions are unverified, the Bloch result is a resolution limit rather than a demonstrated fundamental failure, and the thermostat is tested in a different, weaker regime without action-level documentation or successful regression verification.",
+     "evidence": [
+      "proposal/report.tex:325-364,454-580",
+      "proposal/code/run_bloch.py:116-126",
+      "proposal/code/run_thermalization.py:109-146",
+      "task_spec.md:Contract—Main paper vs. appendix structure"
+     ]
+    },
+    {
+     "node_id": "contract.main_appendix_placement_integrity.appendix_work_is_honestly_categorized",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Is attempted-but-incomplete work placed and documented as the task requires, without relegating required substantive contract content to the appendix? Assess placement and depth, not an implied claim of honesty.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "The appendix briefly identifies dropped alternatives, but required incomplete boundary verification remains presented as a completed main-paper contribution. The short appendix note does not provide the task's fallback treatment of the unresolved strong-field thermostat work and incomplete fix verification.",
+     "evidence": [
+      "proposal/report.tex:551-580,670-686,934-943",
+      "proposal/attempts_log.md:90-99,113-134",
+      "task_spec.md:Contract—Main paper vs. appendix structure"
+     ]
+    }
+   ],
+   "unresolved_reasons": []
+  }
+ },
+ "cumulative": {
+  "G1": {
+   "status": "fail",
+   "blocked_by": []
+  },
+  "G2": {
+   "status": "fail",
+   "blocked_by": [
+    "G1"
+   ]
+  },
+  "G3": {
+   "status": "fail",
+   "blocked_by": [
+    "G1",
+    "G2"
+   ]
+  }
+ },
+ "outcome": "integrity_failure",
+ "passes": {
+  "G1": false,
+  "G2": false,
+  "G3": false
+ },
+ "nodes": {
+  "integrity:rh.code_paper_alignment.scheme": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.code_paper_alignment.gauge": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.code_paper_alignment.integration": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.code_paper_alignment.ensemble_and_resolution": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.pre_stated_method.tolerances_consistent_throughout": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:integrity.execution_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:integrity.precommitment_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "undetermined",
+   "value": "insufficient_evidence"
+  },
+  "integrity:rh.number_traceability.main_results_table_cells_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.number_traceability.outcome_column_claims_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.number_traceability.figures_regenerable_from_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.number_traceability.intext_quantitative_claims_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:no_hardcoded_values.no_hardcoded_predictions_in_sim_loop": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.citations_and_derivations.resolve_to_real_sources": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "undetermined",
+   "value": "insufficient_evidence"
+  },
+  "integrity:rh.citations_and_derivations.contain_attributed_results": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "undetermined",
+   "value": "insufficient_evidence"
+  },
+  "integrity:no_external_code.external_code_disclosed_or_absent": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:no_replication_of_published_method.no_substantive_replication_of_existing_followup": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.log_paper_consistency.substantive_runs_in_paper": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.log_paper_consistency.no_undisclosed_test_swaps": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "direction:deliverables.paper_exists": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.uses_neurips_style": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.has_required_sections": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.main_results_table_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.main_results_table_six_rows": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.scope_test_1_designated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:deliverables.scope_test_2_designated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:deliverables.boundary_test_1_designated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:deliverables.boundary_test_2_designated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:deliverables.code_organized_under_proposal": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.logs_organized_under_proposal": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:reproduction_iii_1.attempted": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_1.matches_analytic_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "matches_qualitatively_only"
+  },
+  "direction:reproduction_iii_1.charge_conservation_machine_precision": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_1.energy_conservation_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_2.attempted": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_2.wakefield_at_a1": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:reproduction_iii_2.pair_production_at_a16": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:reproduction_iii_2.charge_conservation_machine_precision": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_2.energy_conservation_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:algorithm_fidelity.derives_eom_from_variational_action": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:algorithm_fidelity.yee_type_field_layout": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:algorithm_fidelity.bianchi_identities_by_construction": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:algorithm_fidelity.charge_conservation_by_construction": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:algorithm_fidelity.resolution_constraints_respected": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:test_scope_test_1.regime_distinct_from_paper_demos": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.regime_distinct_from_other_three": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.regime_physically_meaningful": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "acceptable_but_predictable"
+  },
+  "direction:test_scope_test_1.described_in_methodology_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.convergence_study_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.charge_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.energy_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.primary_diagnostic_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.regime_distinct_from_paper_demos": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.regime_distinct_from_other_three": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.regime_physically_meaningful": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "acceptable_but_predictable"
+  },
+  "direction:test_scope_test_2.described_in_methodology_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.convergence_study_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.charge_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.energy_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.primary_diagnostic_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.regime_distinct_from_paper_demos": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.regime_distinct_from_other_three": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.regime_physically_meaningful": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "acceptable_but_predictable"
+  },
+  "direction:test_boundary_test_1.described_in_methodology_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.convergence_study_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.charge_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.energy_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:test_boundary_test_1.primary_diagnostic_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:test_boundary_test_2.regime_distinct_from_paper_demos": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.regime_distinct_from_other_three": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.regime_physically_meaningful": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "ambitious_well_motivated"
+  },
+  "direction:test_boundary_test_2.described_in_methodology_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.convergence_study_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.charge_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.energy_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.primary_diagnostic_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:scope_scope_test_1.prediction_stated_and_sharp": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "sharp_and_pre_stated"
+  },
+  "direction:scope_scope_test_1.prediction_cited_or_derived": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:scope_scope_test_1.tolerance_pre_stated_and_justified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "stated_and_justified"
+  },
+  "direction:scope_scope_test_1.simulation_agrees_with_prediction_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:scope_scope_test_2.prediction_stated_and_sharp": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "sharp_and_pre_stated"
+  },
+  "direction:scope_scope_test_2.prediction_cited_or_derived": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:scope_scope_test_2.tolerance_pre_stated_and_justified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "stated_and_justified"
+  },
+  "direction:scope_scope_test_2.simulation_agrees_with_prediction_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:boundary_boundary_test_1.failure_criterion_pre_stated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_1.violated_assumption_identification": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "named_but_wrong"
+  },
+  "direction:boundary_boundary_test_1.failure_demonstrated_quantitatively": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_1.failure_vs_bug_discrimination": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "partially_convincing"
+  },
+  "direction:boundary_boundary_test_1.first_principles_reasoning_soundness": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "incorrect_or_missing"
+  },
+  "direction:boundary_boundary_test_1.fix_proposal_and_motivation": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "proposed_and_well_motivated"
+  },
+  "direction:boundary_boundary_test_1.fix_implementation_completeness": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "fully_implemented"
+  },
+  "direction:boundary_boundary_test_1.fix_documented_at_action_level": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_1.fix_resolves_failure_in_logs": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:boundary_boundary_test_1.fix_preserves_claimed_invariants": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_2.failure_criterion_pre_stated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_2.violated_assumption_identification": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "correctly_identified"
+  },
+  "direction:boundary_boundary_test_2.failure_demonstrated_quantitatively": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_2.failure_vs_bug_discrimination": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "partially_convincing"
+  },
+  "direction:boundary_boundary_test_2.first_principles_reasoning_soundness": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "hand_wavy_or_partial"
+  },
+  "direction:boundary_boundary_test_2.fix_proposal_and_motivation": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "proposed_and_well_motivated"
+  },
+  "direction:boundary_boundary_test_2.fix_implementation_completeness": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "partially_implemented"
+  },
+  "direction:boundary_boundary_test_2.fix_documented_at_action_level": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:boundary_boundary_test_2.fix_resolves_failure_in_logs": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:boundary_boundary_test_2.fix_preserves_claimed_invariants": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:coverage.bug_classes_count": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "three"
+  },
+  "direction:analysis.adds_substantive_insight_beyond_contract": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantive_insight"
+  },
+  "direction:writing_quality.thesis_and_framing": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "clear_self_contained"
+  },
+  "direction:writing_quality.body_prose_quality": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "competent"
+  },
+  "direction:writing_quality.reference_count_at_least_original": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.references_substantively_used": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.limitations_discussed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.title_describes_contribution": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "states_contribution"
+  },
+  "direction:writing_quality.paper_structure_independent_of_spec": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "mixed"
+  },
+  "direction:writing_quality.rendered_pdf_formatting_correct": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:main_appendix_placement.scope_test_1_location": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "main_paper"
+  },
+  "direction:main_appendix_placement.scope_test_2_location": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "main_paper"
+  },
+  "direction:main_appendix_placement.boundary_test_1_location": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "main_paper"
+  },
+  "direction:main_appendix_placement.boundary_test_2_location": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "main_paper"
+  },
+  "direction:main_appendix_placement.appendix_usage_minimized": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "empty_or_near_empty"
+  },
+  "direction:claim.test_scope_test_1.success_or_resolution_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_scope_test_1.implementation_complete_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_scope_test_2.success_or_resolution_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_scope_test_2.implementation_complete_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_boundary_test_1.success_or_resolution_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_boundary_test_1.implementation_complete_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_boundary_test_2.success_or_resolution_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_boundary_test_2.implementation_complete_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:contract.citations_and_derivations.present_when_claimed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.citations_and_derivations.mathematically_sound": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.log_paper_consistency.claimed_runs_have_log_evidence": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.effort_evidence.attempts_log_exists_if_needed": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.effort_evidence.attempts_log_diverse_for_unresolved_tests": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.effort_evidence.attempts_match_logs": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.main_appendix_placement_integrity.main_paper_work_is_deep": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.main_appendix_placement_integrity.appendix_work_is_honestly_categorized": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:evidence_completeness.quantitative_sources_documented": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:evidence_completeness.required_reporting_coverage": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  }
+ }
+}

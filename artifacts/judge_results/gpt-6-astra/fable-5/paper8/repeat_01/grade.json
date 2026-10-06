@@ -1,0 +1,1072 @@
+{
+ "model": "fable-5",
+ "paper": 8,
+ "repeat": 1,
+ "rubric_revision": "science-task-alignment-v3-strict",
+ "grading_policy_version": "science-gates-v2-g1-unresolved-fail",
+ "context": {
+  "bc_extension_attempted": true,
+  "boundary_analysis_attempted": true,
+  "partial_work_claimed": true,
+  "pde_breadth_attempted": true
+ },
+ "gates": {
+  "G1": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "number_traceability.errors_and_margins_in_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: errors and margins in logs, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The main error aggregates reproduce the saved records, but the constant-IC ablation errors are falsely attributed to replacing the input with the mean trained IC. The implemented intervention instead uses the mean of each held-out evaluation set. These are materially different inputs, particularly for the unseen-family set; the finding concerns attribution, not invented scalar values.",
+     "evidence": [
+      "proposal/report.tex:574–590 describes the constant intervention as the 'mean trained IC/representation'; logs/aggregate/macros.tex:475–488 supplies errors 0.4130 and 0.2073.",
+      "proposal/code/run_experiment.py:119–126 passes each held-out specification set to evaluate.eval_set; proposal/code/speccond/evaluate.py:31–50 constructs the constant from that evaluation set's features.",
+      "Read-only calculation from proposal/logs/runs/core-reaction_structured_s0/specs.json gives mean IC level 0.497788 for the 24 distinct training ICs versus 0.332197 for the held-out families; their 64-sample mean profiles differ by RMS 0.254642."
+     ]
+    },
+    {
+     "node_id": "pre_stated_method.settings_match_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For pre stated method: settings match logs, is there affirmative evidence that run settings quoted in the paper materially differ from the settings that produced the cited results?",
+     "reason": "Identify evidence that run settings quoted in the paper materially differ from the settings that produced the cited results. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The input setting quoted for the constant-conditioning experiment differs materially from the setting producing its recorded results: training-set mean versus evaluation-set mean. The principal K, epoch, width and collocation settings otherwise match the saved configurations.",
+     "evidence": [
+      "proposal/report.tex:574–590 specifies a constant equal to the mean trained IC representation.",
+      "proposal/code/speccond/evaluate.py:28–50 receives the evaluation specifications and averages their features; no training-set mean is supplied.",
+      "proposal/logs/runs/core-reaction_structured_s0/metrics.json, eval.heldout_params__constant and eval.heldout_family__constant, records the resulting errors 0.2020108387 and 0.3999421967.",
+      "proposal/code/specification_encoder_plan.md:151–154 also specified the mean trained feature."
+     ]
+    },
+    {
+     "node_id": "held_fixed_disclosure.deviations_disclosed",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For held fixed disclosure: deviations disclosed, is there affirmative evidence that the paper claims compliance with a held-fixed condition that the executed implementation or configuration materially contradicts?",
+     "reason": "Identify evidence that the paper claims compliance with a held-fixed condition that the executed implementation or configuration materially contradicts. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The unchanged-reference-loss claim is contradicted by the loss accumulation. The reference sums batch means over batches of 20,000; the submission computes one global mean per term. For the logged 74-specification reaction runs, the reference accumulation would sum four collocation-batch means but only one IC and boundary mean. The submitted reduction therefore changes relative loss weighting, not merely computational batching.",
+     "evidence": [
+      "proposal/report.tex:316–322 claims unchanged loss terms and weights; codebase_notes.md:59–62 claims identical computed losses.",
+      "workdir_outside_proposal/code/P2INN/utils.py:164–166 sets batch_size=20000; train.py:67–105 and 107–126 sums each batch's mean loss without normalizing by batch count.",
+      "proposal/code/speccond/train_engine.py:72–99 and 120–122 instead computes global mean losses.",
+      "proposal/logs/runs/core-reaction_structured_s0/config.json records 74 training specifications and n_f=1000; data.py:123–153 supplies 74,000 collocation points, 18,944 IC points and 7,400 periodic boundary pairs."
+     ]
+    },
+    {
+     "node_id": "code_paper_alignment.methodology_describes_code",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code paper alignment: methodology describes code, is there affirmative evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence?",
+     "reason": "Identify evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "Two material implementation descriptions are contradicted: the constant ablation uses evaluation-set rather than training-set means, and the claimed reference-equivalent loss reduction changes batch weighting. The coordinate encoder, decoder, 50-dimensional interface and coefficient-only modvec pathway do otherwise match the reference architecture.",
+     "evidence": [
+      "proposal/report.tex:574–590 versus proposal/code/speccond/evaluate.py:31–50 establishes the constant-input source mismatch.",
+      "proposal/report.tex:316–322 and codebase_notes.md:59–62 versus proposal/code/speccond/train_engine.py:94–122 and workdir_outside_proposal/code/P2INN/train.py:67–126 establishes the loss-reduction mismatch.",
+      "proposal/code/speccond/models.py:127–170 agrees with workdir_outside_proposal/code/P2INN/model.py:18–83 for the held-fixed model body."
+     ]
+    },
+    {
+     "node_id": "integrity.execution_claims",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "Is there affirmative evidence that an experiment, derivation, inspection, or repair is explicitly claimed as performed but affirmative code/trajectory/artifact evidence establishes that this claim is false?",
+     "reason": "Cite the explicit claim and affirmative evidence that contradicts it. Mere absence of logs, derivation steps, a plan file, or a timestamp is insufficient.",
+     "judge_reason": "The specifically claimed training-mean IC replacement was not the intervention executed by the submitted evaluation path. A constant-IC experiment was completed, but its constant was calculated from the current held-out set. This is an affirmative contradiction of the claimed procedure, not an inference from missing execution evidence.",
+     "evidence": [
+      "proposal/report.tex:585–590 explicitly describes replacing the IC with 'the mean trained representation'.",
+      "proposal/code/run_experiment.py:119–126 executes each ablation using the current held-out specifications.",
+      "proposal/code/speccond/evaluate.py:31–50 derives the constant exclusively from those specifications.",
+      "The corresponding core-reaction_structured_s{0,1,2}/metrics.json records contain completed constant-ablation results; all 78 staged run directories also contain completed training logs and launch completion messages."
+     ]
+    }
+   ],
+   "unresolved_reasons": [],
+   "assessment_status": "fail",
+   "failure_basis": [
+    "detected_violation"
+   ]
+  },
+  "G2": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "deliverables.plan_file_present",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is there a timestamped specification-encoder plan file (proposal/code/specification_encoder_plan.*) written before the comparison?",
+     "reason": "No plan file, or it postdates the comparison logs, or it omits the encoder/representation/splits/delta.",
+     "judge_reason": "A complete plan is present, but the supplied complete Markdown version is timestamped 02:29:43 UTC, after comparison runs began. The earlier 01:25:31 JSON records splits rather than the complete encoder, hyperparameter, and decision-threshold plan. Later amendments explain the modification time, but an earlier complete version establishing the required timing is not supplied.",
+     "evidence": [
+      "proposal/code/specification_encoder_plan.md:3–6, 37–67, 141–165; modification timestamp 2026-09-05T02:29:43Z",
+      "proposal/code/specification_encoder_plan_splits.json: written_utc=2026-09-05T01:25:31Z",
+      "proposal/logs/runs/core-reaction_baseline_s0/config.json: started_utc=2026-09-05T01:26:11Z",
+      "task_spec.md:149, 173"
+     ]
+    },
+    {
+     "node_id": "writing_quality.main_results_table_complete",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is the primary results table (tab:main_results) complete -- all methods, families/axes, and matched-budget column?",
+     "reason": "The table is missing rows, columns, or a declared family/axis.",
+     "judge_reason": "The primary table includes the three core families and a budget column, but omits declared BC and shared-model composition axes, which appear only in separate tables. It also separates absolute errors into an appendix companion rather than including both required metrics in the primary table.",
+     "evidence": [
+      "proposal/report.tex:474–498, 819–834, 978–991, 1012–1037",
+      "proposal/logs/aggregate/main_table_body.tex",
+      "task_spec.md:182–190"
+     ]
+    },
+    {
+     "node_id": "contract.effort_evidence.attempts_log_when_partial_work_claimed",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "If the paper claims partial/failed work (notably the honest-negative held-out-PDE-type transfer), is it backed by at least two documented attempts in proposal/attempts_log.md?",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Several core and coverage failures have multiple documented attempts, but the partial never-trained PDE-type transfer does not. Item 5 records one shared-model study's negative outcome without two distinct documented attempts for that unresolved item; seed repeats alone do not supply distinct attempts.",
+     "evidence": [
+      "proposal/attempts_log.md:53–56, 72–101, 110–113",
+      "proposal/logs/runs/multi-family_{flat,structured}_s{0,1,2}/config.json",
+      "task_spec.md:164"
+     ]
+    },
+    {
+     "node_id": "evidence_completeness.required_reporting_coverage",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Does reporting cover the experiments, completed seeds, required metrics, uncertainty summaries, and attempts required by this task and its applicable declared protocol? Assess coverage against the task, respecting optional work and permitted reporting alternatives. An omission alone is not evidence of favorable-result selection.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Extensive logs, completed seeds, and uncertainty summaries are present, but required reporting remains incomplete: the primary table lacks required metrics and declared axes, comparison curves omit the seen region, and the partial PDE-type transfer lacks two documented attempts. These are coverage shortfalls without an inference of selective reporting.",
+     "evidence": [
+      "proposal/report.tex:474–509, 819–834, 978–1003",
+      "proposal/code/make_figures.py:79–103",
+      "proposal/attempts_log.md:110–113",
+      "task_spec.md:164, 182–190"
+     ]
+    }
+   ],
+   "unresolved_reasons": [
+    {
+     "node_id": "deliverables.main_results_table_present",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the paper contain the primary results table labelled tab:main_results?",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "The labelled primary table exists, but reports only relative errors; absolute errors appear in a separate appendix table. Thus the full 'yes' condition is unmet, while the defined 'no' condition—no labelled table—is also false. The present-but-incomplete case needs adjudication.",
+     "evidence": [
+      "proposal/report.tex:474–498: label tab:main_results and relative-error columns",
+      "proposal/logs/aggregate/main_table_body.tex",
+      "proposal/report.tex:978–991: separate tab:abs_results",
+      "rubric.json: deliverables.main_results_table_present.values"
+     ]
+    },
+    {
+     "node_id": "deliverables.error_vs_specification_curves_present",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Are the error-vs-specification curves across the trained and held-out region present?",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "Comparison curves exist for held-out specifications, but omit seen-specification errors and therefore do not cover both required regions. 'Yes' requires both regions, whereas 'no' is defined as no curves being present; neither definition covers these partial curves.",
+     "evidence": [
+      "proposal/report.pdf: Figures 1 and 8",
+      "proposal/code/make_figures.py:79–103: axes restricted to heldout_params, heldout_family, heldout_combo",
+      "proposal/report.tex:503–509, 994–1003",
+      "rubric.json: deliverables.error_vs_specification_curves_present.values"
+     ]
+    }
+   ]
+  },
+  "G3": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "baseline_and_control.held_fixed_respected",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Are architectural changes restricted to the specification encoder's input representation and internal architecture, retaining its 50-dimensional output, the reference coordinate encoder/decoder, concatenation injection, and original modvec architecture and coefficient/coordinate inputs? Are base-loss terms/weights and headline comparison budgets held fixed?",
+     "reason": "A prohibited architecture, injection, output-width, modvec-input, loss, or headline-budget change occurs. Motivation, disclosure, ablation, or matched compute does not exempt an architecture violation. The explicitly allowed diagnostic budget increases alone are not violations.",
+     "judge_reason": "The architectural interfaces and four base-loss terms are retained, but total headline collocation budgets are not fixed across all three arms. Reaction uses 5 baseline training specifications versus 74 conditioned specifications, each with 1,000 collocation points processed every epoch: 5,000 versus 74,000 points per step.",
+     "evidence": [
+      "proposal/logs/runs/core-reaction_{baseline,flat,structured}_s0/config.json: n_train_specs and n_f",
+      "proposal/code/speccond/data.py:120–169",
+      "proposal/code/speccond/train_engine.py:55–138",
+      "task_spec.md:151–152"
+     ]
+    },
+    {
+     "node_id": "core_result.joint_coeff_ic_generalization",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "clear"
+     ],
+     "question": "Does the structured encoder generalize to unseen IC parameters and unseen coefficient x IC combinations, beating BOTH the coefficient-only baseline and the naive control by at least delta?",
+     "reason": "No improvement (<=0) over the baseline or the naive control on the core held-out sets.",
+     "judge_reason": "On the headline nonlinear reaction problem, structured conditioning is worse than raw input on unseen parameters (0.108755 versus 0.090877) and unseen combinations (0.055310 versus 0.024750). RD's positive raw-control margins, 0.005530 and 0.001259, also fall below their registered thresholds.",
+     "evidence": [
+      "proposal/logs/runs/core-reaction_{baseline,flat,structured}_s{0,1,2}/metrics.json: heldout_params and heldout_combo",
+      "proposal/logs/runs/core-rd_{flat,structured}_s{0,1,2}/metrics.json",
+      "proposal/code/specification_encoder_plan.md:143–147"
+     ]
+    },
+    {
+     "node_id": "core_result.unseen_ic_family_generalization",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "marginal",
+     "accepted_values": [
+      "clear"
+     ],
+     "question": "Does the structured encoder generalize to an unseen IC FUNCTION FAMILY (a functional family held out of training), beating BOTH the coefficient-only baseline (at its trained IC) and the naive control by at least delta?",
+     "reason": "A positive but sub-delta improvement over the baseline or the naive control on the held-out IC function family.",
+     "judge_reason": "The evaluated functional-family results include only a sub-threshold improvement over raw input on convection: 1.103631 versus 1.112318, a gain of 0.008687 against delta 0.166848 and pooled SD 0.101560. Reaction and RD instead worsen versus raw input, so these results do not establish clear functional generalization over both comparators.",
+     "evidence": [
+      "proposal/logs/runs/core-convection_{flat,structured}_s{0,1,2}/metrics.json: heldout_family",
+      "proposal/logs/aggregate/main_table_body.tex: reaction and reaction–diffusion unseen-family columns",
+      "proposal/code/specification_encoder_plan.md:143–147"
+     ]
+    },
+    {
+     "node_id": "core_result.seen_spec_preserved",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "regressed",
+     "accepted_values": [
+      "preserved"
+     ],
+     "question": "Does the extended model preserve seen-specification accuracy (original coefficient-only setting) versus the reference P2INN baseline?",
+     "reason": "Seen-specification accuracy meaningfully regresses -- the generalization was bought by wrecking the original capability.",
+     "judge_reason": "Per-coefficient anchor accuracy exceeds tolerance at 2/5 reaction coefficients, 4/5 convection coefficients, and all 9 core RD coefficients. For example, RD at (nu,rho)=(3,1) rises from 0.1132 to 0.1706 against a permitted limit of 0.1245, a meaningful regression.",
+     "evidence": [
+      "proposal/logs/aggregate/nonreg_reaction_body.tex",
+      "proposal/logs/aggregate/nonreg_convection_body.tex",
+      "proposal/logs/aggregate/nonreg_rd_body.tex",
+      "proposal/report.pdf: Table 3"
+     ]
+    },
+    {
+     "node_id": "statistical_rigor.core_margins_separated",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "within_noise",
+     "accepted_values": [
+      "separated"
+     ],
+     "question": "Are the core generalization margins (over baseline and naive control) statistically separated from seed noise?",
+     "reason": "A core margin lies inside the reported seed-uncertainty band -- the claimed win is not separated from noise.",
+     "judge_reason": "Positive core margins over the raw control are not consistently separated from seed noise. For RD unseen parameters, the gain is 0.005530 against pooled SD 0.008027; for unseen combinations it is 0.001259 against pooled SD 0.002672.",
+     "evidence": [
+      "proposal/logs/runs/core-rd_{flat,structured}_s{0,1,2}/metrics.json",
+      "proposal/logs/aggregate/main_table_body.tex",
+      "proposal/report.tex:601–610"
+     ]
+    },
+    {
+     "node_id": "contract.matched_budget.budget_and_capacity_matched",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Are headline baseline, naive-control, and structured-encoder comparisons matched under the task's base-loss, collocation, optimizer, epochs, seeds, and encoder added-capacity requirements, with no architecture-change exemption? The separately specified optional under-training diagnostic retains its expressly permitted budget increases.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Raw and structured arms match each other in data, epochs, optimizer, seeds, and approximate encoder capacity, but the coefficient-only baseline receives a smaller total collocation budget. Reaction has 5,000 versus 74,000 collocation points per full-batch step; core RD has 9,000 versus 124,000. The separately allowed diagnostic increases are not the source of this failure.",
+     "evidence": [
+      "proposal/logs/runs/core-reaction_{baseline,flat,structured}_s0/config.json",
+      "proposal/logs/runs/core-rd_{baseline,flat,structured}_s0/config.json",
+      "proposal/code/speccond/data.py:120–169",
+      "proposal/code/speccond/train_engine.py:55–138",
+      "task_spec.md:151"
+     ]
+    }
+   ],
+   "unresolved_reasons": [
+    {
+     "node_id": "conditioning_attribution.beats_naive_control",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "missing_judgment",
+     "observed_value": null,
+     "accepted_values": [
+      "beats"
+     ],
+     "question": "On the held-out IC sets, does the structured encoder beat the matched naive control by at least delta?",
+     "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+     "judge_reason": "The comparison was performed, but structured conditioning neither wins nor uniformly ties. Its reaction parameter and combination errors are worse by 0.017878 and 0.030560, exceeding pooled SDs 0.009962 and 0.015784. The available values omit an evaluated, materially worse or mixed result; 'not_tested' and 'ties' would misdescribe the evidence.",
+     "evidence": [
+      "proposal/logs/runs/core-reaction_{flat,structured}_s{0,1,2}/metrics.json",
+      "proposal/logs/aggregate/main_table_body.tex",
+      "rubric.json: conditioning_attribution.beats_naive_control.values"
+     ]
+    }
+   ]
+  }
+ },
+ "cumulative": {
+  "G1": {
+   "status": "fail",
+   "blocked_by": []
+  },
+  "G2": {
+   "status": "fail",
+   "blocked_by": [
+    "G1"
+   ]
+  },
+  "G3": {
+   "status": "fail",
+   "blocked_by": [
+    "G1",
+    "G2"
+   ]
+  }
+ },
+ "outcome": "integrity_failure",
+ "passes": {
+  "G1": false,
+  "G2": false,
+  "G3": false
+ },
+ "nodes": {
+  "integrity:number_traceability.errors_and_margins_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:number_traceability.breadth_and_latent_values_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:no_hardcoded_values.no_hardcoded_reference_or_encodings": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:pre_stated_method.settings_match_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:baseline_and_control_honesty.numbers_from_own_runs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:attribution_integrity.non_degenerate_integrity": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:held_fixed_disclosure.deviations_disclosed": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:code_paper_alignment.methodology_describes_code": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:integrity.execution_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:integrity.precommitment_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:no_training_on_held_out.held_out_specs_never_trained": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:selective_reporting.all_specs_seeds_reported": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:no_replication_of_published_method.not_a_known_method_replication": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:no_external_code.external_code_attributed": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "direction:deliverables.report_pdf_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.logs_directory_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.plan_file_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:deliverables.baseline_and_control_runs_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.core_generalization_runs_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.ablation_runs_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.generalization_boundary_runs_logged": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.boundary_condition_runs_logged": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.pde_type_breadth_runs_logged": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.main_results_table_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:deliverables.error_vs_specification_curves_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:deliverables.methodology_section_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.codebase_notes_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.attempts_log_present": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:method_specification.encoder_stated_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:method_specification.representation_fully_specified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "fully_specified"
+  },
+  "direction:method_specification.injection_point_stated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:method_specification.hyperparameter_protocol_stated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:method_specification.motivation_grounded_in_literature": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:baseline_and_control.coefficient_only_reproduced": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:baseline_and_control.naive_control_matched": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "matched"
+  },
+  "direction:baseline_and_control.held_fixed_respected": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:core_result.joint_coeff_ic_generalization": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:core_result.unseen_ic_family_generalization": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "marginal"
+  },
+  "direction:core_result.seen_spec_preserved": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "regressed"
+  },
+  "direction:conditioning_attribution.beats_naive_control": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:conditioning_attribution.removed_conditioning_ablation": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "degrades_appropriately"
+  },
+  "direction:conditioning_attribution.non_degenerate": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "non_degenerate"
+  },
+  "direction:boundary_conditions.multi_bc_generalization": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "within_noise"
+  },
+  "direction:boundary_conditions.reference_validated": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "validated"
+  },
+  "direction:pde_type_breadth.multi_family_supported": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "two_or_more"
+  },
+  "direction:pde_type_breadth.breadth_reported": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:pde_type_breadth.held_out_transfer": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "composition_transfer_failed"
+  },
+  "direction:statistical_rigor.multiple_seeds_with_error_bars": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:statistical_rigor.core_margins_separated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "within_noise"
+  },
+  "direction:mechanism_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:mechanism_analysis.depth": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "deep"
+  },
+  "direction:generalization_boundary.boundary_mapped": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "mapped"
+  },
+  "direction:generalization_boundary.failure_setting_designated": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "vague"
+  },
+  "direction:generalization_boundary.failure_regime_meaningful": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "meaningful"
+  },
+  "direction:generalization_boundary.fundamental_vs_undertrained_discriminated": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:generalization_boundary.failure_mechanism_explained": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "explained"
+  },
+  "direction:failure_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:failure_analysis.patterns_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:failure_analysis.patterns_explained_coherently": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:originality_and_literature.contribution_originality": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "meaningful_extension"
+  },
+  "direction:originality_and_literature.literature_engagement": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "adequate"
+  },
+  "direction:originality_and_literature.spec_independence": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "independent"
+  },
+  "direction:writing_quality.journal_quality_structure": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "reasonable"
+  },
+  "direction:writing_quality.limitations_discussion_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantive"
+  },
+  "direction:writing_quality.rendered_pdf_clean": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.neurips_style": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.main_results_table_complete": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:contract.matched_budget.budget_and_capacity_matched": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.environment_integrity.pde_definitions_and_construction_unaltered": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.reference_solution_validity.new_references_validated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.experiment_completeness.all_experiments_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.effort_evidence.attempts_log_when_partial_work_claimed": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:evidence_completeness.quantitative_sources_documented": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:evidence_completeness.required_reporting_coverage": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  }
+ }
+}

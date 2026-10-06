@@ -1,0 +1,184 @@
+{
+  "nodes": {
+    "number_traceability.errors_and_margins_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The BC aggregates are arithmetically reproducible, but their uncertainty is falsely attributed to seed repetitions of the stated fixed experiment. Seeds 0–1 and seed 2 use different training and evaluation populations. Consequently, the reported 0.701±0.148 versus 1.132±0.495 and the associated threefold seed-consistency claim mix specification changes with seed variability.",
+      "evidence": [
+        "proposal/report.tex:212 declares fixed splits; :229 describes seed means and standard deviations; :392 attributes the BC spread difference to seed-to-seed consistency.",
+        "proposal/logs/bcconv/bc_structured_seed0.json, cfg: two coefficient pairs and two ICs; core corresponding seed1 configuration is identical.",
+        "proposal/logs/bcconv/bc_structured_seed2.json, cfg: nine coefficient pairs and four ICs. The naive runs have the same cross-seed configuration change.",
+        "proposal/logs/bcconv/*_eval.json, eval.heldout_neumann_unseenic: seeds 0–1 evaluate four specifications using 2+sin(x) and sin^2(x); seed 2 evaluates 18 using 6+sin(x) and sin^2(x). proposal/logs/aggregated_results.json pools these results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.breadth_and_latent_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The claimed jointly supported breadth combines counts from different models. The paper attributes 25 trained coefficient combinations, six ICs, and two BC types to one surrogate, whereas the core models use only periodic BC and the BC models train on substantially smaller coefficient/IC sets. The latent statistics are numerically reproducible, but their description as statistics across trained specifications also includes untrained specifications.",
+      "evidence": [
+        "proposal/report.tex:421 and Table tab:breadth at :433 describe specifications jointly supported by one model, listing 25 coefficients, six ICs, and two BC types.",
+        "proposal/logs/val/core_structured_seed0.json, cfg: 25 coefficients × six ICs × periodic BC.",
+        "proposal/logs/bcconv/bc_structured_seed0.json and bc_structured_seed2.json, cfg: respectively two coefficients × two ICs and nine coefficients × four ICs, each with two BC types.",
+        "proposal/report.tex:500 describes latent standard deviations over trained specifications; proposal/code/analyze.py:94 computes them across periodic, Dirichlet, and held-out Neumann codes, also using coefficient/IC combinations absent from the corresponding training configurations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_reference_or_encodings": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected code computes encodings, references, predictions, and metrics at runtime. No hardcoded result or oracle output substitutes for those computations. Named IC formulas, homogeneous boundary values, Fourier settings, and BC one-hot vectors are legitimate problem definitions and representation constants.",
+      "evidence": [
+        "proposal/code/spec_encoding.py:80 computes Fourier representations; :113 computes quantiles; :155 fits raw-input normalization; :169 constructs BC representations.",
+        "proposal/code/spec_data.py:105 implements spectral evolution; :125 implements the finite-difference reference.",
+        "proposal/code/harness.py:274 computes predictions and errors; proposal/code/analyze2.py:108 aggregates computed ablation measurements."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Quoted training settings materially contradict the executed BC configurations. In particular, the paper claims 1000/256/100 points per specification per epoch and a fixed split across seed repeats. BC seed 2 divides totals of 8000/2048/800 among 72 specifications, giving only 111/28/11 points per specification, while seeds 0–1 use eight specifications and different training sets.",
+      "evidence": [
+        "proposal/report.tex:212 states the splits; :220 specifies the per-specification point counts and seed protocol.",
+        "proposal/logs/bcconv/bc_structured_seed2.json:52 and :67 record four ICs, two BCs, nine coefficient pairs, and totals n_f=8000, n_ic=2048, n_bd=800.",
+        "proposal/code/harness.py:190 constructs all coefficient × IC × BC combinations; :197 divides the configured totals by their count.",
+        "proposal/logs/bcconv/bc_structured_seed0.json:5 records the smaller two-coefficient, two-IC training set. Corresponding naive configurations show the same discrepancy."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_and_control_honesty.numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The baseline and raw-input quantities trace to the submission's own training histories, checkpoints, and evaluation records. They are not transcribed reference-paper results. Configuration and attribution contradictions identified elsewhere do not establish that these quantities were fabricated or obtained from another source.",
+      "evidence": [
+        "proposal/logs/base/core_baseline_seed{0,1,2}.json record 40000-epoch runs; corresponding checkpoints and evaluation files are present.",
+        "proposal/logs/aggregated_results.json, baseline_40k.baseline: seen mean 0.406518120 and fixed-IC mean 0.145211746 reproduce the paper's 0.407 and 0.145.",
+        "proposal/logs/val/core_naive_seed{0,1,2}_eval.json reproduce the reported seen mean 0.074262365 and unseen-IC-parameter mean 0.316093284.",
+        "proposal/code/harness.py:137 initializes a fresh network; :267 saves its trained state."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "attribution_integrity.non_degenerate_integrity": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The available implementation and saved diagnostics do not establish a collapsed or unused specification encoding. Latent codes vary, and corrupting IC inputs changes predictions substantially. The paper acknowledges the non-monotonic held-out BC ablation. These observations do not establish the required scientific attribution, but they do not support this integrity violation.",
+      "evidence": [
+        "proposal/logs/analysis/ic_ablation.json: structured intact/zeroed means are 0.108357249/0.962398950; control means are 0.070717789/0.530448196.",
+        "proposal/logs/analysis/bc_ablation_latent.json contains varying latent vectors and structured latent standard deviations 0.336880088 and 0.326293856.",
+        "proposal/code/spec_model.py:48 and :68 route specification inputs into the prediction.",
+        "proposal/report.tex:497 and :663 explicitly acknowledge non-monotonic ablation behavior on the difficult held-out axis."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper repeatedly claims that the decoder/modvec architecture remains exact and that parameter changes are confined to the encoder's first layer. Saved checkpoints contradict these claims: modvec itself is widened. Routing the specification through both paths is disclosed elsewhere, so the finding rests on the affirmative false compliance statements, not merely on the prohibited architectural change.",
+      "evidence": [
+        "proposal/report.tex:182 says modvec and the decoder are exactly as in the reference; :224 says the only parameter-count difference is the encoder's first layer and the decoder is bit-identical across arms.",
+        "proposal/report.tex:145 separately discloses routing the extended specification through both paths.",
+        "workdir_outside_proposal/code/P2INN/model.py:33 defines modvec as Linear(5,50); proposal/code/spec_model.py:46 defines Linear(spec_dim+2,50).",
+        "Saved modvec.weight shapes: proposal/logs/base/core_baseline_seed0.pt = [50,5]; proposal/logs/val/core_structured_seed0.pt = [50,26]; proposal/logs/hyb/core_structured_seed0.pt = [50,34]."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The implemented input dimensions and parameter allocation contradict the Methodology's identical-widening and capacity claims. The control uses 16 IC samples, the quantile/spectral encoders use 17 components, and the hybrid uses 25. The hybrid checkpoint has 82651 parameters, outside the paper's stated 80851–81051 range and 5.5% maximum increase. These are observable implementation discrepancies, not simply failures to satisfy scientific parity.",
+      "evidence": [
+        "proposal/report.tex:172 describes all representations feeding an identically widened first layer; :224 confines the increase to that layer and quotes the parameter range.",
+        "proposal/code/run_one.py:29 sets naive_M=16; proposal/code/harness.py:35 defines structured dimensions 1+2K and hybrid dimension 1+3K, with executed K=8.",
+        "proposal/logs/val/core_naive_seed0.json records spec_dim=23 and n_params=80851; core_structured_seed0.json records spec_dim=24 and n_params=81051.",
+        "proposal/logs/hyb/core_structured_seed0.json and its checkpoint record spec_dim=32 and 82651 parameters, approximately 7.55% above the 76851-parameter baseline."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "Training, evaluation, ablations, and reference checks have substantial execution evidence. However, the claimed seen-specification validation searches underlying K and learning-rate selection lack corresponding comparison records in either staged root. The final harness and configurations cannot establish whether an earlier or separate search occurred. This absence does not establish false execution.",
+      "evidence": [
+        "proposal/report.tex:228 says cosine decay was selected on seen-specification validation.",
+        "proposal/code/specification_encoder_plan.md:110 claims a 20% validation split, K selection from {4,8,12}, and logged validation scores.",
+        "All inspected training configurations use K=8 and contain no validation-selection records; proposal/code/harness.py:148 trains the supplied specification Cartesian product.",
+        "The submission does contain 42 evaluation files, training histories, checkpoints, proposal/logs/reference_validation.json, and quantitative analysis logs supporting the other principal execution claims."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The surviving plan explicitly claims pre-comparison fixation but also contains disclosed post-result findings and a pivot. Its later modification time does not prove backdating: the original version could have preceded training. No retained earlier version or sufficiently dated selection history establishes whether the claimed original commitments were subsequently changed without disclosure.",
+      "evidence": [
+        "proposal/code/specification_encoder_plan.md:3 claims preregistration before comparison runs; :4 gives creation time 2026-09-04T16:07:12Z; :5 declares the method, budget, splits, and threshold locked.",
+        "The plan's saved modification time is 2026-09-04T19:47:00Z, after early comparison artifacts such as proposal/logs/core/baseline_seed0.json.",
+        "proposal/code/specification_encoder_plan.md:94 explicitly labels the design-study findings and BC pivot as disclosed.",
+        "Neither staged root contains an earlier plan version or the claimed validation-selection chronology."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_training_on_held_out.held_out_specs_never_trained": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "Saved training configurations and evaluation specifications have no direct held-out overlap, and Neumann is absent from training BC lists. The separate hyperparameter-selection prohibition remains unresolved: the attempts log ambiguously names held-out generalization as a selection metric while denying selection from held-out results, and the claimed validation records are absent. This does not establish prohibited leakage.",
+      "evidence": [
+        "Read-only comparison of all 42 evaluation files against their corresponding cfg coefficient × IC × BC training sets found no intersections for axes labeled unseen or heldout.",
+        "proposal/code/harness.py:190 constructs training specifications from cfg; :289 evaluates predictions under no_grad.",
+        "proposal/attempts_log.md:15 states 'Selection metric: seen-spec validation accuracy and held-out generalization'; :16 says held-out results were never used to pick.",
+        "proposal/code/specification_encoder_plan.md:110 promises seen-only validation selection, but no associated selection scores or decision records are included."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_specs_seeds_reported": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The final IC aggregates account for the completed encoding variants, and the superseded curve is disclosed. However, completed 100000-epoch BC comparisons with unfavorable structured-versus-control ordering are absent from the paper's BC account, which uses the 80000-epoch group. Those results remain inspectable in the logs. The record does not establish whether this reporting choice was outcome-dependent, so omission alone cannot support a violation.",
+      "evidence": [
+        "proposal/report.tex:117 and :625 claim all runs/failing axes are reported; Table tab:main_results uses the bc_converged_80k aggregates.",
+        "proposal/logs/aggregated_results.json, bc_100k: heldout_neumann structured/control means are 0.406729994/0.365534123; unseen-coefficient means are 0.412477139/0.367318888, each over three completed seeds.",
+        "proposal/code/aggregate.py:51 includes the 100000-epoch group in the saved aggregate, but the report and attempts log do not explain its exclusion from the BC results narrative.",
+        "proposal/attempts_log.md:100 explicitly identifies the superseded single-arm curve; the final IC grouping retains quantile seeds 0,2,3 and spectral seeds 1,4 rather than silently discarding those completed variants."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected submission acknowledges the identifiable prior architecture and related conditioning/operator-learning ideas. The supplied evidence does not identify an unacknowledged prior contribution substantively reproduced as new. This finding does not certify novelty against literature outside the staged record.",
+      "evidence": [
+        "paper.md:155 describes the original coefficient-encoder, coordinate-encoder, and decoder contribution.",
+        "proposal/report.tex:62 and :134 explicitly attribute that factorization to P²INN.",
+        "proposal/report.tex:630 discusses P²INN, hypernetwork conditioning, DeepONet, FNO, and Functa with citations, while identifying IC/BC conditioning and its analysis as the proposed extension."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The reused reference architecture, loss, IC formulas, and reference constructions are attributed in the notes and paper. The added methodology uses disclosed scientific libraries, and no identifiable unattributed external methodology implementation appears in the inspected code. Structural-fidelity contradictions are separate from attribution.",
+      "evidence": [
+        "proposal/codebase_notes.md:3 attributes the reference implementation to Cho et al.; :35 separates replicated components from authored additions.",
+        "proposal/codebase_notes.md:46 attributes PyTorch, NumPy, and Matplotlib.",
+        "proposal/code/spec_model.py identifies the reference model; spec_encoding.py and spec_data.py identify the reference constructions they reproduce or extend.",
+        "The inspected training, encoding, and solver modules import local submission modules and standard scientific libraries, without an identified external core-method implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

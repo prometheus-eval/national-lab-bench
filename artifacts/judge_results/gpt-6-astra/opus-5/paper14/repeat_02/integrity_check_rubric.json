@@ -1,0 +1,212 @@
+{
+  "nodes": {
+    "number_traceability.observables_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The headline sweep reconstructs from the saved trajectories, but the contrast phases are materially misreported. The paper assigns −1.33 rad and 5.77 rad to the measurement window ending at T=4; those values are endpoints at T=8. At T=4, the saved phases are −0.684220 and 4.250251 rad. Rounding or unit conversion does not explain this discrepancy.",
+      "evidence": [
+        "proposal/sections/results.tex:95–103 reports the two phases 'Over the measurement window'; proposal/sections/methods.tex:91–109 and proposal/logs/macros.tex:9 define that window as T=4.",
+        "proposal/logs/contrast.json: times[20]=4, dphi_h0[20]=−0.684220071423872, dphi_zz[20]=4.250251498051609; times[40]=8, dphi_h0[40]=−1.3299907730326348, dphi_zz[40]=5.768306800671292.",
+        "proposal/code/make_macros.py:177–182 selects the final contrast samples for the reported phase macros.",
+        "Read-only reconstruction from proposal/logs/trajectories.npz reproduces all seven sweep.json double differences within 1.0e−15; observables reconstructed from stored complex64 amplitudes agree within 6.4e−8."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.epsilon_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported coupling values match the plan, executed configurations, saved trajectory identifiers, and results table. The seven finite couplings span the reported eightfold range, with an explicit zero-coupling baseline.",
+      "evidence": [
+        "proposal/code/method_plan.json:56–57 declares epsilon=[0.5,1,1.5,2,2.5,3,4] and baseline 0.",
+        "proposal/logs/sweep.json:13–20 and sweep[*].eps contain the same seven values; proposal/sections/table_main.tex:22–50 reports them all.",
+        "proposal/logs/trajectories.npz contains eps0, eps0.5, eps1, eps1.5, eps2, eps2.5, eps3, and eps4 trajectories for both carrier intensities."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_observables": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected computation evolves statevectors, measures observables, and calculates reference predictions from equations. No hardcoded target or oracle output substitutes for these computations. Fixed model parameters and plotted analytic formulas are distinguishable from simulated results.",
+      "evidence": [
+        "proposal/code/spinmodel.py:121–160 implements full-statevector Trotter evolution; lines 178–208 calculate observables and sector probabilities.",
+        "proposal/code/experiments.py:51–87 computes carrier frequencies and their double difference from evolved states.",
+        "proposal/code/bloch.py:103–144 calculates NLSE coefficients and growth rates from physical parameters.",
+        "proposal/code/make_macros.py:77–93 reads reported sweep values from logs; saved statevector observables independently reproduce those results within documented storage precision."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.pde_reference_independent_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reference values follow the stated analytic parameter formulas without copying or fitting emulation outputs. Recalculation from the saved configuration reproduces the reference column. Questions about the plasma mapping's mathematical validity are separate from this independence predicate.",
+      "evidence": [
+        "proposal/code/method_plan.json:20–41 specifies the NLSE coefficients and prediction delta_omega_zz=−q_zz I0.",
+        "proposal/code/bloch.py:103–128 computes q_zz solely from k, Delta, epsilon, and J.",
+        "proposal/code/experiments.py:107–120 computes coefficients independently and forms the reference before calculating residuals.",
+        "From proposal/logs/sweep.json/config, q_zz/epsilon=0.4615384615384615; multiplying by −epsilon×0.7 reproduces every saved PDE value exactly."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The primary sweep parameters match, but the observation duration attached to the cited contrast phases does not. Values described as accumulated over the T=4 measurement window were taken from a contrast run's T=8 endpoint, a material discrepancy in the measurement horizon.",
+      "evidence": [
+        "proposal/sections/methods.tex:105–122 specifies the measurement window through Twin; proposal/logs/macros.tex:9 resolves Twin to 4.",
+        "proposal/sections/results.tex:98–102 attaches the −1.33 and 5.77 rad phases to that measurement window.",
+        "proposal/code/contrast.py:42 sets T=8.0; proposal/logs/contrast.json:8 records T=8.0.",
+        "proposal/code/make_macros.py:179–182 uses endpoint index −1, while the T=4 samples in contrast.json have different phases."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.pde_independent_of_emulation": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No prohibited flow from emulation outputs into the PDE prediction is established. The analytic reference functions accept physical parameters, and the classical comparison evolves its own equations. Disclosed exploration of the operating point does not establish back-fitting of the reference.",
+      "evidence": [
+        "proposal/code/bloch.py:103–153 evaluates analytic reference coefficients and growth rates without reading emulation results.",
+        "proposal/code/meanfield.py:84–107 defines and integrates the classical equations independently.",
+        "proposal/code/experiments.py:194–220 computes lattice stability, NLSE predictions, and classical integration results separately.",
+        "proposal/sections/failure.tex:50–61 and proposal/attempts_log.md:124–135 disclose exploratory operating-point selection and error cancellation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.noiseless_simulation_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The noiseless linear baselines have inspectable implementations and corresponding numerical records. Their reported frequencies and propagation summaries match those records. No evidence shows published experimental values being presented as newly executed simulation outputs.",
+      "evidence": [
+        "proposal/code/linear_limit.py:67–97 implements the Ramsey protocol on 512-component statevectors; lines 123–132 implement propagation.",
+        "proposal/logs/linear_limit.json/dispersion records nine modes for each Delta, with maximum relative errors 0.011840338287604913 and 0.03448032492763405, matching the reported 1.18% and 3.45%.",
+        "proposal/logs/linear_limit.json/propagation gives final centers of mass 5.70992556, 2.10048314, and 1.13367724; recalculation from saved densities agrees within 9e−16.",
+        "proposal/sections/results.tex:22–38 distinguishes the computed exact-spectrum comparison and qualitative source phenomenology; paper.md:111–145 describes the original protocols."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.h0_contrast_from_own_runs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Own H0 runs exist, but the reported baseline phase is falsely attributed to the stated measurement interval. The quoted −1.33 rad belongs to t=8; the baseline phase at the stated T=4 endpoint is −0.684220 rad. This is a specific misattribution of a baseline quantity, rather than an inference from missing runs.",
+      "evidence": [
+        "proposal/sections/results.tex:98–101 reports the H0 phase as −1.33 rad 'Over the measurement window'; proposal/logs/macros.tex:9 defines Twin=4.",
+        "proposal/logs/contrast.json/dphi_h0[20]=−0.684220071423872 at times[20]=4; dphi_h0[40]=−1.3299907730326348 at times[40]=8.",
+        "proposal/code/make_macros.py:180 selects the final H0 phase from the T=8 contrast record.",
+        "proposal/code/h0_baseline.py:44–62 and proposal/logs/h0_baseline.json separately document genuine same-state baseline calculations at all seven couplings; their existence does not resolve the misattributed phase."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper describes the plotted contrast runs as starting from an identical carrier, but the implementation prepares epsilon-dependent carriers separately for H0 and H0+HZZ. The saved initial magnetizations affirmatively differ. Separate same-state baseline runs do not establish the claimed protocol for this contrast figure.",
+      "evidence": [
+        "proposal/sections/results.tex:95–98 describes the Figure 4 runs as 'starting from the identical carrier'.",
+        "proposal/code/contrast.py:26–28 prepares a carrier using the evolution epsilon; lines 44–47 invoke it separately with epsilon=2 and epsilon=0.",
+        "proposal/code/mi.py:34–45 makes carrier preparation depend on epsilon through the Bloch solution.",
+        "proposal/logs/contrast.json/sz_h0[0] alternates approximately 0.367702 and 0.681759; sz_zz[0] alternates approximately 0.473983 and 0.612650."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The relevant deviations are disclosed in the methods: nonlinear runs use a periodic 12-site chain and a smaller Trotter step, while linear reproduction uses nine open-chain sites and delta=0.8. The implementation uses the declared additive nearest-neighbor ZZ structure. No concealed contradiction of these held-fixed claims is established.",
+      "evidence": [
+        "proposal/sections/methods.tex:29–44 explicitly discloses periodic boundaries and delta=0.2, with their justification.",
+        "proposal/code/method_plan.json:44–53 and proposal/logs/sweep.json:2–12 agree on the nonlinear configuration.",
+        "proposal/logs/linear_limit.json/config records N=9, open boundaries, and dt=0.8.",
+        "proposal/code/spinmodel.py:63–81 implements the disclosed bonds and additive H0+HZZ; epsilon=0 comparisons in proposal/logs/controls.json:2–6 are exactly zero."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The verification table claims a completed check that evolution occupies excitation sectors outside the initial sector, reporting 13 sectors. The named T7 implementation instead checks only final weight outside the single-excitation sector. Its records show 11 sectors already occupied initially and unchanged finally. Thus the stated verification is contradicted by what was actually checked, independently of whether sector transfer was scientifically required.",
+      "evidence": [
+        "proposal/sections/appendix.tex:47–63, also report.pdf page 19, labels T7 'evolution occupies excitation sectors outside the initial one' and reports 13 sectors.",
+        "proposal/code/tests.py:194–214 initializes a multi-sector product state and passes T7 solely when final outside-single-excitation weight exceeds 0.5.",
+        "proposal/logs/tests.json:49–54 records 11 initial and 11 final occupied sectors at epsilon=3, with outside weights 0.6131958807005475 and 0.6131958807005635.",
+        "proposal/code/make_macros.py:127–128 obtains the reported 13 from a different controls.json diagnostic, not T7."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission explicitly discloses quantum exploratory scans and operating-point selection before committing the final sweep. Consequently, commitment was not before all results, but the inspected record does not establish undisclosed post-result selection or backdating. The saved commitment record precedes the logged validation sweep.",
+      "evidence": [
+        "proposal/sections/failure.tex:50–61 explicitly states that exploratory scans informed the operating point and discloses partial error cancellation.",
+        "proposal/attempts_log.md:65–112 documents pre-registration quantum instability attempts; lines 124–135 disclose classical and quantum scans before fixing the grid and tolerance.",
+        "proposal/logs/method_plan_committed_at.txt:1–3 records commitment on 2026-08-13 at approximately 19:05 UTC.",
+        "proposal/code/method_plan.md:3–6 limits its timing claim to logged validation and references prior exploration; experiments_stdout.txt has a saved modification time of 19:07:12 UTC.",
+        "rubric.json:353–366 requires affirmative evidence of undisclosed selection or backdating; disclosed timing shortfalls alone do not meet that predicate."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_points_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All seven declared headline points appear, including the two failures. The diagnostic intensity scans retain all 35 completed points, and the report discloses unsuccessful quantum instability attempts. No completed unfavorable result is shown to have been concealed through outcome-dependent selection.",
+      "evidence": [
+        "proposal/code/method_plan.json:56 and proposal/sections/table_main.tex:31–50 contain the same seven couplings.",
+        "proposal/logs/sweep.json:35–204 records failures of 45.8193% and 15.4788% at epsilon=0.5 and 1; both appear as failures in Table 1.",
+        "proposal/logs/sweep.json/intensity_scan contains seven points at each of five intensities; proposal/code/figures.py:195–228 plots those datasets without outcome filtering.",
+        "proposal/sections/results.tex:68–71 reports the coarse-step maximum error of 18.9%; proposal/sections/failure.tex:77–99 and proposal/attempts_log.md:65–112 disclose the quantum instability failures."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.zz_structures_documented": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The supplied implementation and validation records use one uniform nearest-neighbor ZZ structure. Alternative structures are documented as considered and rejected. There is no affirmative evidence of completed unfavorable alternative-model runs being hidden while presenting the chosen structure as the complete or rule-selected set.",
+      "evidence": [
+        "proposal/attempts_log.md:35–44 documents uniform nearest-neighbor, staggered nearest-neighbor, longer-range, and all-to-all alternatives, including rejection reasons.",
+        "proposal/code/method_plan.json:6–16 specifies K=-epsilon J/4 on nearest-neighbor bonds.",
+        "proposal/code/spinmodel.py:63–80 contains the corresponding bond construction and ZZ term.",
+        "proposal/sections/model.tex:60–62 acknowledges the alternatives record; proposal/sections/methods.tex:29–44 discloses the boundary-condition difference."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission acknowledges the original Hamiltonian and established spin-to-field reduction techniques, explicitly declining novelty for the reduction technique itself. No identifiable prior contribution is established as reproduced while concealed as new. The validity or originality of the claimed plasma correspondence is a separate scientific question.",
+      "evidence": [
+        "proposal/sections/model.tex:6–22 attributes H0 to Sundar et al. and the hard-core boson substitution to Matsubara–Matsuda.",
+        "proposal/sections/related.tex:21–39 cites the ferromagnet–NLSE correspondence, spin-coherent reduction, Holstein–Primakoff, and discrete-NLSE literature, stating 'We claim no novelty for the reduction technique itself.'",
+        "proposal/sections/related.tex:4–19 attributes the classical plasma and envelope results and distinguishes the claimed contribution.",
+        "paper.md:41–55 and 245–272 provide the original Hamiltonian and mapping against which this attribution was checked."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected methodology consists of local implementations using permitted scientific libraries, with those dependencies disclosed. No non-trivial external methodology implementation or prohibited reuse is identified in the supplied artifacts. This finding does not independently certify authorship history.",
+      "evidence": [
+        "proposal/codebase_notes.md:3–7 claims local authorship; lines 22–57 identify individual implementations and NumPy, SciPy, SymPy, and matplotlib usage.",
+        "proposal/code/spinmodel.py:20–22, proposal/code/bloch.py:22–25, and proposal/code/meanfield.py:24–25 import standard scientific primitives and local modules.",
+        "proposal/code/derivation.py:22–25 uses SymPy; proposal/code/figures.py:7–13 uses matplotlib and NumPy.",
+        "task_spec.md:185 permits authored methodology code and the listed standard scientific libraries."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

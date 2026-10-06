@@ -1,0 +1,326 @@
+{
+  "nodes": {
+    "code_methodology_match.hyperparameters_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported covariance scale is the largest binned squared difference, but the implementation floors that scale at 1e-12. This materially changes the diffusion surrogate's predictive variance; it is not the disclosed relative observation-noise floor or a units conversion.",
+      "evidence": [
+        "proposal/report.tex:230-249 defines k=s*exp(-a*h), with s determined by variogram normalization.",
+        "proposal/code/core.py:493,517,553,574-575 passes sqrt(max(sill,1e-12)) as the kernel amplitude; core.py:164-173 squares this amplitude.",
+        "proposal/logs/main_3d/grid_diffusion3d_b1000_s0.json, evals[n=1000]: fitted sill=1.3927701924496688e-19, whereas the executed kernel uses 1e-12, approximately 7.18 million times larger. Its core_sha1=37e363ef3e31 matches the submitted core.py."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.acquisition_optimizer_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The available runner and supplied gpCAM implementation agree with the reported differential-evolution optimizer, population multiplier, iteration limit and lack of polishing. No affirmative evidence establishes a different optimizer in the supporting runs.",
+      "evidence": [
+        "proposal/report.tex:334-340 specifies gpCAM differential evolution, population 12d, 15 iterations and no polish.",
+        "proposal/code/core.py:414-427 calls gpo.ask(method='global', pop_size=12, max_iter=15, tol=1e-8).",
+        "workdir_outside_proposal/code/gpCAM/gpcam/surrogate_model.py:321-335 forwards these settings to scipy differential_evolution with polish=False.",
+        "proposal/code/run_sweep.py:48-52 invokes run_config with its default optimizer settings."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.surrogate_matches_paper": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The implemented predictive distribution differs materially from the described data-scaled Matérn surrogate. Although the exponential kernel and variogram-fitting procedure are present, the undisclosed absolute covariance floor overrides the fitted diffusion scale and changes uncertainty and distributional scores.",
+      "evidence": [
+        "proposal/report.tex:223-250 describes a covariance scale derived from measured squared differences and a scale-relative numerical noise floor.",
+        "proposal/code/core.py:164-173,236-243,493,553,574-575 implements the exponential kernel but replaces fitted sill values below 1e-12.",
+        "proposal/logs/main_3d/grid_diffusion3d_b1000_s0.json, evals[n=1000]: sill=1.3927701924496688e-19, IAE=5.027163530430508e-12 and CRPS=3.171837324197106e-08.",
+        "Across saved diffusion checkpoints, fitted sills range from approximately 1.26e-22 to 4.79e-19, all below the implementation's floor."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.proposed_acquisition_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The proposed acquisition formula matches the implementation: posterior variance multiplied by exp(beta*(nearest-distance/median-nearest-neighbor-spacing)^2). The headline dispatch explicitly uses beta=4 across functions; older docstrings describing other defaults do not override that dispatch.",
+      "evidence": [
+        "proposal/report.tex:275-298 states the BVS formula and global beta=4.",
+        "proposal/code/core.py:336-352 computes the stated variance, nearest distance and median spacing.",
+        "proposal/code/core.py:531-538 maps bvs4 to make_acq_bvs(4.0).",
+        "proposal/code/analyze.py:38 identifies bvs4 as the headline method; all five functions have ten bvs4 run records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.smart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The primary SMART quantities reproduce from the submission's own saved runs, including all ten seeds for each function and required budget. The method and benchmark discrepancies identified elsewhere do not establish fabricated baseline numbers.",
+      "evidence": [
+        "proposal/logs/main_2d/smart_*_b500_s0.json through s9.json and proposal/logs/main_3d/smart_diffusion3d_b1000_s0.json through s9.json contain trajectories, checkpoint metrics and timestamps.",
+        "Reaggregation of all 21 SMART cells reproduces proposal/tables/main_results.tex after rounding and the declared diffusion scaling.",
+        "The saved diffusion SMART mean at n=1000 is 2.2561405251371634e-12, matching the reported 2.26e-12."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.gsmart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The primary gSMART quantities reproduce from ten-seed execution records. Its poor results are disclosed. Equality with SMART on diffusion is consistent with the effectively inactive gradient weighting and matched random streams, rather than affirmative evidence of copied or fabricated results.",
+      "evidence": [
+        "proposal/code/core.py:255-265 implements the literal c=20 gradient-weighted criterion.",
+        "proposal/logs/main_2d/gsmart_piecewise1_b500_s*.json aggregate to IAE=43.29272188991219 at n=500, matching proposal/tables/main_results.tex:8.",
+        "proposal/logs/main_3d/gsmart_diffusion3d_b1000_s*.json contain separately timestamped runs and aggregate to 2.2561405251371634e-12 at n=1000.",
+        "proposal/report.tex:647-671 explicitly discusses gSMART's failures and its numerical coincidence with SMART on diffusion."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.no_paper_numbers_cited_as_baselines": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported primary baseline values trace to the submitted execution records. Comparisons with the source paper are attributed as reference behavior; no transcribed reference-paper number was identified as an own-run baseline.",
+      "evidence": [
+        "All 105 numerical cells in proposal/tables/main_results.tex reproduce from proposal/logs/main_2d/ and main_3d/.",
+        "proposal/code/analyze.py:55-70,91-122 builds the primary table from saved run metrics.",
+        "proposal/report.tex:965-986 distinguishes its recomputed comparisons from the original paper's interpolation choices and experimental gSMART results.",
+        "paper.md:234-265,319-341,383-401 supplies the original comparison context."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_claims_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The approximately 2.2-fold sample-efficiency claim is supported, but stronger same-budget improvement claims contradict the logs. The stated 36–47% diffusion advantage at every budget falls to 31.96% at 500 and 28.88% at 1000. The claim that BVS halves percentage error is also contradicted by the reported and logged MAPE values.",
+      "evidence": [
+        "proposal/report.tex:420-426 claims a 36–47% diffusion margin at every budget; report.tex:519-526 says BVS halves the uncertainty baselines' error.",
+        "Ten-seed diffusion means at n=500: SMART=3.173164e-12, BVS=2.158877e-12; at n=1000: SMART=2.256140525e-12, BVS=1.604457455e-12.",
+        "proposal/logs/main_3d/*_diffusion3d_b1000_s*.json, evals[n=1000].mape: SMART averages 9.6042253%, BVS 7.0314795%, a reduction of approximately 26.8%, not 50%.",
+        "proposal/logs/speedup.json, diffusion3d.smart.bvs4=450.1676283903243 supports the separately stated max-budget sample-efficiency calculation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.consistent_direction_acknowledged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The principal per-function directions and uncertainty are conveyed: small 2D advantages over SMART, larger diffusion gains, persistent diffusion losses to random sampling, and intermediate-budget grid wins. Calling the small 2D advantages statistically indistinguishable does not conceal their stated direction. The magnitude overstatements are assessed separately.",
+      "evidence": [
+        "proposal/report.tex:420-457 explicitly characterizes small 2D gains, diffusion improvement over SMART and failure to overtake random.",
+        "proposal/report.tex:624-645,674-701 discusses non-wins, grid advantages and ablation behavior.",
+        "proposal/figures/convergence_2d.png and convergence_3d.png display the saved mean curves and variability bands.",
+        "proposal/report.tex:607-614 also exposes the small n=250 reversals on Piecewise I and Smooth oscillatory rather than removing those results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_reference_consistent": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The speedup calculations consistently target each baseline's maximum-budget mean error: 500 measurements for 2D and 1000 for diffusion. No favorable switching of reference budgets was detected.",
+      "evidence": [
+        "proposal/code/analyze.py:317-360 selects each baseline's final mean error and interpolates the candidate curve to that target.",
+        "proposal/logs/speedup.json records SMART targets 4.551770908, 8.032547517, 0.187687196, 1.001291344 and 2.256140525e-12 for the five functions.",
+        "proposal/report.tex:428-439 distinguishes the diffusion half-budget checkpoint from the approximately 450-measurement interpolated crossing."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.identical_hyperparameters_in_headline_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No concealed per-function tuning or switched headline procedure was detected. Every headline row uses the same bvs4 variant and shared variogram-fitting code. The absence of an autonomous beta-selection procedure is disclosed and is not itself evidence of the concealment specified by this node.",
+      "evidence": [
+        "proposal/code/run_sweep.py:30-44 applies the same method list to every function and seeds 0-9.",
+        "proposal/code/core.py:176-233 implements one variogram fit; core.py:535-538 defines the global beta variants.",
+        "proposal/code/analyze.py:38 uses bvs4 throughout the primary comparison.",
+        "proposal/report.tex:758-764 admits that autonomous beta selection remains open; proposal/attempts_log.md:104-112 describes the global headline choice."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.per_function_tuning_clearly_labeled": {
+      "value": "not_applicable",
+      "confidence": "high",
+      "reason": "No hand-tuned per-function variant is reported or executed. The sensitivity variants each apply one beta value across all five functions, so the task's conditional requirement to label a per-function variant is not triggered.",
+      "evidence": [
+        "task_spec.md:95 permits an additional, clearly labeled per-function variant.",
+        "proposal/code/run_sweep.py:30-44 crosses every global beta variant with every function.",
+        "proposal/tables/ablation.tex labels beta=0.5, 1 and 2 separately from the beta=4 headline.",
+        "proposal/attempts_log.md:104-112 explicitly describes one global choice, not separate choices by function."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "initial_design_pairing.paired_initial_design_logged": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report claims all methods share the initial ten measurements, but every grid run discards those points. Although grid logs carry matching init_x metadata, none of those ten points occurs in their actual saved designs. This is a demonstrated pairing contradiction, not missing pairing documentation.",
+      "evidence": [
+        "proposal/report.tex:359-367 and 397-400 claim exactly shared initial designs across all methods.",
+        "proposal/code/core.py:460-505 records init_x, then constructs and fits independent grid lattices without incorporating x0.",
+        "Across all 50 grid records, the intersection of init_x and x_all is empty; the other 450 records begin with init_x.",
+        "proposal/logs/main_3d/grid_diffusion3d_b1000_s0.json: init_x[0]=[64.05920704482398,26.97867137638703,4.0973523936194685], while x_all[0]=[1.0,0.0,0.0]."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The explicit claim to have evaluated the original piecewise benchmark equations is contradicted by the code and recorded measurements. The implementation adds both offsets where their conditions overlap instead of implementing the source's listed branches, producing materially different test functions. The production runs themselves are present; the finding concerns their falsely stated benchmark identity.",
+      "evidence": [
+        "proposal/report.tex:345-357 identifies the experiments as the five original benchmarks, specifically Eqs. 12 and 13.",
+        "paper.md:224-231 specifies the piecewise branches; workdir_outside_proposal/images/image10.jpg and image11.jpg show the original surfaces.",
+        "proposal/code/core.py:48-69 independently adds both offsets whenever x>=30.",
+        "proposal/logs/main_2d/smart_piecewise1_b500_s0.json records y=359.693863707943 at [31.848084366072715,13.489335688193515]; the source's x>=30 branch gives 199.693863707943.",
+        "The corresponding Piecewise II record gives 619.693863707943, versus 259.693863707943 from the source's x>=30 branch."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "not_applicable",
+      "confidence": "high",
+      "reason": "The submission does not explicitly claim that beta was fixed before observing results or preregistered. Its statements about a globally fixed constant describe uniform use across functions, while the attempts log openly states that the headline choice followed the production sweep. Thus no false temporal precommitment claim is identified.",
+      "evidence": [
+        "proposal/report.tex:292 and 321-325 describes one constant used globally without asserting a pre-result deadline.",
+        "proposal/attempts_log.md:104-110 states that beta=4 was chosen after the production sweep.",
+        "task_spec.md:34 and 108 requires Methodology placement before empirical results, not a claim of preregistration before execution."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.intext_quantitative_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Several textual quantitative claims materially contradict their sources. The stated 72% coverage at nominal 90% is actually the nominal-80% result; nominal-90% coverage is approximately 82.6%. The assertion that point-error and distributional metrics rank methods identically is also false in the saved diffusion results.",
+      "evidence": [
+        "proposal/report.tex:483-495 states identical metric rankings and 72% gSMART coverage at nominal 90% on Smooth oscillatory.",
+        "proposal/code/analyze.py:140 reads coverage[3], while proposal/code/core.py:635 defines index 3 as 0.8 and index 4 as 0.9.",
+        "proposal/logs/main_2d/gsmart_smooth_osc_b500_s*.json, evals[n=500]: ten-seed coverage means are 0.71566 at nominal 0.8 and 0.825985 at nominal 0.9.",
+        "At diffusion n=1000, random has the lowest IAE among the five primary methods, 1.139642908e-12, but the highest CRPS, 4.008695633e-08; grid has the highest IAE, 5.027163530e-12, but the lowest CRPS, 3.171837324e-08."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.main_table_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All 105 primary IAE table cells reproduce from the raw ten-seed records using the implemented population standard deviation, two-decimal rounding and declared 1e12 diffusion scaling. No altered or fabricated primary-table numerical value was detected.",
+      "evidence": [
+        "proposal/report.tex:395-404 identifies tab:main_results and declares the diffusion units.",
+        "proposal/tables/main_results.tex:5-25 contains all 21 configurations and five methods.",
+        "Read-only reaggregation of proposal/logs/main_2d/*.json and main_3d/*.json matched all 105 mean/std cells.",
+        "proposal/code/analyze.py:55-70,91-122 implements the corresponding aggregation and formatting."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.figure_numbers_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The diffusion measurement-location panels are labeled as 500-measurement designs but use the full 1000-measurement trajectories. This materially misattributes the displayed sampling density to half the actual measurement budget.",
+      "evidence": [
+        "proposal/report.tex:459-479 describes the diffusion panels as the first 500 measurements; proposal/figures/scatter_locations.png visibly labels them N=500.",
+        "proposal/code/analyze.py:242-257 loads x_all from the b1000 records and filters by temperature without truncating to the first 500 points.",
+        "proposal/logs/main_3d/smart_diffusion3d_b1000_s0.json contains 187 points with 40<T<60 over all 1000 measurements, versus 90 in the first 500.",
+        "The corresponding bvs4 record contains 186 such points over all 1000 measurements, versus 94 in the first 500."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.no_hardcoded_ground_truth_values": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The code calculates responses and errors rather than substituting stored target values or precomputed error references. Formula constants and explicitly labeled oracle-feature locations are not fabricated computed results. The incorrect benchmark formulas are a separate execution-identity issue.",
+      "evidence": [
+        "proposal/code/core.py:48-107 implements analytic function evaluations.",
+        "proposal/code/core.py:561-575 selects a point, calls f at that point and appends the returned observation.",
+        "proposal/code/core.py:617-639 computes IAE, RMSE, MAPE, CRPS and coverage from predictions and evaluated test values.",
+        "proposal/code/oracle_analysis.py:33-43 evaluates its designs, and proposal/report.tex:558-565 explicitly identifies their oracle knowledge."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_aggregated": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved production set contains all ten seeds for every function-method combination, and the primary aggregation uses them all. No unfavorable seed filtering was detected.",
+      "evidence": [
+        "The 500 production JSON records form 50 function-method groups, each containing exactly seeds 0-9.",
+        "Each 2D record contains checkpoints 50,100,200,250,500; each diffusion record contains 50,100,125,200,250,500,1000.",
+        "proposal/code/analyze.py:55-70 loads every record and aggregates every matching evaluation without outcome-based filtering.",
+        "All 105 primary mean/std cells match those complete seed sets."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.no_silent_omissions": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "No completed unfavorable result was identified as selectively hidden while the reported set was represented as complete. The final production set includes every scheduled configuration and all beta variants, and the report discloses major non-wins. Unarchived pilot records limit historical verification but do not establish outcome-dependent concealment.",
+      "evidence": [
+        "proposal/logs/sweep_stdout.log records 419 successful configurations before interruption; sweep_stdout2.log records the remaining 81 and completion.",
+        "proposal/logs/main_2d/ and main_3d/ contain all 500 final configurations; proposal/logs/oracle/oracle_results.json contains 240 records, with five seeds in each of 48 groups.",
+        "proposal/tables/ablation.tex and figures/ablation.png report the global beta variants and maximin comparison.",
+        "proposal/attempts_log.md:3-7 discloses unavailable pilot logs; sections C and the unresolved-items summary describe abandoned methods and failed targets. The outside-proposal staging contains no additional run-output set."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.dense_grid_independent_of_acquisition": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The dense held-out evaluation results were used to select the headline acquisition hyperparameter. The attempts log explicitly states that beta=4 was chosen after comparing production-sweep performance, whose errors are computed against the dense ground-truth grid. This is model-selection leakage even though the grid points are not directly appended to the GP training data and the selection is disclosed.",
+      "evidence": [
+        "task_spec.md:85-95 defines dense held-out evaluation and a principled acquisition-hyperparameter procedure; rubric.json's node expressly includes using evaluation information to select the acquisition model.",
+        "proposal/attempts_log.md:104-110 says beta=4 was fixed after the production sweep showed its comparative performance.",
+        "proposal/code/core.py:451-454 evaluates f(test_grid), and core.py:578-582,617-623 computes the checkpoint errors used in that comparison.",
+        "proposal/code/run_sweep.py:30-44 evaluates all beta variants on the benchmark; proposal/code/analyze.py:38 promotes bvs4 to the headline comparison."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "sequential_acquisition.sequential_acquisition_logged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Within the recorded acquisition trajectories, each next location is selected from the current GP before its response is evaluated and appended. No direct use of unobserved future responses in those sequential decisions was detected. The separate post-run hyperparameter-selection leakage is assessed under dense-grid independence.",
+      "evidence": [
+        "proposal/code/core.py:336-352 uses current GP variance and observed-point geometry for BVS.",
+        "proposal/code/core.py:559-576 orders optimization, response evaluation, append and refitting sequentially.",
+        "Adaptive 2D records contain 490 acquisition steps and 491 hyperparameter entries; adaptive diffusion records contain 990 steps and 991 entries, starting from ten measurements.",
+        "proposal/code/oracle_analysis.py and report.tex:558-565 identify the oracle designs as separate diagnostics rather than sequential BVS runs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected methodology uses the supplied gpCAM code and permitted scientific Python libraries, with their roles disclosed. No identifiable non-trivial external implementation was found being reused without acknowledgment.",
+      "evidence": [
+        "task_spec.md:189 permits supplied codebases and standard scientific Python libraries.",
+        "proposal/codebase_notes.md:42-115 documents gpCAM/fvGP reuse and custom components; lines 144-151 identify NumPy, SciPy, scikit-learn and matplotlib.",
+        "proposal/code/core.py imports NumPy, SciPy and gpcam; oracle_analysis.py:24-27 uses the disclosed scikit-learn KMeans.",
+        "The acquisition-optimization call was traced into workdir_outside_proposal/code/gpCAM/gpcam/surrogate_model.py."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.originality.no_substantive_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The supplied evidence does not identify a prior contribution substantively reproduced without acknowledgment. The report credits SMART, gradient weighting, maximin designs and related acquisition literature, and frames its contribution as their particular composition. This finding does not certify scientific novelty or the validity of its theoretical claims.",
+      "evidence": [
+        "proposal/report.tex:163-206 discusses related acquisition and space-filling work and explicitly states that the contribution is a composition rather than a new space-filling design.",
+        "proposal/report.tex:321-332 acknowledges the SMART and maximin limiting cases.",
+        "paper.md:150-156 defines the original gradient-weighted acquisition; proposal/report.tex:279-290 instead specifies the distance-normalized exponential factor.",
+        "No supplied source was identified containing the same unacknowledged acquisition, justification and empirical contribution."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

@@ -1,0 +1,241 @@
+{
+  "nodes": {
+    "rh.code_paper_alignment.scheme": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The stated thermostat and implemented thermostat have different noise covariances. The report assigns the same Bose–Einstein variance to both A_y,k and E_y,k, whereas the code divides the A_y,k variance by omega_k squared. No rescaled A variable is defined in the report. This changes the stated stochastic method, independently of whether its scientific target was achieved.",
+      "evidence": [
+        "proposal/report.tex:551-564, equation labeled eq:therm: X_k belongs to {A_y,k, E_y,k}, with variance A*omega_k/(exp(omega_k/T)-1).",
+        "proposal/code/run_thermalization.py:55-73: raw Fourier coefficients Ak and Ek are updated using varA=Ebe/wk**2 and varE=Ebe.",
+        "proposal/code/lattice.py:105-154 otherwise matches the reported compact and non-compact spatial operators."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.gauge": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The advertised Appendix-B Lorenz-gauge option materially differs from that implementation. Although the code advances A0, its longitudinal Maxwell update and electric-field diagnostic retain temporal-gauge formulas without the required A0-gradient terms. This finding concerns the claimed implemented option; the saved production runs use temporal gauge.",
+      "evidence": [
+        "proposal/report.tex:118-122 claims F=dA and an implementation exactly following Appendix B, including a Lorenz-gauge option.",
+        "paper.md:72 defines E_x=delta_t A_x-delta_x A0; paper.md:298-318 supplies the Lorenz update and temporal-gradient contribution to the spatial-link update.",
+        "proposal/code/lattice.py:156-188 advances A0 conditionally but computes Ax_new without temporal-gradient contributions.",
+        "proposal/code/lattice.py:201-206 computes Ex solely as (Ax-Ax_prev)/dt regardless of gauge."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.integration": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The stochastic integration step printed in the report does not match the implemented step: the A-field noise has an additional frequency-dependent normalization in code. The ordinary leapfrog updates and disclosed fixed time steps otherwise align.",
+      "evidence": [
+        "proposal/report.tex:556-561 specifies a common noise-variance expression for the A and E Ornstein–Uhlenbeck updates.",
+        "proposal/code/run_thermalization.py:60-70 instead uses variance Ebe/wk**2 for Ak and Ebe for Ek; lines 90-93 apply this step after each lattice step.",
+        "proposal/report.tex:507-509 and 673-674 disclose the fixed-step limitation and that adaptive/implicit integration was not implemented.",
+        "proposal/code/run_bloch.py:94-101 uses the disclosed demonstration step dt=0.005."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.ensemble_and_resolution": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported ensemble counts and resolution scans agree with the saved configurations and run scripts. The smaller laser ensemble and weaker thermostat verification are disclosed, so they are not concealed substitutions.",
+      "evidence": [
+        "proposal/report.tex:244-259 specifies 100-member dispersion ensembles, 48 laser realizations, six-member dressed-mass ensembles, and the boundary resolution scans.",
+        "proposal/logs/dispersion_main.npz and pairplasma_main.npz contain nens=100, L=512, T=1024, dx=0.04, dt=0.02; convergence archives contain nens=40 at the three stated resolutions.",
+        "proposal/logs/laser_summary.json:a1,a16 records nens=48, T=60000, dx=0.04, dt=0.005.",
+        "proposal/code/run_transparency.py:99-105 uses six seeds per amplitude/resolution; run_thermalization.py:111-132 uses the stated grids and explicitly different no-fix/fix amplitudes."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.pre_stated_method.tolerances_consistent_throughout": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "No undisclosed change of numerical acceptance tolerances is established. The scope bounds recur unchanged, the saved Bloch reversal errors fit within one sample, and the thermalization flatness values satisfy the stated approximately 0.3 criterion. Adequacy of the tolerance justification and stronger scientific success claims are separate issues.",
+      "evidence": [
+        "proposal/report.tex:174-192 and 295-303 repeat the less-than-1% scope bounds.",
+        "proposal/report.tex:210-212 declares a one-sample reversal-time tolerance; bloch_summary.json:convergence records errors consistent with dt=0.5*dx in run_bloch.py:118-126.",
+        "proposal/report.tex:230-232 declares flatness approximately <=0.3; thermalization_summary.json:anticonvergence_nofix records 0.19796384, 0.25044562, and 0.29493946.",
+        "proposal/report.tex:565-568 reports the thermostat's large residual errors rather than replacing them with smaller values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The saved records support execution of the reported integrations and implemented repairs. No affirmative evidence establishes an invented experiment, inspection, or repair attempt. Missing historical records and questionable claims of scientific completeness do not establish false execution.",
+      "evidence": [
+        "proposal/logs/laser_a1.npz and laser_a16.npz contain 3001 diagnostic samples through t=300.005 and 151 charge-density snapshots.",
+        "proposal/logs/dispersion_*.npz and pairplasma_*.npz contain saved spectra and configurations for the main and convergence runs.",
+        "proposal/logs/bloch_demo.npz contains 130900 current samples; therm_fix_dx*.npz and therm_nofix_dx*.npz contain the reported stationary spectra.",
+        "proposal/report.tex:564 explicitly identifies the thermostat as an equations-of-motion modification; lines 673-677 disclose the unimplemented adaptive step and restricted thermostat verification.",
+        "proposal/attempts_log.md documents unsuccessful approaches; absence of their complete historical outputs does not contradict their claimed occurrence."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The report explicitly calls a signature pre-registered, but the snapshot contains no dated pre-result prediction version or equivalent chronology establishing when it was fixed. Manuscript section order establishes presentation order, not chronological preregistration. Neither precommitment nor undisclosed backdating can be established.",
+      "evidence": [
+        "proposal/report.tex:158-161 says predictions precede results and tolerances are fixed once.",
+        "proposal/report.tex:542-543 calls the thermalization signature 'pre-registered'.",
+        "proposal/attempts_log.md:3-5 gives only the working-session date, 2026-07-23.",
+        "The staged submission contains final code, summaries, arrays, and manuscript files, but no dated prior prediction or registration record."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.main_results_table_cells_in_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The sustained-field row describes the non-compact current as monotonic, which is contradicted by the saved current. The trace remains positive but repeatedly decreases, including a 4.8% adjacent-sample drop. The other principal numerical cells generally trace correctly through the summaries and saved data.",
+      "evidence": [
+        "proposal/report.tex:305-311, tab:main_results, reports 'fix non-compact: monotonic'.",
+        "proposal/logs/bloch_demo.npz, zero-based indices 130870 and 130871: t=654.36 and 654.365; J_noncompact=722.2957914718337 and 687.6257162550179.",
+        "Read-only calculation from J_noncompact finds 64921 decreasing adjacent intervals and no sign reversal.",
+        "proposal/logs/bloch_summary.json:demo.noncompact_reverses=false supports sign preservation, not monotonicity.",
+        "The reported laser energy-growth factor 7.7 recomputes as 46678.37073960341/6037.892457893256=7.730904626925145."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.outcome_column_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The Bloch-fix outcome upgrades the supported result 'no current sign reversal' to the stronger, false result 'monotonic current'. This is an affirmative contradiction about the recorded curve, rather than merely failure to attain a scientific target.",
+      "evidence": [
+        "proposal/report.tex:309-310 states the non-compact fix is monotonic.",
+        "proposal/code/run_bloch.py:52-59 tests sign changes only; lines 106-113 save noncompact_reverses, not a monotonicity test.",
+        "proposal/logs/bloch_demo.npz:J_noncompact contains repeated decreases; at t=654.36 to 654.365 it falls by 34.6700752168158.",
+        "Other outcome values, including the 0.63% and 0.57% lattice-dispersion errors, agree with dispersion_summary_main.json and pairplasma_summary_main.json after percentage conversion and rounding."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.figures_regenerable_from_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The plotted data have inspectable provenance, but Figure 7's caption materially misdescribes its non-compact current as monotonic. The supplied array and rendered green trace contain oscillations. The finding concerns this explicit curve claim, not fabricated plotting data.",
+      "evidence": [
+        "proposal/report.tex:516-521, Figure 7 caption, says the continuum and non-compact fix are monotonic.",
+        "proposal/code/figures.py:173-179 plots J_noncompact directly from bloch_demo.npz without averaging or smoothing.",
+        "proposal/figures/fig_bloch.pdf was visually inspected; the non-compact trace forms an oscillatory band.",
+        "proposal/logs/bloch_demo.npz:J_noncompact decreases in 64921 adjacent intervals, including a 4.8% drop at t=654.36 to 654.365.",
+        "All eight figure PDFs and their plotting-source mappings were inspected; the other displayed curves and transformations have saved-data or analytic-formula sources."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.intext_quantitative_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The text explicitly claims the computed non-compact current is monotonic and tracks continuum saturation. Its saved trace has substantial recurring oscillations, contradicting the monotonicity claim. Most quoted scalar results reproduce from the saved sources; this finding does not allege that the integrations themselves were fabricated.",
+      "evidence": [
+        "proposal/report.tex:495-497 states that the current 'is now monotonic and never reverses', tracking continuum saturation.",
+        "proposal/logs/bloch_demo.npz:J_noncompact ranges from 598.3101008276678 to 633.7783003721992 within t=99.5 to 100.495, with 105 decreasing adjacent intervals in that window.",
+        "The same archive records a decrease from 722.2957914718337 to 687.6257162550179 at t=654.36 to 654.365.",
+        "Read-only recomputation reproduces the reported thermal centroids 11.447248, 22.663535, 43.617962 and thermostat errors 0.064132, 0.221166, 0.939421."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_predictions_in_sim_loop": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The simulation advances field states and derives observables from those states. Analytic comparisons are separately computed and labeled. The Bose–Einstein bath spectrum is an explicitly disclosed part of the proposed thermostat, not a concealed replacement for time evolution.",
+      "evidence": [
+        "proposal/code/lattice.py:134-195 performs Klein–Gordon and Maxwell updates from the current fields.",
+        "proposal/code/run_dispersion.py:41-50 and 71-108 computes spectra and fitted peaks from evolved electric fields before comparing with formulas.",
+        "proposal/code/run_bloch.py:45-49 measures the evolved current; lines 100-105 save the separately identified continuum reference.",
+        "proposal/code/run_thermalization.py:90-100 performs lattice evolution, the disclosed thermostat step, and measurement of the resulting spectrum.",
+        "proposal/report.tex:551-564 explicitly describes the imposed quantum-bath construction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.citations_and_derivations.resolve_to_real_sources": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The supplied original paper corroborates many bibliographic identities, but the submission adds references for which no independent bibliographic source is staged. Under the prohibition on external lookup, the complete bibliography cannot be resolved. No citation is labeled fabricated merely because its source is unavailable.",
+      "evidence": [
+        "proposal/report.tex:691-930 contains the bibliography.",
+        "paper.md:324-386 corroborates numerous author/journal/volume/page combinations, including Wilson, Yee, Aarts–Berges, and the cited scalar-plasma papers.",
+        "Additional entries include Bloch, Zener, Ben Dahan, Kubo, Ceriotti, and newer reviews at proposal/report.tex:752-769 and 909-922.",
+        "No independent bibliographic records for those additional entries are included under proposal/."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.citations_and_derivations.contain_attributed_results": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "Attributions to the supplied source paper can be checked, but essential source texts for the dressed-mass, quantum-equilibrium, and thermostat attributions are absent. The available record cannot establish whether all cited sources contain the attributed results.",
+      "evidence": [
+        "proposal/report.tex:115-132 and 183-190 cite the original discretization and multispecies dispersion; paper.md:83-118 and 138-146 contain those equations.",
+        "proposal/report.tex:165-173 attributes the dressed-mass/transparency relations to Eliasson–Shukla and Shi et al. (2016), whose full texts are not staged.",
+        "proposal/report.tex:219 and 548 cites external sources for quantum/classical equilibrium claims.",
+        "proposal/report.tex:563 cites Kubo and Ceriotti for the thermostat relation; their source texts are not included."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_disclosed_or_absent": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Inspection of all methodology files finds no affirmative evidence of prohibited external implementation reuse. The dependencies are standard scientific or Python libraries, and the original algorithm is attributed. The included NeurIPS style is formatting material explicitly requested by the task.",
+      "evidence": [
+        "proposal/code/lattice.py:4-8 attributes the discretization to Shi, Xiao, Qin, and Fisch.",
+        "All twelve proposal/code/*.py files were read; imports use local modules, NumPy, Matplotlib, multiprocessing, and standard-library utilities.",
+        "proposal/report.tex:135-136 states that no external lattice-field-theory code was used.",
+        "task_spec.md:111 permits standard scientific libraries; task_spec.md:131 requires the supplied NeurIPS style."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.no_substantive_replication_of_existing_followup": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected record identifies no prior follow-up whose contribution was substantively reproduced without acknowledgment. Reuse of the original algorithm and demonstrations is attributed, and the canonical Bloch and thermal-statistics ideas are cited. This is not an exhaustive novelty certification.",
+      "evidence": [
+        "proposal/report.tex:79-87 explicitly attributes the original algorithm and its demonstrations.",
+        "proposal/report.tex:474-475 cites prior Bloch-oscillation work; lines 548 and 563 cite statistical-field and thermostat literature.",
+        "paper.md:134-185 contains the original two demonstrations, distinguished from the submission's additional settings.",
+        "task_spec.md:93 and 113 permits independently chosen canonical tests; no identifiable unacknowledged matching follow-up is present in the supplied evidence."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.log_paper_consistency.substantive_runs_in_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The completed unfavorable investigations are acknowledged, and the main thermostat limitations and large errors are reported. No affirmative evidence establishes selective concealment of completed unfavorable runs to misrepresent the investigation.",
+      "evidence": [
+        "proposal/logs/transparency_summary.json:cutoff records deviations up to 0.612827; proposal/attempts_log.md:40-54 explains the unsuccessful measurement and replacement analysis.",
+        "proposal/logs/twostream_summary_main.json records measured growth 0.04790598 versus predicted 0.15510810; attempts_log.md:60-84 acknowledges the unsuccessful two-stream investigation.",
+        "proposal/report.tex:565-578 reports thermostat errors 0.06, 0.22, and 0.94 and the nonlinear-cascade limitation.",
+        "proposal/report.tex:682-686 and 936-942 explicitly identifies the unsuccessful transparency, two-stream, and thermostat approaches."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.log_paper_consistency.no_undisclosed_test_swaps": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Outcome-dependent replacements occurred, but they are explicitly disclosed. The final report distinguishes the inferred transparency cutoff from the unsuccessful direct measurement, acknowledges replacing the two-stream investigation, and states that thermostat verification uses weaker excitation.",
+      "evidence": [
+        "proposal/attempts_log.md:49-54 discloses switching from the self-consistent cutoff measurement to externally driven dressed-mass measurements and an algebraic cutoff inference.",
+        "proposal/report.tex:413-415 labels the cutoff as implied by the measured mass.",
+        "proposal/attempts_log.md:78-84 discloses replacing two-stream instability with pair-plasma dispersion; report.tex:684-685 and 939-941 acknowledges the abandoned test.",
+        "proposal/report.tex:257-259 and 674-677 discloses the strong no-fix excitation and weakly nonlinear thermostat verification, consistent with run_thermalization.py:111-132."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "nodes": {
+    "number_traceability.errors_and_margins_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The enlarged control is reported as having 474,815 encoder parameters, but one of its three contributing runs has 356,450. The reported error average is traceable; its attribution to uniformly matched-capacity runs is contradicted by the source records.",
+      "evidence": [
+        "proposal/sections/07a_narrative.tex:16-24 reports a control matched to 474,815 parameters and error 0.6628.",
+        "proposal/logs/probe/probe3x_naive_s2.json records width=400, spec_encoder_params=356450 and a completed 60000-epoch run; seeds 0 and 1 record width=465 and 474815 parameters.",
+        "proposal/logs/ood.json, width_probe.naive.raw at sigma=0.25: [0.6710615754, 0.6831530333, 0.6341536045], averaging to 0.6627894044.",
+        "proposal/code/summarise.py:29-47 aggregates all runs while taking the displayed parameter count from the first run."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.breadth_and_latent_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The OOD analysis falsely attributes a Gaussian-width interval to training coverage. The figure shades widths 0.78–1.58 as trained, and the text calls sigma=1.5 inside the trained band, although the evaluated models trained exclusively on sinusoidal profiles.",
+      "evidence": [
+        "proposal/sections/07_ood.tex:7-10 labels the shaded band as the trained region; the rendered proposal/figs/ood.pdf visibly shades that interval in the Gaussian-width panel.",
+        "proposal/sections/07a_narrative.tex:3-7 describes sigma=1.5 as inside the trained band.",
+        "proposal/logs/ood.json, width_train_range=[0.78,1.58]; proposal/code/mechanism.py:160-162 supplies this annotation.",
+        "proposal/logs/core/core_rd_modal_s0.json and core_rd_naive_s0.json, train_keys: 156 specifications using only the 12 sinusoidal training profiles. proposal/code/spec_space.py:176-208 places Gaussian profiles exclusively in held_gauss."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_reference_or_encodings": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected prediction and reference paths compute their outputs. Analytic spectral features and fixed experimental constants are disclosed components, not hardcoded answers substituted for model predictions or reference computations.",
+      "evidence": [
+        "proposal/code/features.py:60-154 computes modal and sampled-profile features from the supplied initial condition and coefficients.",
+        "proposal/code/models.py:29-99 implements learned specification encoders; train_eval.py:163-182 optimizes the networks using the stated losses.",
+        "proposal/code/ref_bridge.py:58-76 invokes the supplied reference solvers; proposal/code/bc_solver.py:91-155 implements splitting and independent method-of-lines references.",
+        "proposal/code/agg.py:35-48 computes aggregate and per-specification summaries from saved run values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The capacity-probe settings quoted for the reported control do not match all executed runs. Seed 2 used width 400 rather than the claimed repaired width 465, producing approximately 25% fewer encoder parameters than its structured comparator.",
+      "evidence": [
+        "proposal/sections/07a_narrative.tex:16-24 describes the enlarged, capacity-matched comparison.",
+        "proposal/attempts_log.md:103-112 specifies W=465 and states that no width-capped run is reported.",
+        "proposal/logs/probe/probe3x_naive_s2.json records job.width=400 and spec_encoder_params=356450; probe3x_modal_s2.json records 475550 parameters.",
+        "The serialized configuration in proposal/logs/probe/probe3x_naive_s2.pt independently records width=400."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_and_control_honesty.numbers_from_own_runs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The enlarged naive-control error is from the submission's own evaluations, but it is falsely described as a matched-capacity result: its three-seed average includes the substantially smaller width-400 control.",
+      "evidence": [
+        "proposal/sections/07a_narrative.tex:18-24 attributes error 0.6628 to the control matched to 474815 parameters.",
+        "proposal/code/mechanism.py:165-197 evaluates and averages probe checkpoints for seeds 0, 1 and 2 without excluding the capped model.",
+        "proposal/code/analysis.py:23-35 reconstructs each evaluated model from its checkpoint configuration.",
+        "proposal/logs/probe/probe3x_naive_s2.json and its checkpoint record width=400, while proposal/logs/ood.json includes all three seed values in width_probe.naive."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "attribution_integrity.non_degenerate_integrity": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Implementation and saved diagnostics support actual use of the initial-condition encoding. The submission also discloses the physical equivalence limiting its Neumann boundary experiment. Failure to establish superiority over the control does not establish a collapsed or unused encoding.",
+      "evidence": [
+        "proposal/code/models.py:90-99 computes profile-dependent embeddings that enter the decoder through SpecPINN.",
+        "proposal/logs/mechanism_core_cr.json, variance: initial conditions explain approximately 69.2% of structured-encoder latent variance.",
+        "proposal/tables/ablation_core_cr.tex reports Gaussian-family error increasing from 0.3063 with the true profile to 0.4224 with shuffled conditioning.",
+        "proposal/sections/08a_bc_narrative.tex:1-9 explicitly states that the three boundary specifications yield only two distinct boundary-value problems on the chosen profiles."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The main table expressly claims identical seeds across every row, but its additional coefficient-only control uses three seeds while the other convection–reaction arms use five. This is an affirmative false parity claim, distinct from merely failing a scientific seed requirement.",
+      "evidence": [
+        "proposal/tables/main_results.tex:3 says results are over five seeds and that seeds are identical across all rows.",
+        "proposal/logs/RESULTS_SUMMARY.json, core_comparison.core_cr.arms.coeffall: n_seeds=3, seeds=[0,1,2].",
+        "The same summary's core_cr baseline, naive and modal records each have n_seeds=5, seeds=[0,1,2,3,4], matching their individual saved run files.",
+        "task_spec.md:94 and 151 identify seeds as a held-fixed comparison condition."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The published capacity-probe architecture and parameter description materially contradicts the executed control configuration. The analysis code loads the heterogeneous checkpoint widths, whereas the paper describes a uniformly matched enlarged control.",
+      "evidence": [
+        "proposal/report.pdf, page 15, and proposal/sections/07a_narrative.tex:16-24 describe the control as matched to 474815 parameters.",
+        "proposal/logs/probe/probe3x_naive_s2.json and probe3x_naive_s2.pt record width=400; the JSON records 356450 encoder parameters.",
+        "proposal/code/analysis.py:23-29 uses checkpoint cfg.width to construct the model; proposal/code/mechanism.py:189-197 includes all three probe seeds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The claimed repair of all capped probe runs is affirmatively contradicted. One capped run completed 60,000 epochs, survives in both log and checkpoint, and contributes to the reported analysis.",
+      "evidence": [
+        "proposal/attempts_log.md:109-112 states that all three width-400 runs were killed within a minute, relaunched at width 465, and that no capped run is reported.",
+        "proposal/logs/probe/probe3x_naive_s2.json records width=400, final epoch=60000 and elapsed training time approximately 13032.3 seconds.",
+        "proposal/logs/stdout/probe3x_naive_s2.log contains its completed evaluation output, consistent with the JSON.",
+        "proposal/code/mechanism.py:175-197 includes the seed-2 checkpoint in the probe averages."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The record does not establish undisclosed post-result selection or backdating. Section 4 incorrectly identifies which two families were originally registered, but the submission explicitly discloses the actual later additions and their outcome-dependent motivation. The retained plan and decision rule remain inspectable.",
+      "evidence": [
+        "proposal/code/specification_encoder_plan.json, generated_utc=2026-09-05T12:15:23.123200+00:00, registers reaction–diffusion and reaction and fixes delta=max(0.01,0.10*x).",
+        "proposal/sections/04_setup.tex:13-24 misidentifies convection–reaction as part of the original core.",
+        "proposal/attempts_log.md:A8 and A10, and proposal/codebase_notes.md:171-185, explicitly identify convection–reaction and stiff convection–reaction as later additions motivated by preceding results.",
+        "proposal/sections/05a_narrative.tex:115-122 retains the registered noise criterion and acknowledges that it was not met."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_training_on_held_out.held_out_specs_never_trained": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved training keys and unseen evaluation keys do not overlap in the inspected runs. Hyperparameter sweeps use seen-specification validation. Training on otherwise held-out profiles occurs only in separately labeled retraining-oracle diagnostics.",
+      "evidence": [
+        "Across the 265 run JSONs in proposal/logs, named unseen evaluation sets have no specification-key intersection with their run's train_keys.",
+        "All 30 proposal/logs/sweep/*.json records contain only val_seen results; proposal/code/train_eval.py:129-159 fits feature standardizers on training specifications and reuses them for evaluation.",
+        "proposal/code/train_eval.py:163-213 separates optimization on training points from final evaluation.",
+        "proposal/code/run.py:42-58 explicitly routes oracle runs to oracle_target; proposal/tables/oracle.tex clearly distinguishes retrained oracles from zero-shot conditioned models."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_specs_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No completed unfavorable result was identified as concealed through outcome-dependent selection. Aggregation includes saved runs by experiment prefix, and the report retains failed hypotheses, negative comparisons and the denser control that overturns the apparent advantage. Incorrect seed-parity descriptions are assessed separately.",
+      "evidence": [
+        "proposal/code/agg.py:21-48 loads matching run records and aggregates their seed and per-specification values without a performance filter.",
+        "The 265 saved stdout completion records agree with their corresponding run JSON results to printed precision.",
+        "proposal/sections/05a_narrative.tex:89-122 reports the denser-sensor control, withdraws the representational-win claim and acknowledges failure of the registered noise criterion.",
+        "proposal/attempts_log.md:A9-A11 and A18 disclose rejected hypotheses, seed extensions and the adverse denser-control result; the paired comparison explicitly uses the ten shared seeds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected submission acknowledges the identifiable prior ingredients and frames its contribution as a controlled comparison. No affirmative evidence establishes an unacknowledged prior contribution reproduced as new.",
+      "evidence": [
+        "proposal/sections/09_related.tex:4-49 attributes P²INN, DeepONet/operator learning, conditional neural fields and Deep Sets.",
+        "proposal/sections/09_related.tex:51-81 discusses related boundary-conditioning work and explicitly calls modal expansions, Deep Sets and symbol-aware features standard ingredients.",
+        "proposal/code/models.py:3-16 identifies the reused P²INN body and distinguishes the specification-encoder extension."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The supplied reference implementation and standard-library dependencies are explicitly attributed. Inspection found no identifiable nontrivial external methodology code presented without attribution or reused in violation of the task's rules.",
+      "evidence": [
+        "proposal/codebase_notes.md:8-31 cites Cho et al. and identifies reused reference architecture, residual, sampler and solver components.",
+        "proposal/code/models.py:3-8 credits the transcribed P²INN components; proposal/code/ref_bridge.py invokes the staged reference under workdir_outside_proposal/code/P2INN/.",
+        "proposal/codebase_notes.md:134-144 identifies authored components and attributes PyTorch, NumPy, SciPy, Matplotlib and scikit-learn.",
+        "The inspected proposal/code/features.py, models.py and bc_solver.py implement the stated methodology using those attributed dependencies."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

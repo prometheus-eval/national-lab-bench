@@ -1,0 +1,305 @@
+{
+  "nodes": {
+    "code_methodology_match.hyperparameters_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The Methodology states that γ=1 is used throughout, but all 50 headline CER runs used γ=0.5. The sensitivity section and appendix correctly disclose 0.5, making this a demonstrable inconsistency in the submitted method description rather than evidence that the runs were fabricated.",
+      "evidence": [
+        "proposal/sections/intro_method.tex:248–251: “γ=1 throughout.”",
+        "proposal/logs/runs/main/*/loca/seed*.json: all 50 records have loca_gamma=0.5.",
+        "proposal/sections/analysis.tex:172–177 and proposal/sections/appendix.tex:30 identify 0.5 as the headline value; the contradictory Methodology statement also appears on report.pdf p.4."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.acquisition_optimizer_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The adaptive methods use the described gpCAM differential-evolution optimizer with matching population, iteration-limit, and tolerance settings. The task allows an optimizer different from the original paper’s genetic algorithm.",
+      "evidence": [
+        "proposal/sections/setup.tex:68–74 and proposal/sections/appendix.tex:9–11 specify differential evolution, population multiplier 20, 40 generations, and tolerance 1e-8.",
+        "proposal/code/runner.py:29–31,114–115,164–169 and headline adaptive-run ask_settings record the same settings.",
+        "workdir_outside_proposal/code/gpCAM/gpcam/surrogate_model.py:322–335 implements that scipy differential-evolution call; task_spec.md:97 permits alternative acquisition optimizers."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.surrogate_matches_paper": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The stated CER numerical policy requires escalating jitter until the reciprocal condition estimate exceeds 1e-6. CER actually uses a fitted-nugget branch that only checks Cholesky success and bypasses that condition-number safeguard. A calculation from saved trajectory and hyperparameters gives approximately 8.09e-11 for a headline covariance matrix, materially below the claimed threshold.",
+      "evidence": [
+        "proposal/sections/intro_method.tex:303–307 and report.pdf p.5 state the conditioning-gated numerical policy.",
+        "proposal/code/surrogates.py:276–288,514–533: menu kernels use _chol_with_nugget; only the other branch calls stable_jitter_rel.",
+        "proposal/logs/runs/main/smooth/loca/seed0.json, snapshot n=500: additive52, fitted nugget 4.271976816583405e-6, jitter_rel=8.62399327722361e-8. Reconstructing its saved covariance plus nugget and applying the LAPACK reciprocal-condition estimate yields 8.086476042723456e-11."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.proposed_acquisition_matches_paper": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The implemented acquisition has the described calibrated integrated-standard-deviation-reduction structure, but its executed calibration exponent differs from the Methodology’s stated value: square-root calibration weighting was used instead of the stated linear weighting. The omitted 1/M normalization in code is an equivalent positive rescaling and is not the violation.",
+      "evidence": [
+        "proposal/sections/intro_method.tex:240–251 specifies the acquisition and γ=1 throughout.",
+        "proposal/code/acquisitions.py:136–155 computes c_nodes**gamma times the standard-deviation reduction.",
+        "proposal/code/runner.py:152 and proposal/logs/runs/main/*/loca/seed*.json show the headline acquisition receives γ=0.5; proposal/tables/sensitivity.tex:11–12 reports materially different outcomes for 0.5 and 1."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.smart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The SMART table entries reproduce the submission’s own saved runs, with ten seeds at every headline checkpoint. Its disclosed reproduction limitations do not establish fabricated or falsely attributed baseline quantities.",
+      "evidence": [
+        "proposal/logs/runs/main/*/smart/seed0.json through seed9.json contain 50 runs and all 21 function–budget configurations.",
+        "Independent aggregation matches all SMART cells in proposal/tables/main_results.tex; piecewise1 at N=500 is 2.412783476±0.112236523, displayed as 2.41±0.11.",
+        "proposal/sections/analysis.tex:189–215 explicitly discusses remaining baseline-reproduction deviations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.gsmart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported gSMART numerical entries agree with its own ten-seed logs, and its per-function weights are disclosed. Errors in prose characterizing its ranking are assessed separately from the provenance of these quantities.",
+      "evidence": [
+        "proposal/logs/runs/main/*/gsmart/seed0.json through seed9.json provide all headline gSMART results.",
+        "At diffusion3d N=1000, the logged aggregate is 0.006560037771±0.000127162417, matching proposal/tables/main_results.tex:36 after rounding.",
+        "proposal/code/gsmart_c.json and proposal/sections/appendix.tex:15–17 disclose weights 1e-5, 1e-5, 1e-4, 1e-4, and 10."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.no_paper_numbers_cited_as_baselines": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The quantitative baseline tables derive from the submitted runs. The original paper’s qualitative findings and example gradient weight are identified as reference material, without being presented as newly executed baseline results.",
+      "evidence": [
+        "proposal/code/make_tables.py:60–102 reads run logs to generate the headline table; all 105 numerical cells match independent aggregation.",
+        "proposal/sections/intro_method.tex:318–327 explicitly attributes the published c=20 example to Noack et al.",
+        "paper.md:391–394 supplies that imaging-example weight; proposal/sections/analysis.tex:200–215 distinguishes published behavior from the submission’s observed behavior."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_claims_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The headline CER sample-efficiency factors of 10× and 20× are supported. However, the additional claim that gSMART is the strongest 3D baseline at every budget contradicts the corresponding comparisons: random and grid have substantially lower errors at N=50,100,200.",
+      "evidence": [
+        "proposal/sections/results.tex:50–56 discusses all four baselines and claims gSMART becomes “the strongest baseline at every budget.”",
+        "proposal/logs/runs/main/diffusion3d/{gsmart,random,grid}/seed*.json: mean errors at N=50 are 0.0496762, 0.0228780, and 0.0234528; at N=100, 0.0355071, 0.0179791, and 0.0196857; at N=200, 0.0210319, 0.0144463, and 0.0169239.",
+        "proposal/logs/speedup_report.json correctly supports CER reaching the SMART/gSMART maximum-budget reference errors at N=50 on smooth and diffusion3d."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.consistent_direction_acknowledged": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "CER’s unfavorable discontinuous-function results are substantially acknowledged, including consistent non-differentiable regression. Nevertheless, the 3D baseline characterization contradicts a material crossing pattern: gSMART trails random and grid for the first three budgets and becomes better only later, rather than dominating throughout.",
+      "evidence": [
+        "proposal/sections/results.tex:52–56 claims gSMART is strongest at every 3D budget.",
+        "proposal/tables/main_results.tex:32–36 and the corresponding ten-seed logs show gSMART worse than random/grid at 50,100,200 and better at 500,1000.",
+        "proposal/sections/results.tex:76–98 correctly preserves the piecewise-II outlier and describes CER’s non-differentiable curve as consistent regression; these acknowledgments do not resolve the separate incorrect 3D characterization."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_reference_consistent": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The sample-efficiency calculation consistently uses the better of SMART and gSMART at the largest headline budget: 500 in 2D and 1000 in 3D. No favorable intermediate reference budget is substituted.",
+      "evidence": [
+        "proposal/sections/results.tex:24–26 declares the maximum-budget comparison rule.",
+        "proposal/code/analysis.py:51–64 implements that rule.",
+        "Reaggregation gives smooth reference 0.193511381 at N=500 and diffusion3d reference 0.00656003777 at N=1000; both are reached by CER at N=50, yielding 10× and 20×. Piecewise1 reaches its reference only at N=500, yielding 1×."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.identical_hyperparameters_in_headline_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The headline CER records show a common configuration and model-selection procedure across functions. There is no evidence of concealed function-specific parameter switching. The Methodology’s incorrect γ statement and evaluation-set tuning are separate findings.",
+      "evidence": [
+        "All 50 proposal/logs/runs/main/*/loca/seed*.json records use loca_gamma=0.5, loca_w0=0.05, menu='default', and the same retrain_at and ask_settings.",
+        "proposal/code/surrogates.py:431–461 applies ML fitting followed by LOO-density selection with common hysteresis; saved selection tables agree with that selection rule.",
+        "proposal/attempts_log.md:277–301 explicitly chooses one full-menu configuration for all functions and declines function-specific repairs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.per_function_tuning_clearly_labeled": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The function-specific gSMART weight selection is explicitly labeled, while the CER headline uses one configuration. Alternative CER menus and weights are identified as development or sensitivity variants rather than substituted silently into individual headline rows.",
+      "evidence": [
+        "proposal/sections/intro_method.tex:325–327 and proposal/tables/main_results.tex:3 disclose the per-function gSMART scan.",
+        "proposal/code/gsmart_c.json records the weights and scan provenance.",
+        "proposal/attempts_log.md:279–288 describes the alternative four-kernel menu and the decision to retain the same full menu everywhere; main CER logs consistently record menu='default'."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "initial_design_pairing.paired_initial_design_logged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed initial-design pairing is supported. Comparing the saved arrays across all headline and ablation methods found identical initial points within each of the 50 function–seed groups.",
+      "evidence": [
+        "proposal/sections/setup.tex:25–30 claims ten shared initial measurements per seed.",
+        "proposal/logs/runs/{main,ablation}/: all nine methods in every function–seed group share the same initial_design array.",
+        "proposal/code/sim_functions.py:133–139 generates initial points from function and seed only; runner.py:104 and 233 use this shared generator."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The principal claimed sweeps, metric checks, and development attempts have corresponding saved execution records. Failed development jobs are distinguishable from the completed final sweep. The record does not affirmatively establish that these experiments or inspections were invented.",
+      "evidence": [
+        "proposal/attempts_log.md:3–37 identifies 250 headline, 200 ablation, and 12 initial sensitivity jobs, followed by nine additional sensitivity runs.",
+        "proposal/logs/sweep_main_jobs_progress.txt:1–463 records 462 completed jobs; sweep_fill_jobs_progress.txt records the nine additional completions, with corresponding run files.",
+        "proposal/logs/tests_metrics.txt contains six Gaussian/lognormal CRPS checks; sweep_p4_jobs_progress.txt records two development failures, and attempts_log.md:A12–A14 explains the subsequent numerical-debugging work."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "not_applicable",
+      "confidence": "high",
+      "reason": "The submission does not claim that its final method was fixed before observing results. It expressly describes choosing γ and the final configuration from pilot outcomes. Statements about constants being fixed across functions are not preregistration claims.",
+      "evidence": [
+        "proposal/sections/analysis.tex:172–177 says the headline γ=0.5 was chosen on pilot runs.",
+        "proposal/attempts_log.md:A15–A16 documents outcome-informed development and the final configuration decision.",
+        "task_spec.md:34,170 requires the Methodology to precede empirical results in the paper; it does not impose a preregistration deadline."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.intext_quantitative_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported N=500 CER decision time is falsely attributed to that data size. The quoted 0.23 seconds is a median pooled over N=400–500, whereas the actual N=500 median including the surrogate update is 10.73666 seconds. The accompanying statement that every method decides well under two seconds also fails for these recorded refit decisions.",
+      "evidence": [
+        "proposal/sections/analysis.tex:153–163 and report.pdf pp.12–13 report 0.23 seconds at N=500 and decisions well under two seconds.",
+        "proposal/code/make_tables.py:296–309 computes the 0.23-second macro by pooling all steps from 400 through 500.",
+        "proposal/logs/runs/main/piecewise1/loca/seed0.json through seed9.json, steps[n=500]: t_ask+t_tell_fit ranges from 6.50220 to 14.26221 seconds, with median 10.73666; seed0 alone records 0.14524+7.56144=7.70668 seconds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.main_table_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every numerical cell of the 21-row headline table matches independent aggregation of the saved ten-seed runs under the displayed rounding convention. The severe unfavorable outlier is retained.",
+      "evidence": [
+        "proposal/tables/main_results.tex:12–36: all 105 mean±std cells match the corresponding main-run snapshots.",
+        "proposal/logs/runs/main/piecewise2/loca/seed7.json, snapshot n=100, records IAE=404.0365216721984; all ten seeds aggregate to 57.853524354±115.478219361, displayed as 57.85±115.48.",
+        "The rendered Table 1 on proposal/report.pdf p.7 agrees with the table source."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.figure_numbers_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected rendered plots and their data-generation paths do not show fabricated or contradicted numerical series. Convergence, calibration, scan, and timing curves have saved sources; location and mechanism panels derive from logged trajectories. Some captions overstate plotted coverage, but that does not establish numerical fabrication.",
+      "evidence": [
+        "Visually inspected all eight PDFs under proposal/figures/, including the retained piecewise-II outlier in convergence_main.pdf.",
+        "proposal/code/figures.py:50–95,125–188,239–265 aggregates saved snapshots, coverage values, timings, and p5c scan records.",
+        "proposal/code/figures.py:99–121,194–235 derives location and mechanism panels from saved trajectories and hyperparameters. The pointwise ablation omitted from Figure 7 remains numerically reported in proposal/tables/ablation.tex."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.no_hardcoded_ground_truth_values": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected implementation evaluates the benchmark functions and computes metrics from predictions and evaluated targets. The numerical constants define the supplied functions, units, or algorithms; they are not lookup tables replacing experimental computation.",
+      "evidence": [
+        "proposal/code/sim_functions.py:30–82 implements the analytic functions, including the required discontinuities and diffusion unit conversion.",
+        "proposal/code/runner.py:167–174 selects a point before evaluating fm at that point.",
+        "proposal/code/metrics.py:77–110 computes errors, CRPS, MAPE, and coverage; no hardcoded reference errors feed these calculations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_aggregated": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All ten headline seeds contribute to the reported aggregates, including unfavorable runs. Three-seed development and sensitivity summaries are labeled as such. No outcome-dependent seed exclusion was found.",
+      "evidence": [
+        "proposal/code/aggregate.py:18–43 and proposal/code/analysis.py:27–36 load and aggregate every matching seed record without filtering on outcomes.",
+        "All 105 headline cells independently reproduce from seeds 0–9, including the piecewise-II n=100 outlier.",
+        "proposal/tables/sensitivity.tex:3 explicitly identifies three pilot seeds; its 18 numerical cells match the referenced saved arms."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.no_silent_omissions": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected records do not establish concealed outcome-dependent suppression. Unfavorable headline results and ablations are reported, alternative development configurations remain documented, and exclusions of superseded numerical-bug runs are disclosed. Plot coverage omissions alone do not establish the specified selection behavior.",
+      "evidence": [
+        "proposal/sections/results.tex:76–98 reports the outlier and regression; proposal/tables/ablation.tex includes poorly performing pointwise and baseline-surrogate variants.",
+        "proposal/attempts_log.md:A7–A16 preserves abandoned approaches, failed numerical configurations, and the trade-offs behind the final choice.",
+        "All 315 extended-metric cells and 35 ablation-table cells match saved aggregates. The missing pointwise curve in Figure 7 is present in Table 3, rather than suppressed from the results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.dense_grid_independent_of_acquisition": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The dense evaluation sets are geometrically separate from acquisition points, but their errors were used to select the acquisition exponent and model menu before reusing those same sets for headline evaluation. This is affirmative evaluation-set feedback into acquisition-model selection; disclosure of pilot tuning does not restore the held-out separation.",
+      "evidence": [
+        "proposal/code/sim_functions.py:18–24,118–130 fixes each dense set by TEST_SEED+function id, with no separate pilot or validation set; runner.py:89,208–214 uses it for snapshot errors.",
+        "proposal/attempts_log.md:254–288 selects γ=0.5 and the full menu using comparative benchmark IAEs, including 3.40 versus 4.21 and 9.72 versus 11.39 at N=200.",
+        "proposal/sections/analysis.tex:175–177 explicitly says the headline exponent was chosen on pilot runs; the main runs reuse the same evaluation-set construction.",
+        "task_spec.md:85–95,180–181 defines the held-out evaluation protocol; rubric.json’s leakage predicate explicitly includes using evaluation outcomes to select the acquisition model."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "sequential_acquisition.sequential_acquisition_logged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Within each adaptive run, acquisition scores depend on the current observed-data posterior and label-free integration nodes. The next function value is evaluated only after choosing its location. No direct use of unobserved future measurement values was found in this sequential loop; the separate evaluation-set tuning issue is assessed above.",
+      "evidence": [
+        "proposal/code/runner.py:154–174 updates acquisition state from current LOO quantities, calls gp.ask, and only then evaluates y_new.",
+        "proposal/code/acquisitions.py:96–125,136–150 uses observed residuals and posterior covariance; integration nodes are not supplied ground-truth responses.",
+        "All 350 headline/ablation adaptive records contain ordered steps from 11 through their terminal budget, totaling 186,500 recorded sequential decisions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The implementation and attribution notes identify use of the supplied gpCAM code and standard scientific libraries. No affirmative evidence of prohibited or unattributed external methodology code was found.",
+      "evidence": [
+        "proposal/codebase_notes.md:64–79 distinguishes reused gpCAM optimization from the custom posterior and acquisition implementation; lines 112–118 identify external-library usage.",
+        "proposal/code/surrogates.py:30–34, acquisitions.py:34–37, and figures.py:14–20 import the disclosed scientific libraries and gpCAM.",
+        "The optimizer integration agrees with workdir_outside_proposal/code/gpCAM/gpcam/surrogate_model.py; task_spec.md:189 permits these supplied codebases and standard libraries."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.originality.no_substantive_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The available evidence does not identify an unacknowledged prior contribution substantively reproduced as new. The report acknowledges integrated-reduction and residual-based predecessors and describes its proposed combination and differences. This does not independently establish the strength of its novelty claim.",
+      "evidence": [
+        "proposal/sections/intro_method.tex:95–126 discusses Cohn/ALC, EIGF, MEPE, SFCVT, TEAD, and ES-LOO, including specific comparisons with ES-LOO.",
+        "proposal/sections/intro_method.tex:178–264 specifies standardized LOO calibration, radial smoothing, and integrated standard-deviation reduction; these components are visible in proposal/code/acquisitions.py.",
+        "paper.md:413–425 discusses gradient weighting and prospective local-error extensions; the submission explicitly attributes SMART/gSMART to that work."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

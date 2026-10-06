@@ -1,0 +1,206 @@
+{
+  "nodes": {
+    "number_traceability.phase_and_threshold_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported Berry phases, extracted scalar thresholds and bootstrap intervals trace to saved results. Independent calculations on the saved samples reproduce all four main threshold crossings and the main table's circular phase means. Principal-value folding and rounding explain the apparent sign differences at π.",
+      "evidence": [
+        "proposal/sections/anchor_table.tex and proposal/logs/noiseless_*.json: anchor deviations are 3.4565e-5, 0.00406944, 7.3339e-5 and 1.7203e-5 radians.",
+        "proposal/logs/thresholds.json, per-configuration s_star fields: 0.2796281135, 0.5182925220, 0.00936495805 and 0.00435558714; each is reproduced from proposal/logs/results_samples.json using the stated crossing rule.",
+        "proposal/sections/main_table.tex: near-threshold phase means −2.851, +0.377, −2.865 and +0.283 agree with circular means of the corresponding saved samples.",
+        "proposal/code/analysis.py:88–181 implements running-maximum crossings and 2000-resample bootstrap intervals; proposal/report.tex:221–226 specifies circular comparisons."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.noise_rates_and_shots_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The prose materially misattributes the U=10 topological-only readout and T₂ limits to the conservative threshold covering both regimes. That conservative threshold requires readout error about 1.31e-5 and T₂ about 230 seconds, whereas the report calls 2.8e-5 and 110 seconds equivalent. These are values from a different configuration, differing by a factor of approximately 2.15. The underlying cache rates and sampled shot counts otherwise agree with the implementation.",
+      "evidence": [
+        "proposal/report.tex:390–396 and proposal/report.pdf, page 7: the conservative per-U two-qubit threshold is followed by 'equivalently' readout error 2.8e-5 and T₂ ≥110 seconds for U=10.",
+        "proposal/logs/thresholds.json:302–304: perU_U10.s_star=0.004355587137617416, selected from U10_trivial. With the stated profile this gives readout error 0.003*s=1.3066761413e-5 and T₂=1/s=229.59017198 seconds.",
+        "proposal/logs/thresholds.json:126–131: U10_nontrivial.s_star=0.0093649580487638, which instead gives 2.8094874146e-5 and 106.78104427 seconds.",
+        "proposal/logs/macros.tex:26–27 and 222–223 define the distinct topological/trivial values; proposal/report.tex:395–396 selects the topological macros after presenting the conservative threshold.",
+        "All 104 saved noisycache_*.npz noise records were inspected; their rates follow the configured scale and channel selection."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.resource_counts_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported circuit counts agree with logged operator selections and compiled-circuit metadata. Read-only reconstruction of every saved trajectory's CNOT and ansatz-depth trace found no mismatches. The report distinguishes ansatz layers from scheduled readout-circuit layers.",
+      "evidence": [
+        "proposal/logs/trajectory_{U0,U10}_{nontrivial,trivial}.npz, ops_x/ops_z/ntheta/cnot/depth: independently reconstructed endpoint counts are 120/15, 124/12, 592/61 and 592/61 CNOTs/layers, matching proposal/sections/anchor_table.tex.",
+        "proposal/code/engine.py:80–106 derives resources from the selected operators; the saved selections also match each noiseless JSON's AVQITE operators plus growth_log additions.",
+        "proposal/logs/noisycache_*_s0.npz, ht_cnots/ht_layers: 198/243, 196/224, 1074/1086 and 1148/1135, matching proposal/sections/main_table.tex.",
+        "proposal/logs/trotter_noiseless_U0_nontrivial.json and trotter_deep_demo.json support 6260 and 624020 CNOTs; proposal/code/compile.py:90–91 counts compiled CNOT gates."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_ground_truth": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected pipeline constructs its Hamiltonian and computes Wilson-loop references at runtime; adaptive phases and thresholds are calculated rather than substituted with target values. The Trotter analysis uses a literal π for the same nontrivial configuration whose independent ED reference is already computed and logged; it does not replace a missing reference computation. Archive reads occur in cross-checking, after the independent adaptive run.",
+      "evidence": [
+        "proposal/code/pauli.py:166–183 implements Jordan–Wigner creation/annihilation operators; proposal/code/model.py:38–91 constructs the SSHH Hamiltonian without loading archive Hamiltonian strings or pools.",
+        "proposal/code/ed.py:16–27 diagonalizes the model at 400 loop points and computes the overlap-product phase.",
+        "proposal/code/run_noiseless.py:82–115 computes ED, AVQITE and AVQDS results before the archive cross-check at lines 117–142.",
+        "proposal/logs/noiseless_*.json, ed.phi_B_wilson: −3.14159265358979, 2.8053e-15, 3.1415926535897905 and 8.7781e-16.",
+        "proposal/code/analysis.py:318 uses π for the U0_nontrivial Trotter comparison; its measured phase still comes from sampled quadratures at lines 325–328."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The Methodology specifies a shot-floor sweep starting at 64 shots, but the executed sweep includes 16 shots and uses that point to obtain the headline U=0 floors near 16. This is material to the reported minimum-shot result: a grid starting at 64 could not establish that crossing. The results section and appendix do reveal the 16-shot point, so this finding concerns the inconsistent methodological specification, not concealed sampling or fabricated results.",
+      "evidence": [
+        "proposal/report.tex:324–329 specifies S∈{64,…,65536} and states that the grids and seed counts were fixed before the sweeps.",
+        "proposal/code/sweep.py:25 and proposal/code/analysis.py:30 specify the executed grid [16,64,256,1024,4096,16384,65536].",
+        "proposal/logs/results_samples.json contains 24 S=16, s=0 samples, seeds 0–23, for each of the four configurations.",
+        "proposal/logs/thresholds.json:39–52: U0_nontrivial.S_star=16.3371528148, determined using mean deviation 0.3961605796 at S=16 and 0.1660435338 at S=64.",
+        "proposal/report.tex:432–435 and proposal/sections/appendix_sweep_table.tex explicitly report the actual 16-shot level."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission distinguishes its own noiseless and Trotter results from archive comparisons. Its baseline values agree with saved trajectories, run outputs and sampled records. No affirmative evidence establishes that cited reference values were passed off as the submission's measurements.",
+      "evidence": [
+        "proposal/sections/anchor_table.tex labels parenthetical values as archived results; proposal/logs/noiseless_*.json separates avqds from figshare_crosscheck.",
+        "proposal/logs/run_U0_nontrivial.out:16 reports the independently obtained phase −3.141558 and 120 CNOTs, while line 15 separately reports the archive's phase and 352 CNOTs.",
+        "proposal/logs/run_U10_nontrivial.out:20–21 similarly separates archive and own-run results, including 780 versus 592 CNOTs.",
+        "proposal/logs/trotter_noiseless_U0_nontrivial.json, trotter_noisy_sweep.json and trotter_samples.json support the optional baseline. Recalculation gives s*=0.12872601831605096, matching trotter_thresholds.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The executed test bed and principal AVQDS settings match the report. Regularization, the regime-dependent reference state and the AVQITE cutoff are explicitly disclosed. The saved trajectory residuals stay below the stated AVQDS cutoff. Resource and accuracy differences from the original paper are reported rather than concealed; their scientific adequacy is outside this rubric.",
+      "evidence": [
+        "proposal/report.tex:140–153 and 169–187 disclose N=4, t=1, eight qubits, both interactions, AVQDS cutoff 1e-4, parameter-step cap 0.01, AVQITE cutoff 1e-2, Tikhonov regularization 1e-7 and the reference-state switch.",
+        "proposal/logs/noiseless_*.json, config fields, match those settings; all four use T=20 with δ=±0.5 or ±0.6.",
+        "proposal/logs/trajectory_*.npz, l2 arrays: maxima are approximately 9.9484e-5, 9.9952e-5, 9.9289e-5 and 9.9880e-5.",
+        "proposal/attempts_log.md:53–62 explains the earlier tighter AVQITE cutoff and its replacement; proposal/report.tex:345–351 acknowledges leaner circuits and their implications."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The shot-floor methodology materially contradicts the implemented sweep: its stated grid begins at 64, whereas the code samples at 16 and uses those samples for the reported U=0 floors. The discrepancy is limited to that protocol specification. Inspection otherwise supports the described circuit-level channels, finite sampling of all three phase terms, frozen trajectory and common threshold calculation.",
+      "evidence": [
+        "proposal/report.tex:324–325 states the shot axis as S∈{64,…,65536}; proposal/code/analysis.py:30 and 62–71 include and execute S=16.",
+        "proposal/logs/results_samples.json, kind=sample, suffix='', s=0, shots=16 records: 24 seeds per configuration; proposal/logs/thresholds.json records U0_nontrivial.S_star=16.3371528148.",
+        "proposal/code/noisy_eval.py:327–376 uses multinomial energy samples, binomial connection samples and two binomial interferometric measurements before assembling the phase.",
+        "proposal/code/noisesim.py:31–56 and 171–246 implement the stated scaled noise profile and density-matrix channels; proposal/code/analysis.py:88–181 implements the stated crossing statistic."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The major execution claims have corresponding trajectories, probability caches, sampled outputs and run records. Earlier failed jobs are followed by completed replacement artifacts, so those failures do not contradict final execution claims. Some upstream inspection claims cannot be independently reconstructed because the referenced archive and cross-check file are absent from both staged locations; their absence alone does not establish a false claim.",
+      "evidence": [
+        "proposal/logs/run_*.out, trajectory_*.npz, sweep_stage1.out:1–98 and 104 noisycache_*.npz files support the adaptive and noisy measurement campaigns.",
+        "proposal/attempts_log.md:64–87 discloses the failed refinement launch; proposal/logs/u10_refine.out records the failure, while u10_refine_a.out/u10_refine_b.out and the corresponding caches record successful replacements.",
+        "proposal/report.tex:217–219 reports a global-phase check near 4e-8 radians; proposal/logs/tests_engine.json, forward_phase.phase_residual=4.2031647991771064e-8, supports it.",
+        "proposal/build_final.log:208 records a 16-page PDF; proposal/report.pdf is readable and has 16 pages. Earlier compilation failures in workdir_outside_proposal/ do not contradict this later output.",
+        "proposal/codebase_notes.md:63–64 references logs/crosscheck_hamiltonian.json, which is not present in either staged location."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The report explicitly claims that the protocol was fixed before the sweeps, but the staged record lacks a dated prior protocol or version history establishing that timing. Final source comments repeating 'pre-registered' cannot establish historical order. The disclosed refinements and inconsistent shot-grid descriptions do not establish undisclosed post-result selection or backdating.",
+      "evidence": [
+        "proposal/report.tex:43, 112 and 310–329 explicitly characterize the tolerance and extraction protocol as pre-registered and fixed before the sweeps.",
+        "proposal/code/analysis.py:3–17 and proposal/code/sweep.py:8–13 repeat pre-registration claims in final source comments.",
+        "proposal/report.tex:321–324 and proposal/attempts_log.md:66–85 disclose post-first-pass noise-grid refinement.",
+        "Inspection of proposal/ and workdir_outside_proposal/ found final code and run outputs, but no dated pre-sweep protocol version or change history sufficient to establish the claimed timing."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_levels_and_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved main sweep contains all four configurations and every reported noise level, with the specified seed sets. The shot sweep, channel-isolation results, Trotter results and mitigation results are also retained. Unfavorable high-noise results and post-threshold revivals remain visible. No completed unfavorable result was identified as hidden or favorably selected.",
+      "evidence": [
+        "proposal/logs/results_samples.json contains 2644 records: 1696 whole-method samples, 864 explicitly labeled phiG-exact samples and 84 exact-limit records.",
+        "For every configuration, the main grid is s={0,0.003,0.005,0.007,0.01,0.02,0.03,0.05,0.1,0.2,0.3,0.5,1}; nonzero main points contain seeds 0–15. Each of seven s=0 shot levels contains seeds 0–23.",
+        "proposal/sections/appendix_sweep_table.tex includes all 13 main noise levels, including U10_nontrivial deviations 2.877 at s=0.1 and 3.001 at s=0.5.",
+        "proposal/logs/trotter_samples.json contains 12 levels ×16 seeds; mitigation_samples.json contains two configurations ×10 levels ×16 seeds. No duplicate seed records were found.",
+        "proposal/report.tex:321–324 and 577–579 disclose the main and Trotter grid refinements; proposal/attempts_log.md:53–62 discloses replacement of preliminary preparation runs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "threshold_extraction_integrity.threshold_by_prestated_rule": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved thresholds are obtained uniformly from seed-mean circular errors using the stated running-maximum crossing and log interpolation. Independent calculations reproduce the main, Trotter and mitigation crossings. No evidence establishes post-result threshold selection to inflate robustness. Historical precommitment remains unresolved separately.",
+      "evidence": [
+        "proposal/report.tex:310–329 states tolerance π/8, the running-maximum envelope, log interpolation, bootstrap uncertainty and the conservative per-U minimum.",
+        "proposal/code/analysis.py:88–181 applies the same crossing function across configurations; lines 183–201 take the per-U minimum.",
+        "Recalculation from proposal/logs/results_samples.json reproduces s*=0.2796281135, 0.5182925220, 0.00936495805 and 0.00435558714 in thresholds.json.",
+        "Recalculation from trotter_samples.json and mitigation_samples.json reproduces 0.1287260183, 0.5494274082 and 0.03862255131 in their threshold files.",
+        "proposal/report.tex:383–386 explicitly explains why later low-error revivals are not used to enlarge the threshold."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "variational_simulation_integrity.ansatz_growth_uses_measurable_signals": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Growth depends on the McLachlan system, energy variance and candidate residuals. Exact-state fidelity is computed separately for diagnostics and does not feed operator selection, stopping or integration. The variational state is evolved through the selected parameterized Pauli rotations, and the saved selections agree with growth records.",
+      "evidence": [
+        "proposal/code/engine.py:57–78 evolves the parameterized circuit and its derivatives; lines 132–180 compute M, V, variance and candidate L².",
+        "proposal/code/engine.py:183–217 ranks candidate residuals and appends disjoint-support operators without any exact-state argument.",
+        "proposal/code/engine.py:301–335 performs growth before computing sector_ed fidelity, which is appended only to res.fid.",
+        "proposal/code/run_noiseless.py:95–104 computes preparation fidelity after AVQITE; lines 117–142 read archive traces only after the adaptive loop.",
+        "All four trajectory_*.npz operator lists match their noiseless JSON preparation operators followed by growth_log additions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected record identifies and acknowledges the original adaptive algorithm, related sampling-noise work, adiabatic-error cancellation and standard mitigation methods. No identifiable prior contribution in the supplied evidence is substantively reproduced while presented without acknowledgment. This is limited to the artifact-based inspection, not a comprehensive literature verification.",
+      "evidence": [
+        "paper.md, Results and Conclusion: the supplied original study reports noiseless simulations and identifies hardware noise and mitigation as future work.",
+        "proposal/report.tex:640–662 distinguishes the proposed measurement-noise characterization from cited variational-construction sampling work and adiabatic-error cancellation.",
+        "proposal/report.tex:80–90 and 103–123 explicitly attribute the underlying AVQITE/AVQDS Berry-phase method to Mootz and Yao.",
+        "proposal/report.tex:603–621 and bibliography entries Temme2017, Li2017, Kandala2019 and Bravyi2021 acknowledge the mitigation components."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The methodology code is inspectable, standard scientific dependencies are attributed, and no affirmative evidence identifies prohibited or unattributed external methodology code. The archive access visible in the pipeline is for comparison, rather than replacing Hamiltonian construction or adaptive growth.",
+      "evidence": [
+        "proposal/codebase_notes.md:77–113 describes the implementation modules; lines 115–121 attribute NumPy, SciPy, h5py and matplotlib.",
+        "proposal/code/engine.py, model.py, noisesim.py and noisy_eval.py contain the adaptive engine, Hamiltonian construction, density-matrix channels and estimator implementation.",
+        "proposal/code/run_noiseless.py:117–142 loads archive result traces for a separately labeled cross-check after the own-run computation.",
+        "proposal/code/figures.py:302–323 uses reference HDF5 traces for the explicitly labeled archive comparison figure."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

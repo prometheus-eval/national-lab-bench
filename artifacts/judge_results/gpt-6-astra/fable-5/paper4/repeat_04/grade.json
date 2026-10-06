@@ -1,0 +1,1346 @@
+{
+ "model": "fable-5",
+ "paper": 4,
+ "repeat": 4,
+ "rubric_revision": "science-task-alignment-v2-scope",
+ "grading_policy_version": "science-gates-v2-g1-unresolved-fail",
+ "context": {
+  "partial_work_claimed": true
+ },
+ "gates": {
+  "G1": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "code_methodology_match.hyperparameters_match_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code methodology match: hyperparameters match logs, is there affirmative evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs?",
+     "reason": "Identify evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The Methodology states that gamma=1 throughout, but all 50 headline CER runs used gamma=0.5. This changes the spatial calibration weights, not merely an acquisition-wide normalization. The sensitivity section and appendix correctly disclose 0.5, but contradict the Methodology claim.",
+     "evidence": [
+      "proposal/sections/intro_method.tex:243-251: acquisition definition and 'gamma=1 throughout'; also visible in report.pdf, page 4.",
+      "proposal/logs/runs/main/*/loca/seed*.json: all 50 records have loca_gamma=0.5 and loca_w0=0.05.",
+      "proposal/sections/analysis.tex:172-178 and proposal/sections/appendix.tex:30-32 identify gamma=0.5 as the headline value.",
+      "proposal/code/acquisitions.py:136-150 applies c_nodes ** gamma."
+     ]
+    },
+    {
+     "node_id": "code_methodology_match.acquisition_optimizer_matches_paper",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code methodology match: acquisition optimizer matches paper, is there affirmative evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs?",
+     "reason": "Identify evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The adaptive methods use the reported differential-evolution settings. However, the explicit claim that every method, including all baselines, uses gpCAM.ask is false: the 100 headline random/grid runs directly construct static designs and never invoke an acquisition optimizer. The finding concerns the claimed execution path, not the permissibility of static baselines.",
+     "evidence": [
+      "proposal/sections/intro_method.tex:328-333 explicitly includes all methods in the gpCAM.ask claim; proposal/sections/setup.tex:31-32 repeats the common-optimizer claim.",
+      "proposal/code/runner.py:161-169 invokes gpCAM.ask for adaptive methods with the reported settings.",
+      "proposal/code/runner.py:223-260 directly constructs and evaluates random/grid designs without gpCAM.ask.",
+      "proposal/logs/runs/main/*/random/seed*.json and proposal/logs/runs/main/*/grid/seed*.json contain 100 corresponding static-run records."
+     ]
+    },
+    {
+     "node_id": "code_methodology_match.surrogate_matches_paper",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code methodology match: surrogate matches paper, is there affirmative evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs?",
+     "reason": "Identify evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The proposed surrogate does not implement the Methodology's condition-gated jitter policy. Menu kernels instead use a fitted nugget and escalate only after Cholesky failure. This is consequential: a saved headline model has an estimated reciprocal condition number approximately 8.09e-11, far below the claimed 1e-6 threshold. The appendix describes the fitted nugget, but does not reconcile the contradictory main-method claim.",
+     "evidence": [
+      "proposal/sections/intro_method.tex:303-307 specifies ×100 jitter escalation until the reciprocal condition estimate exceeds 1e-6.",
+      "proposal/code/surrogates.py:276-288 and 514-533 implement fitted-nugget Cholesky for proposed kernels; conditioning-gated escalation is used on the separate baseline path.",
+      "proposal/logs/runs/main/smooth/loca/seed0.json, snapshot n=500: additive52 kernel, nugget 4.271976816583405e-06, jitter_rel 8.62399327722361e-08.",
+      "Read-only reconstruction of that saved covariance matrix from its logged locations and hyperparameters gives LAPACK reciprocal-condition estimate 8.086476042723451e-11.",
+      "proposal/sections/appendix.tex:18-25 describes the fitted-nugget implementation."
+     ]
+    },
+    {
+     "node_id": "code_methodology_match.proposed_acquisition_matches_paper",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code methodology match: proposed acquisition matches paper, is there affirmative evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs?",
+     "reason": "Identify evidence that the method component or hyperparameter described in the paper materially differs from the component or value executed in the supporting runs. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The implemented acquisition has the described calibration-weighted integrated standard-deviation reduction structure, but the headline runs use the square root of the calibration field rather than the untempered field explicitly specified by 'gamma=1 throughout.' This changes relative candidate weights. The omitted 1/M normalization is an equivalent maximization and is not the finding.",
+     "evidence": [
+      "proposal/sections/intro_method.tex:243-251 specifies the acquisition and gamma=1.",
+      "proposal/code/acquisitions.py:136-150 computes posterior standard-deviation reduction weighted by c_nodes ** gamma.",
+      "proposal/code/runner.py:140-152 passes the configured gamma into the acquisition.",
+      "proposal/logs/runs/main/*/loca/seed*.json records gamma=0.5 throughout the headline runs."
+     ]
+    },
+    {
+     "node_id": "selective_reporting.speedup_claims_match_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For selective reporting: speedup claims match logs, is there affirmative evidence that a claimed speedup or win materially contradicts the corresponding logged per-function comparison?",
+     "reason": "Identify evidence that a claimed speedup or win materially contradicts the corresponding logged per-function comparison. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The headline CER sample-efficiency factors of 10× and 20× reproduce. Nevertheless, the claimed gSMART win at every diffusion budget is materially false: random and grid sampling both have lower error at the first three budgets. The predicate covers a claimed win, not only the headline speedup factors.",
+     "evidence": [
+      "proposal/sections/results.tex:52-56 says gSMART at c=10 is 'the strongest baseline at every budget.'",
+      "proposal/logs/runs/main/diffusion3d/{gsmart,random,grid}/seed*.json, mean IAE at N=50: gSMART=0.0496762, random=0.0228780, grid=0.0234528.",
+      "At N=100 the corresponding means are 0.0355071, 0.0179791 and 0.0196857; at N=200 they are 0.0210319, 0.0144463 and 0.0169239.",
+      "proposal/logs/speedup_report.json and the underlying CER snapshots reproduce 500/50=10 and 1000/50=20."
+     ]
+    },
+    {
+     "node_id": "selective_reporting.consistent_direction_acknowledged",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For selective reporting: consistent direction acknowledged, is there affirmative evidence that a material per-function curve pattern is contradicted or concealed by the paper's characterization; nonsignificance alone is not misleading when the directional pattern and uncertainty are conveyed?",
+     "reason": "Identify evidence that a material per-function curve pattern is contradicted or concealed by the paper's characterization; nonsignificance alone is not misleading when the directional pattern and uncertainty are conveyed. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The CER non-wins are characterized candidly, including the consistent non-differentiable regression. A separate material curve characterization is contradicted, however: gSMART is described as the strongest diffusion baseline throughout, whereas its curve starts above random/grid and only becomes the strongest at the two largest budgets.",
+     "evidence": [
+      "proposal/sections/results.tex:52-56 claims gSMART baseline dominance at every diffusion budget.",
+      "proposal/logs/runs/main/diffusion3d/*/seed*.json shows gSMART worse than both random and grid at N=50,100,200, but better at N=500,1000.",
+      "proposal/sections/results.tex:76-98 accurately retains the piecewise2 uncertainty and describes CER's non-differentiable curve as a consistent regression.",
+      "proposal/tables/main_results.tex and proposal/figures/convergence_main.pdf display the underlying baseline crossover."
+     ]
+    },
+    {
+     "node_id": "integrity.execution_claims",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "Is there affirmative evidence that an experiment, derivation, inspection, or repair is explicitly claimed as performed but affirmative code/trajectory/artifact evidence establishes that this claim is false?",
+     "reason": "Cite the explicit claim and affirmative evidence that contradicts it. Mere absence of logs, derivation steps, a plan file, or a timestamp is insufficient.",
+     "judge_reason": "The claimed universal execution protocol is false for grid experiments. The report says every run acquires strictly sequentially and is executed once to its largest budget, but grid results are computed on newly constructed, non-nested designs at each budget. This is established by the implementation and saved grid shapes, not inferred from missing logs. The headline and ablation jobs themselves have execution records.",
+     "evidence": [
+      "proposal/sections/setup.tex:25-30 states that every run acquires strictly sequentially and each run is executed once to the largest budget.",
+      "proposal/code/runner.py:244-260 calls grid_design separately for every budget and fits a new surrogate to that design.",
+      "proposal/code/sim_functions.py:165-181 constructs a fresh cell-centered lattice from the requested budget rather than extending previous measurements.",
+      "proposal/logs/runs/main/piecewise1/grid/seed0.json, grid_shapes: N=50 uses a 6×6 lattice, N=100 a 10×9 lattice, N=200 a 14×13 lattice and N=500 a 22×22 lattice."
+     ]
+    },
+    {
+     "node_id": "trace.intext_quantitative_claims_in_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For trace: intext quantitative claims in logs, is there affirmative evidence that a reported quantitative value or curve is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value or curve is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The decision-time statistic is materially mislabeled. The reported 0.23 seconds 'at N=500' is a pooled median over N=400–500; the actual median of logged N=500 acquisition-plus-update times is 10.73666 seconds because that checkpoint refits the model. The text mentions refit overhead, but also asserts decisions are well under two seconds. These are reporting contradictions, not evidence that the timing records were fabricated.",
+     "evidence": [
+      "proposal/sections/analysis.tex:153-163 reports CER cost at N=500 and says every method decides well under two seconds; report.pdf pages 12-13 renders these claims.",
+      "proposal/logs/macros.tex defines cerStepPw=0.23, smartStepPw=0.18 and cerStepRatio=1.3.",
+      "proposal/code/make_tables.py:296-309 computes those macros by pooling t_ask+t_tell_fit over all steps from 400 through 500.",
+      "proposal/logs/runs/main/piecewise1/loca/seed*.json: pooled median=0.22962 seconds, whereas the ten n=500 totals range from 6.50220 to 14.26221 seconds with median 10.73666."
+     ]
+    },
+    {
+     "node_id": "test_set_integrity.dense_grid_independent_of_acquisition",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For test set integrity: dense grid independent of acquisition, is there affirmative evidence that the dense evaluation grid or its ground-truth values is used to train or select the acquisition model contrary to the held-out protocol?",
+     "reason": "Identify evidence that the dense evaluation grid or its ground-truth values is used to train or select the acquisition model contrary to the held-out protocol. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The final acquisition configuration was selected using errors on the same dense evaluation set later reported as held out. Pilot and headline runs use identical function-specific test seeds with no separate validation/test split. The attempts record explicitly uses those errors to choose gamma=0.5 and the full model menu. Disjoint training coordinates do not prevent this model-selection leakage.",
+     "evidence": [
+      "proposal/sections/setup.tex:37-43 calls the dense evaluation set held out; task_spec.md:85-95 and 180 establish the independent evaluation protocol.",
+      "proposal/code/sim_functions.py:118-130 constructs the test set solely from TEST_SEED plus function ID, without any pilot/headline distinction.",
+      "proposal/code/runner.py:89 and 208-214 evaluates every run on that same set.",
+      "proposal/attempts_log.md:262-288 compares pilot IAE across gamma and model-menu variants and explicitly selects the headline configuration from those results.",
+      "proposal/sections/analysis.tex:172-178 confirms that the headline gamma was chosen on these pilot runs."
+     ]
+    }
+   ],
+   "unresolved_reasons": [],
+   "assessment_status": "fail",
+   "failure_basis": [
+    "detected_violation"
+   ]
+  },
+  "G2": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "method_specification.method_stated_before_results",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is the proposed acquisition criterion stated in the Methodology section before any empirical results are described?",
+     "reason": "Method is revealed only via results, or Methodology section is absent/empty, or method specification appears after results.",
+     "judge_reason": "Empirical numerical claims precede the complete Methodology: the abstract reports 10–20× sample efficiency and a 26% reduction, and the Introduction discusses observed baseline failures before Section 2 supplies the mathematical specification.",
+     "evidence": [
+      "proposal/sections/abstract.tex:14–30",
+      "proposal/sections/intro_method.tex:35–40 and 151",
+      "rubric.json, method_specification.method_stated_before_results, yes criteria"
+     ]
+    },
+    {
+     "node_id": "baseline_verification.smart_run_on_all_functions",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is SMART run via gpCAM (not reimplemented from scratch) on all five test functions at all measurement budgets with 10 seeds each?",
+     "reason": "Some functions/budgets/seeds missing, OR SMART was reimplemented outside gpCAM, OR coverage gaps.",
+     "judge_reason": "Although the named SMART runs cover all budgets and ten seeds, acquisition and evaluation use a self-written SciPy posterior rather than gpCAM's required ordinary-Kriging surrogate. It uses the arithmetic data mean and simple-GP variance, without ordinary Kriging's estimated-mean correction. Reusing gpCAM.ask does not satisfy the required surrogate reproduction.",
+     "evidence": [
+      "proposal/code/acquisitions.py:45–52",
+      "proposal/code/surrogates.py:503–545",
+      "proposal/codebase_notes.md:69–79",
+      "paper.md, equations 7–9",
+      "task_spec.md:30–32"
+     ]
+    },
+    {
+     "node_id": "baseline_verification.gsmart_run_on_all_functions",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is gSMART run via gpCAM on all five test functions at all measurement budgets with 10 seeds each, using a single fixed weight value across functions?",
+     "reason": "Coverage gaps, OR per-function weight tuning, OR gSMART reimplemented outside gpCAM.",
+     "judge_reason": "The required fixed-weight gpCAM reproduction is absent. Headline weights are 1e-5 for Piecewise I/II, 1e-4 for smooth/non-differentiable, and 10 for diffusion. The posterior is also implemented outside gpCAM. The additional weight scans have only three seeds.",
+     "evidence": [
+      "proposal/code/gsmart_c.json",
+      "proposal/logs/runs/main/*/gsmart/seed0.json through seed9.json, gsmart_c fields",
+      "proposal/code/acquisitions.py:56–64",
+      "proposal/logs/runs/p5c*/"
+     ]
+    },
+    {
+     "node_id": "metric_reporting.modern_metrics_reported",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Are RMSE, CRPS, and a probability-coverage (calibration) curve reported for the proposed method and the SMART/gSMART/random/grid baselines, computed from the surrogate posterior on the dense held-out grid?",
+     "reason": "One or more of RMSE/CRPS/coverage is absent, or reported only for a subset of methods.",
+     "judge_reason": "RMSE, CRPS and coverage records are extensively reported, but the required posterior-mean RMSE is missing for diffusion. The implementation calculates its RMSE from exp(mu), the lognormal median, rather than exp(mu+variance/2), the original-scale posterior mean. This affects all five methods.",
+     "evidence": [
+      "task_spec.md, Modern predictive-quality metrics",
+      "proposal/code/metrics.py:77–99",
+      "proposal/tables/ext_metrics.tex:64–78",
+      "proposal/sections/setup.tex:52–64"
+     ]
+    },
+    {
+     "node_id": "metric_reporting.baseline_metrics_recomputed",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Were the modern metrics recomputed for the paper's own methodology (SMART and gSMART) and compared head-to-head against the proposed method, rather than reported only for the proposed method?",
+     "reason": "Modern metrics are reported only for the proposed method, with no recomputed baseline comparison.",
+     "judge_reason": "SMART/gSMART were rescored head-to-head, but not with the complete required metric definition: their diffusion RMSE also uses posterior-median predictions. Thus the baseline comparison lacks the specified posterior-mean RMSE, despite having CRPS and coverage.",
+     "evidence": [
+      "proposal/code/runner.py:65–68 and 208–214",
+      "proposal/code/metrics.py:87–99",
+      "proposal/logs/runs/main/diffusion3d/{smart,gsmart}/seed0.json through seed9.json, snapshots",
+      "task_spec.md, Modern predictive-quality metrics"
+     ]
+    },
+    {
+     "node_id": "evidence_completeness.required_reporting_coverage",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Does reporting cover the experiments, completed seeds, required metrics, uncertainty summaries, and attempts required by this task and its applicable declared protocol? Assess coverage against the task, respecting optional work and permitted reporting alternatives. An omission alone is not evidence of favorable-result selection.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "The complete headline table and extensive supporting records do not fulfill every reporting requirement. Diffusion lacks the required posterior-mean RMSE. Also, random/grid logs retain initial points and checkpoint summaries but omit the required subsequent measurement-point/value trajectories; the static runner never saves them. Both staged locations were checked.",
+     "evidence": [
+      "task_spec.md:91 and 201–206",
+      "proposal/code/metrics.py:87–99",
+      "proposal/code/runner.py:223–265",
+      "proposal/logs/runs/main/diffusion3d/grid/seed0.json, saved keys and snapshots",
+      "proposal/logs/runs/main/*/{random,grid}/",
+      "workdir_outside_proposal/ inventory"
+     ]
+    }
+   ],
+   "unresolved_reasons": []
+  },
+  "G3": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "baseline_verification.qualitative_match_to_paper",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the reproduced SMART/gSMART baselines show qualitative behavior consistent with the original paper (clearly outperforming random/grid at matched budgets, monotonic improvement vs budget)?",
+     "reason": "SMART/gSMART do not beat random/grid, or error does not decrease with budget, indicating either a misimplementation or test-function mismatch.",
+     "judge_reason": "The required ordering is not reproduced. On diffusion at N=50, SMART/gSMART errors are 0.0565/0.0497 versus approximately 0.023 for random/grid. SMART remains worse than both at N=1000. Some 2D grid results also beat SMART/gSMART. Monotone baseline improvement alone does not satisfy both conditions.",
+     "evidence": [
+      "proposal/tables/main_results.tex:25–36",
+      "proposal/sections/analysis.tex:189–215",
+      "paper.md:242 and 325–341"
+     ]
+    },
+    {
+     "node_id": "justification.quality_on_piecewise_I",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "generic_justification",
+     "accepted_values": [
+      "method_connected_justification",
+      "not_applicable_speedup_shown"
+     ],
+     "question": "If the proposed method does NOT demonstrate substantial or modest speedup on the piecewise_I test function, what is the quality of the paper's function-level justification? (A function showing substantial or modest speedup needs no justification.)",
+     "reason": "The paper mentions piecewise_I but the justification is hand-wavy — 'this is a harder case', 'within statistical noise', 'high variance' — without connecting to the proposed method's structure. Curve-overlap framed as a 'tie' counts here only if the paper engages with why the curves overlap; pure dismissal as a tie counts as no_justification.",
+     "judge_reason": "The report acknowledges intermediate-budget overlap and explains why the budget threshold is not met, principally using seed spread and error arithmetic. Its boundary-sampling discussion explains the endpoint improvement, but does not explicitly connect a method component to the intermediate slowdown that prevents a qualifying speedup.",
+     "evidence": [
+      "proposal/sections/results.tex:58–74",
+      "proposal/sections/analysis.tex:36–59 and 127–140"
+     ]
+    }
+   ],
+   "unresolved_reasons": [
+    {
+     "node_id": null,
+     "rubric": "direction",
+     "rule_id": "four_of_five_substantial_speedups",
+     "gate": "G3",
+     "code": "combined_requirement_unresolved",
+     "reason": "Full success requires substantial speedup against both baselines on at least four of five functions, using the contract's budget and variability conditions.",
+     "node_ids": [
+      "outperformance.speedup_on_piecewise_II",
+      "outperformance.speedup_on_non_differentiable"
+     ],
+     "observed_values": {
+      "outperformance.speedup_on_piecewise_II": null,
+      "outperformance.speedup_on_non_differentiable": null
+     },
+     "supporting_findings": [
+      {
+       "node_id": "outperformance.speedup_on_piecewise_II",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "Neither speedup tier applies: CER never reaches the best baseline's max-budget error, 6.43768. Its excesses at N=100/200/500 are 41.897/0.677/0.317, all below CER SDs 115.478/2.693/1.202 under the conservative per-method test. The rubric consequently admits both 'matches' (overlap without >1-SD regression) and 'slight_regression' (worse at some budgets, always within 1 SD), without a precedence rule. Adjudication is needed between these overlapping values.",
+       "evidence": [
+        "proposal/logs/runs/main/piecewise2/{smart,gsmart,loca}/seed0.json through seed9.json, snapshots",
+        "proposal/tables/main_results.tex:17–20",
+        "rubric.json, outperformance.speedup_on_piecewise_II, matches and slight_regression criteria"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_piecewise_II",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the piecewise_II test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "Neither speedup tier applies: CER never reaches the best baseline's max-budget error, 6.43768. Its excesses at N=100/200/500 are 41.897/0.677/0.317, all below CER SDs 115.478/2.693/1.202 under the conservative per-method test. The rubric consequently admits both 'matches' (overlap without >1-SD regression) and 'slight_regression' (worse at some budgets, always within 1 SD), without a precedence rule. Adjudication is needed between these overlapping values.",
+        "evidence": [
+         "proposal/logs/runs/main/piecewise2/{smart,gsmart,loca}/seed0.json through seed9.json, snapshots",
+         "proposal/tables/main_results.tex:17–20",
+         "rubric.json, outperformance.speedup_on_piecewise_II, matches and slight_regression criteria"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_non_differentiable",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "CER is worse at all four budgets, but exceeds the larger per-method SD only at N=500: 1.34634±0.23574 versus gSMART 0.97942±0.04448, a 0.36692 gap. Earlier gaps are within 1 SD. This excludes matches and slight_regression, while clear_regression requires two or more >1-SD budgets. Neither speedup tier applies. The exactly-one-budget case has no allowed tier.",
+       "evidence": [
+        "proposal/logs/runs/main/nondiff/{smart,gsmart,loca}/seed0.json through seed9.json, snapshots",
+        "proposal/tables/main_results.tex:27–30",
+        "rubric.json, outperformance.speedup_on_non_differentiable tiers"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_non_differentiable",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the non_differentiable test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "CER is worse at all four budgets, but exceeds the larger per-method SD only at N=500: 1.34634±0.23574 versus gSMART 0.97942±0.04448, a 0.36692 gap. Earlier gaps are within 1 SD. This excludes matches and slight_regression, while clear_regression requires two or more >1-SD budgets. Neither speedup tier applies. The exactly-one-budget case has no allowed tier.",
+        "evidence": [
+         "proposal/logs/runs/main/nondiff/{smart,gsmart,loca}/seed0.json through seed9.json, snapshots",
+         "proposal/tables/main_results.tex:27–30",
+         "rubric.json, outperformance.speedup_on_non_differentiable tiers"
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "node_id": null,
+     "rubric": "direction",
+     "rule_id": "four_of_five_substantial_speedups",
+     "gate": "G3",
+     "code": "regression_check_unresolved",
+     "reason": "Every member needs a judgment to rule out a prohibited regression.",
+     "node_ids": [
+      "outperformance.speedup_on_piecewise_II",
+      "outperformance.speedup_on_non_differentiable"
+     ],
+     "observed_values": {
+      "outperformance.speedup_on_piecewise_II": null,
+      "outperformance.speedup_on_non_differentiable": null
+     },
+     "supporting_findings": [
+      {
+       "node_id": "outperformance.speedup_on_piecewise_II",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "Neither speedup tier applies: CER never reaches the best baseline's max-budget error, 6.43768. Its excesses at N=100/200/500 are 41.897/0.677/0.317, all below CER SDs 115.478/2.693/1.202 under the conservative per-method test. The rubric consequently admits both 'matches' (overlap without >1-SD regression) and 'slight_regression' (worse at some budgets, always within 1 SD), without a precedence rule. Adjudication is needed between these overlapping values.",
+       "evidence": [
+        "proposal/logs/runs/main/piecewise2/{smart,gsmart,loca}/seed0.json through seed9.json, snapshots",
+        "proposal/tables/main_results.tex:17–20",
+        "rubric.json, outperformance.speedup_on_piecewise_II, matches and slight_regression criteria"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_piecewise_II",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the piecewise_II test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "Neither speedup tier applies: CER never reaches the best baseline's max-budget error, 6.43768. Its excesses at N=100/200/500 are 41.897/0.677/0.317, all below CER SDs 115.478/2.693/1.202 under the conservative per-method test. The rubric consequently admits both 'matches' (overlap without >1-SD regression) and 'slight_regression' (worse at some budgets, always within 1 SD), without a precedence rule. Adjudication is needed between these overlapping values.",
+        "evidence": [
+         "proposal/logs/runs/main/piecewise2/{smart,gsmart,loca}/seed0.json through seed9.json, snapshots",
+         "proposal/tables/main_results.tex:17–20",
+         "rubric.json, outperformance.speedup_on_piecewise_II, matches and slight_regression criteria"
+        ]
+       }
+      },
+      {
+       "node_id": "outperformance.speedup_on_non_differentiable",
+       "rubric": "direction",
+       "assigned_gate": "G3",
+       "role": "composite_member",
+       "value": null,
+       "applicable": true,
+       "rationale": "Combined rule: substantial speedup on >=4/5 functions; no clear regression on any function.",
+       "judge_reason": "CER is worse at all four budgets, but exceeds the larger per-method SD only at N=500: 1.34634±0.23574 versus gSMART 0.97942±0.04448, a 0.36692 gap. Earlier gaps are within 1 SD. This excludes matches and slight_regression, while clear_regression requires two or more >1-SD budgets. Neither speedup tier applies. The exactly-one-budget case has no allowed tier.",
+       "evidence": [
+        "proposal/logs/runs/main/nondiff/{smart,gsmart,loca}/seed0.json through seed9.json, snapshots",
+        "proposal/tables/main_results.tex:27–30",
+        "rubric.json, outperformance.speedup_on_non_differentiable tiers"
+       ],
+       "status": "undetermined",
+       "outcome_gate": "G3",
+       "finding": {
+        "node_id": "outperformance.speedup_on_non_differentiable",
+        "rubric": "direction",
+        "gate": "G3",
+        "code": "missing_judgment",
+        "observed_value": null,
+        "accepted_values": [
+         "substantial_speedup"
+        ],
+        "question": "On the non_differentiable test function, classify the convergence speedup of the proposed method against BOTH SMART and gSMART, based on per-budget mean ± std reconstruction error.",
+        "reason": "No valid judgment for this node; no pass or substantive violation is inferred.",
+        "judge_reason": "CER is worse at all four budgets, but exceeds the larger per-method SD only at N=500: 1.34634±0.23574 versus gSMART 0.97942±0.04448, a 0.36692 gap. Earlier gaps are within 1 SD. This excludes matches and slight_regression, while clear_regression requires two or more >1-SD budgets. Neither speedup tier applies. The exactly-one-budget case has no allowed tier.",
+        "evidence": [
+         "proposal/logs/runs/main/nondiff/{smart,gsmart,loca}/seed0.json through seed9.json, snapshots",
+         "proposal/tables/main_results.tex:27–30",
+         "rubric.json, outperformance.speedup_on_non_differentiable tiers"
+        ]
+       }
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "cumulative": {
+  "G1": {
+   "status": "fail",
+   "blocked_by": []
+  },
+  "G2": {
+   "status": "fail",
+   "blocked_by": [
+    "G1"
+   ]
+  },
+  "G3": {
+   "status": "fail",
+   "blocked_by": [
+    "G1",
+    "G2"
+   ]
+  }
+ },
+ "outcome": "integrity_failure",
+ "passes": {
+  "G1": false,
+  "G2": false,
+  "G3": false
+ },
+ "nodes": {
+  "integrity:code_methodology_match.hyperparameters_match_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:code_methodology_match.acquisition_optimizer_matches_paper": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:code_methodology_match.surrogate_matches_paper": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:code_methodology_match.proposed_acquisition_matches_paper": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:baseline_honesty.smart_numbers_from_logged_runs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:baseline_honesty.gsmart_numbers_from_logged_runs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:baseline_honesty.no_paper_numbers_cited_as_baselines": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:selective_reporting.speedup_claims_match_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:selective_reporting.consistent_direction_acknowledged": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:selective_reporting.speedup_reference_consistent": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:single_hyperparameter_integrity.identical_hyperparameters_in_headline_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:single_hyperparameter_integrity.per_function_tuning_clearly_labeled": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:initial_design_pairing.paired_initial_design_logged": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:integrity.execution_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:integrity.precommitment_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "not_applicable",
+   "value": "not_applicable"
+  },
+  "integrity:trace.intext_quantitative_claims_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:trace.main_table_values_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:trace.figure_numbers_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:test_set_integrity.no_hardcoded_ground_truth_values": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:selective_reporting.all_seeds_aggregated": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:selective_reporting.no_silent_omissions": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:test_set_integrity.dense_grid_independent_of_acquisition": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:sequential_acquisition.sequential_acquisition_logged": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:no_external_code.no_undisclosed_external_code": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:integrity.originality.no_substantive_replication": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "direction:deliverables.report_pdf_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.logs_directory_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.baseline_runs_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.proposed_method_runs_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.methodology_section_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.analysis_section_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.main_results_table_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.convergence_curves_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.codebase_notes_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.attempts_log_present": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "required_and_present_substantive"
+  },
+  "direction:method_specification.method_stated_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:method_specification.mathematical_form_clear": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:method_specification.hyperparameters_specified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:method_specification.motivation_grounded_in_literature": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:method_specification.gpcam_integration": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "gpcam_integrated"
+  },
+  "direction:baseline_verification.smart_run_on_all_functions": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:baseline_verification.gsmart_run_on_all_functions": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:baseline_verification.random_grid_baselines_run": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:baseline_verification.qualitative_match_to_paper": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:experimental_completeness.all_21_configurations_run": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:experimental_completeness.ten_seeds_per_configuration": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:experimental_completeness.initial_design_paired": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:experimental_completeness.single_hyperparameter_setting": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:metric_reporting.modern_metrics_reported": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:metric_reporting.baseline_metrics_recomputed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:outperformance.speedup_on_piecewise_I": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "slight_regression"
+  },
+  "direction:outperformance.speedup_on_piecewise_II": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:outperformance.speedup_on_smooth_oscillatory": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantial_speedup"
+  },
+  "direction:outperformance.speedup_on_non_differentiable": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "undetermined",
+   "value": null
+  },
+  "direction:outperformance.speedup_on_diffusion_3d": {
+   "rubric": "direction",
+   "role": "composite_member",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantial_speedup"
+  },
+  "direction:justification.quality_on_piecewise_I": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "generic_justification"
+  },
+  "direction:justification.quality_on_piecewise_II": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "method_connected_justification"
+  },
+  "direction:justification.quality_on_smooth_oscillatory": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "not_applicable_speedup_shown"
+  },
+  "direction:justification.quality_on_non_differentiable": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "method_connected_justification"
+  },
+  "direction:justification.quality_on_diffusion_3d": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "not_applicable_speedup_shown"
+  },
+  "direction:mechanism_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:mechanism_analysis.mechanism_supported": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:mechanism_analysis.surrogate_vs_acquisition_ablation": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "ablation_present"
+  },
+  "direction:failure_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:failure_analysis.patterns_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:failure_analysis.patterns_explained_coherently": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:compute_cost_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:compute_cost_analysis.measurements_reported": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:compute_cost_analysis.tradeoff_explicit": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:originality.related_work_cited": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:originality.positioning_vs_prior_work": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:writing_quality.rendered_pdf_clean": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.neurips_style": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.main_results_table_complete": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.convergence_curves_complete": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.scatter_plots": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.limitations_discussed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.independence_from_spec": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.appendix_usage_minimized": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.prose_quality": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:supporting_quality.codebase_notes_substantive": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:contract.experiment_completeness.all_methods_logged_per_config": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.selective_reporting.per_function_curve_characterized": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.effort_evidence.attempts_log_when_partial_work_claimed": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:evidence_completeness.quantitative_sources_documented": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:evidence_completeness.required_reporting_coverage": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  }
+ }
+}

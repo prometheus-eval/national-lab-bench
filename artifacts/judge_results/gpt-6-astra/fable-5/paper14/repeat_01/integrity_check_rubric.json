@@ -1,0 +1,213 @@
+{
+  "nodes": {
+    "number_traceability.observables_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The headline sweep values reconstruct from the saved data, but two reported observables materially contradict their sources. The reported mean quantum occupation, 0.56, is actually the squared transverse-field amplitude; the saved statevector and sector probabilities give 0.6676483 quanta. Figure 3's caption identifies a pump-mode projection, while its plotting code uses an unweighted sum of site fields. These are discrepancies in the quantities reported, not evidence that the underlying statevector simulations were fabricated.",
+      "evidence": [
+        "proposal/sections_results.tex:49-58 and proposal/macros.tex:17-18 report mean quanta 0.56 and active-sublattice density 0.092.",
+        "proposal/logs/sweep/sweep_epsp0_00.json, fields sector_populations_coh_initial, nbar_quanta and rho_per_Asite; read-only reconstruction from proposal/logs/sweep/statevectors_epsp0_00.npz gives mean occupation 0.6676483145327714 and active-sublattice density 0.10996688148186425.",
+        "proposal/code/run_sweep.py:164-165 computes the reported quantities from squared transverse amplitudes, rather than occupation probabilities.",
+        "proposal/sections_results.tex:180-185 and rendered proposal/report.pdf, page 7, identify Figure 3's upper curve as S(t). proposal/code/make_figures.py:173-181 instead plots sv.sum(axis=1). At t=0, that sum is 1.7011681-0.2021575i, whereas the defined pump projection is 0.75; the trajectories are not related by a constant rescaling."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.epsilon_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported coupling values match the plan, executed configurations, individual logs and results table. The additional ±0.15 runs belong to the separately declared window analysis. The epsilon/4 Hamiltonian convention is consistent across the report and implementation.",
+      "evidence": [
+        "proposal/code/method_plan.json:27-36 declares epsilon/J = -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4; lines 51-55 declare the secondary window couplings.",
+        "proposal/tables_main.tex:19-27 reports the zero baseline and all eight primary couplings.",
+        "proposal/logs/sweep/sweep_eps*.json, meta.eps, matches the corresponding sweep_summary.json rows and secondary R_of_T records.",
+        "proposal/report.tex:204-212 and proposal/code/spinchain.py:68-73 both specify H_ZZ = (epsilon/4) sum Z_j Z_(j+2)."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_observables": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported sweep and baseline results come from statevector evolution, numerical reference solutions and observable extraction. No target literals replace those computations. The constant classical comparison in Figure 5 is consistent with an equivalent analytic normalization: the saved epsilon-zero NLSE trajectory independently gives normalized pair density one to numerical precision.",
+      "evidence": [
+        "proposal/code/spinchain.py:349-416 implements full-state Trotter and matrix-exponential evolution; proposal/code/run_sweep.py:100-158 records computed trajectories.",
+        "proposal/code/run_sweep.py:178-210 computes double differences and relative errors from phases; read-only reconstruction reproduced every primary summary value.",
+        "proposal/code/classical_reference.py:97-138 numerically solves the discrete reference equation.",
+        "proposal/code/make_figures.py:230-233 draws the classical unity line. Computing normalized neighboring-cell intensity products from proposal/logs/sweep/sweep_epsp0_00.json, dnlse_traj and nlse_traj, gives maximum deviation from one of 7.66e-10."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.pde_reference_independent_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved reference values trace to separate numerical solutions using the declared equations, coefficients and initial envelope. Their extraction occurs before residual calculation and does not use evolved quantum outputs. The disclosed pilot change from a continuum to a discrete reference does not establish that reference values were copied or fitted to emulation results.",
+      "evidence": [
+        "proposal/code/classical_reference.py:26-46 reads the symbolic coefficient dictionary; lines 97-138 implement the reference differential equation without loading emulation results.",
+        "proposal/code/run_sweep.py:114-133 computes independent reference trajectories and phases; lines 199-206 subsequently calculate comparisons.",
+        "proposal/logs/sweep_summary.json, epsilon=-0.4 row: D_pde=-0.07818419335982298 and D_sim=-0.07925797604041523 reconstruct from the respective saved phases.",
+        "proposal/attempts_log.md:124-127 discloses adoption of the discrete reference during pilot B3."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The independent run settings quoted in the report match the executed configurations: N=12, J=1, Delta=0.5, amplitude 0.75, step 0.8, second-order layering, one-step response and 15% tolerance. The occupation discrepancy assessed under observable traceability is a derived-quantity misstatement, not evidence that a different pump-amplitude setting was executed.",
+      "evidence": [
+        "proposal/sections_results.tex:20-25, 49-58 and 111-120 specify the production settings.",
+        "proposal/code/method_plan.json:15-37 matches the plan embedded in proposal/logs/sweep_summary.json exactly.",
+        "Every proposal/logs/sweep/sweep_eps*.json metadata record specifies N=12, Delta=0.5, dt=0.8, order=2, amplitude_A=0.75 and response_window_steps=1.",
+        "proposal/logs/mi_quantum_contrast.json records pump_A=0.75 and seed_amplitude=0.25, matching method_plan.json:65-68."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.pde_independent_of_emulation": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No prohibited information flow from evolved emulation results into the reference prediction is evident. Both calculations share declared physical parameters and initial conditions, while their dynamics are computed separately. The adequacy of the chosen discrete approximation is a scientific question, not evidence of reference leakage.",
+      "evidence": [
+        "proposal/code/classical_reference.py imports NumPy, solve_ivp and mapping_coefficients.json, with no emulation-output input.",
+        "proposal/code/run_sweep.py:100-123 passes the initial envelope and physical settings to the reference solvers, not the quantum trajectories.",
+        "proposal/code/mapping_coefficients.json:4-13 specifies analytic coefficient expressions, including omega_pp=J**2*a**2/Delta and q_envelope=2*eps.",
+        "proposal/code/run_sweep.py:197-210 calculates errors only after both sets of predictions have been computed."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.noiseless_simulation_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The dispersion and propagation baselines are attributable to the submission's own saved statevector runs. Their extracted frequencies, densities and centers of mass reproduce the logs. The use of Strang rather than the source paper's stated first-order evolution is disclosed; whether that constitutes an adequate reproduction belongs to scientific assessment.",
+      "evidence": [
+        "proposal/code/run_linear_suite.py:50-116 implements and logs Ramsey evolution, first-order comparisons and frequency extraction; lines 120-157 implement the three propagation runs.",
+        "proposal/logs/linear_dispersion_Delta0_statevectors.npz and linear_dispersion_DeltaJ4_statevectors.npz contain 13x512 trajectories. Reconstructed frequencies match the logs within 3.4e-16; logged maximum nonzero-mode errors are 1.8300% and 1.9806%.",
+        "The three proposal/logs/linear_propagation_*_statevectors.npz files reproduce logged densities exactly and centers of mass within 1.8e-15.",
+        "proposal/sections_results.tex:20-37 and proposal/attempts_log.md:61-77 disclose the evolution-order choice."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.h0_contrast_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The unextended-H0 contrast has its own saved trajectory and uses the same initial state as the focusing and defocusing runs. The report accurately includes the baseline's nonzero sideband variation rather than replacing it with a fabricated zero-growth trace.",
+      "evidence": [
+        "proposal/code/run_mi_demo.py:150-188 constructs focusing, H0 and defocusing runs and saves each trajectory.",
+        "proposal/logs/mi_statevectors_h0_baseline.npz contains a 61x4096 trajectory; its initial state is identical to those in mi_statevectors_focusing_zz.npz and mi_statevectors_defocusing_zz.npz.",
+        "proposal/logs/mi_quantum_contrast.json gives peak-to-initial sideband ratios 3.5826040, 2.6764467 and 1.9653331, matching the reported 3.6, 2.7 and 2.0.",
+        "proposal/sections_results.tex:336-350 reports these contrasts and explicitly disclaims quantitative quantum growth-rate metrology."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The methodology materially overstates the implemented control coverage: it says exact evolution accompanies every Trotterized production run, but the production MI and coupling-geometry routines implement only Trotter evolution. The report also identifies Figure 3's summed-field curve as the distinct pump-mode projection. These are affirmative implementation-description contradictions.",
+      "evidence": [
+        "proposal/sections_results.tex:35-37, rendered on proposal/report.pdf page 5, states that exact Krylov evolution is run alongside every Trotterized production run.",
+        "proposal/code/run_mi_demo.py:125-188 implements the three quantum MI trajectories using only Trotter layers/evolution; lines 210-237 likewise implement the geometry comparison using only Trotter evolution.",
+        "proposal/logs/mi_quantum_contrast.json records order=2 and the three corresponding runs; proposal/logs/mi_stdout.txt reports the results produced by that routine.",
+        "proposal/sections_results.tex:180-185 calls Figure 3's upper trace S(t), while proposal/code/make_figures.py:173-181 computes and plots the unweighted site sum."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implementation retains the specified H0, uses 9- and 12-qubit quantum lattices, keeps the step at 0.8 and makes the ZZ term vanish exactly at zero coupling. Strang layering, pilot-informed protocol selection and the nearest-neighbor comparison are disclosed. No concealed contradiction of a claimed held-fixed condition is established.",
+      "evidence": [
+        "proposal/code/spinchain.py:57-93 implements the original H0 and the additive epsilon-dependent ZZ term.",
+        "proposal/sections_results.tex:5-8 and 20-37 disclose lattice sizes and Strang layering at delta=0.8.",
+        "proposal/logs/eps0_identity.json records zero operator difference and zero maximum trajectory differences for three protocols.",
+        "proposal/sections_results.tex:111-120 discloses pilot-informed choices; lines 364-369 explicitly describe the nearest-neighbor structure as a comparison.",
+        "proposal/attempts_log.md:79-87 distinguishes classical ring checks from the committed open-chain quantum model."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The blanket claim that every Trotterized production run received an exact-evolution control exceeds the executed implementation shown by the production scripts and corresponding records. The MI suite and geometry comparison terminate after Trotter-only computations. This finding concerns the falsely stated coverage of controls; the sweep, MI trajectories and baseline simulations themselves have execution evidence.",
+      "evidence": [
+        "proposal/sections_results.tex:35-37 explicitly claims exact Krylov evolution alongside every Trotterized production run.",
+        "proposal/code/run_mi_demo.py:125-188 and 195-237 provide complete production routines for the MI and geometry results, with no exact-evolution branch.",
+        "proposal/logs/mi_quantum_contrast.json, proposal/logs/nn_vs_nnn_contrast.json and proposal/logs/mi_stdout.txt correspond to those Trotter-only routines.",
+        "In contrast, proposal/code/run_sweep.py:105-108 explicitly executes both evolution schemes and proposal/logs/sweep_summary.json reports D_sim_exactevo, supporting the narrower claim for the primary sweep."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The explicit claim is commitment before production runs, with preceding pilot refinement acknowledged. The saved chronology supports that claim, and the production log embeds the same plan. The plan's lateness relative to exploratory work does not establish undisclosed selection or backdating.",
+      "evidence": [
+        "proposal/report.tex:155-159 and proposal/sections_results.tex:111-120 limit the timing claim to production and acknowledge preceding pilots.",
+        "proposal/code/method_plan.json records created_utc=2026-08-19T11:51:03.899243+00:00.",
+        "proposal/logs/pilots/pilot_B4_ehrenfest.json was saved at 11:48:46.694597; proposal/logs/eps0_identity.json begins at 12:00:36.670924 and sweep_summary.json at 12:07:56.835311.",
+        "The plan embedded in proposal/logs/sweep_summary.json matches proposal/code/method_plan.json exactly; proposal/attempts_log.md:89-157 documents the outcome-informed pilot refinements."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_points_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All eight declared primary couplings and the zero baseline appear in the main table. Secondary window results include unfavorable long-window behavior, and failed pilot protocols remain documented. The record does not establish concealment of completed unfavorable sweep results.",
+      "evidence": [
+        "proposal/code/method_plan.json:27-36 and proposal/tables_main.tex:19-27 contain the same primary sweep grid.",
+        "proposal/logs/sweep_summary.json, R_of_T, retains all declared windows and four secondary couplings, including negative ratios at long windows.",
+        "Rendered proposal/report.pdf page 9, Figure 5, displays the deterioration; proposal/sections_results.tex:262-299 discusses it.",
+        "proposal/logs/pilots/pilot_B2_shift.json retains 32 rows, pilot_B3_shift.json 120 rows and pilot_B4_ehrenfest.json 48 rows; proposal/attempts_log.md:89-157 explains their unfavorable outcomes and subsequent choices."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.zz_structures_documented": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Both implemented coupling structures are documented: next-nearest-neighbor ZZ is the production model and nearest-neighbor ZZ is a disclosed comparison. The weaker nearest-neighbor result is retained and reported. No hidden completed structure comparison is evident.",
+      "evidence": [
+        "proposal/code/spinchain.py:68-94 implements the nnn and nn alternatives.",
+        "proposal/attempts_log.md:7-30 describes consideration and rejection of nearest-neighbor ZZ.",
+        "proposal/code/method_plan.md:140-142 declares the nearest-neighbor comparison at epsilon=-0.3.",
+        "proposal/logs/nn_vs_nnn_contrast.json records D_nnn=-0.059698443543940716, D_nn=-0.0006268388185194651 and magnitude ratio 0.010500086456325847; proposal/sections_results.tex:364-369 reports the approximately 95-fold difference."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report explicitly acknowledges the established coherent-state, spin-chain and NLSE mapping techniques and distinguishes its claimed application from those methods. The inspected materials do not identify a substantively reproduced prior contribution presented without attribution. This does not independently establish scientific novelty.",
+      "evidence": [
+        "proposal/sections_results.tex:457-476 explicitly says the derivation follows an established route and that the route itself is not the contribution.",
+        "proposal/sections_appendix.tex:89-101 cites Holstein–Primakoff, spin-soliton and lattice-boson correspondence work while stating the claimed distinction.",
+        "proposal/report.tex:166-195 attributes the base Hamiltonian and linear mapping to Sundar et al.",
+        "proposal/refs.bib includes the cited mapping literature; paper.md, Sections II and Appendix A, supplies the acknowledged original construction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submitted methodology code uses disclosed standard scientific libraries and local implementations. No identifiable non-trivial external implementation is embedded or imported without attribution. The source and provenance notes support this limited finding; they do not prove authorship beyond the staged record.",
+      "evidence": [
+        "proposal/codebase_notes.md:3-5, 7-61 and 63-79 distinguish local implementations from NumPy, SciPy, SymPy and matplotlib use.",
+        "proposal/code/spinchain.py:25-30, proposal/code/classical_reference.py:22-28 and proposal/code/derivation_mapping.py:21-22 show the methodology dependencies.",
+        "Inspection of all proposal/code/*.py files found direct local implementations and imports of local modules or standard libraries, without an attributed or identifiable external solver implementation.",
+        "task_spec.md:185 permits authored methodology code and the listed standard scientific libraries."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

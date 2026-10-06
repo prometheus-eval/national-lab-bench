@@ -1,0 +1,181 @@
+{
+  "nodes": {
+    "number_traceability.metrics_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Reported predictive metrics, uncertainties, likelihoods, sizes, sparsity, and resource measurements agree with their saved sources after rounding and unit conversion. Independent calculations from prediction and model arrays reproduced the principal results. The large-support memory figures are explicitly labeled estimates.",
+      "evidence": [
+        "proposal/report.tex:137-146 and proposal/logs/results_macros.tex:2-38: main-table values match proposal/logs/main_results.json.",
+        "proposal/logs/predictions_adapted.npz and predictions_existing.npz: independently recalculated RMSE/CRPS are 5.395976109/2.889468792 and 5.416495558/4.959710408; 95% coverage is 0.961900049 and 0.997822860.",
+        "proposal/logs/model_adapted.npz: saved denominator and transformed_y reproduce log-determinant 1467367.889136399 and log marginal likelihood -1472898.473860578.",
+        "proposal/logs/kernel_factors_adapted.npz: 58696 temporal entries times 1193 spatial entries equals the reported 70024328 covariance entries.",
+        "proposal/logs/analysis.json, per_sensor and per_horizon: recalculated metrics for all three methods agree within 7.2e-15; the 121.903 GB support estimate is labeled estimated_csr_gb."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_predictions": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submitted computation derives predictions from fitted models and training responses, then computes metrics against held-out observations. No hardcoded result or oracle output replaces those computations. Fixed normal quantiles, kernel supports, initialization values, and the cited reproduction target serve legitimate computational or comparison roles.",
+      "evidence": [
+        "proposal/code/kron_gp.py:31-114 computes full-data likelihood terms, posterior means, and variances from covariance factors and residuals.",
+        "proposal/code/run_exact_traffic_gp.py:419-445 computes predictions before saving their arrays; proposal/code/utils.py:138-174 computes CRPS, RMSE, and coverage.",
+        "proposal/code/run_vecchia_baseline.py:345-382 derives predictions from fitted hyperparameters and training residuals.",
+        "proposal/code/run_mnist_reproduction.py:119-136: saved group statistics and fitted hyperparameters independently reproduce every saved MNIST probability exactly.",
+        "proposal/code/validate_artifacts.py:113-114 uses 0.018 and 0.004 only to compare an already computed reproduction score."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "kernel_adaptation_genuineness.claim_matches_implementation": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed normalized directed-incidence Gram kernel and compact daily-recurrence term are implemented distinctly and selected by the adapted production run. Saved parameters and covariance factors support that implementation rather than a relabeled stock kernel.",
+      "evidence": [
+        "proposal/report.tex:64-86 specifies normalized (I+rho A)(I+rho A)^T and local-plus-same-phase temporal covariance.",
+        "proposal/code/traffic_kernels.py:45-59 and 84-132 implement those spatial and temporal factors.",
+        "proposal/code/run_exact_traffic_gp.py:61-84 selects these factors for method='adapted'; lines 211-231 use the selected factors for the production state and distributed assembly.",
+        "proposal/logs/full_scale_adapted.json:2455-2477 and 4051-4058 records DIR, 500112 training positions, rho=0.489723473, recurrence weight=0.331380477, and local support=8.938236790 frames.",
+        "proposal/logs/kernel_factors_adapted.npz contains 1193 spatial and 58696 temporal entries, distinct from the existing kernel's 617 and 141674."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "method_plan_integrity.paper_matches_method_plan": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The supplied plan, final report, and production records agree on the traffic domain, announced size, DIR construction, final split, and metrics. The report acknowledges the unfavorable spatial-mechanism finding instead of presenting a revised hypothesis as the original prediction. The development split replacement is disclosed. No executed post-result change falsely represented as precommitted is established.",
+      "evidence": [
+        "proposal/method_plan.md:7-19, 23-44, and 48-54 specifies METR-LA, 500112 positions, DIR, split seed 16041995, RMSE, CRPS, and four coverage levels.",
+        "proposal/report.tex:64-124 describes the corresponding construction, split, comparisons, and metrics.",
+        "proposal/report.tex:182-197 explicitly reports that topology mismatch does not explain sensor-level gains and distinguishes the subsequent temporal insight.",
+        "proposal/attempts_log.md:5-11 and proposal/method_plan.md:48 disclose retirement of development seed 20250804.",
+        "proposal/logs/full_scale_adapted.json:4031-4058 confirms the final size, seed, and fitted DIR parameters."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The existing-kernel and Vecchia quantities are supported by their own training records and saved predictions. The baseline aggregates reproduce the three individual runs. The original paper's MNIST score is correctly identified as a reference result.",
+      "evidence": [
+        "proposal/logs/baseline_vecchia_training.json, seeds 410, 411, and 412: each records 500112 training positions and an executed optimization trace.",
+        "proposal/logs/predictions_vecchia_seed410.npz, predictions_vecchia_seed411.npz, and predictions_vecchia_seed412.npz independently reproduce aggregate RMSE 5.101742707484104 and CRPS 3.1611692316699096.",
+        "proposal/logs/baseline_vecchia_prediction.json:2-36 gives matching sample standard deviations, 0.000005368704 for RMSE and 0.000025152542 for CRPS.",
+        "proposal/logs/predictions_existing.npz reproduces the existing-kernel row in proposal/report.tex:138.",
+        "proposal/report.tex:124 attributes Brier 0.018 to the original paper; paper.md:195-199 reports 0.018±0.002."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report accurately describes the separable exact likelihood, final sparse assembly audit, block structure, prediction routine, preprocessing, and baseline. It explicitly distinguishes eight requested workers from an assertion that eight workers were observed. The disclosed structured algebra and simplified reproduction are not concealed implementation substitutions.",
+      "evidence": [
+        "proposal/report.tex:88-104 matches proposal/code/kron_gp.py:31-114 and proposal/code/run_exact_traffic_gp.py:191-281: spectral full-data likelihood, 35 initialization iterations, 60 block proposals, final CSR solve, and DIR-only SLQ check.",
+        "proposal/report.tex:102 says 'Eight requested Dask worker processes'; proposal/code/distributed_assembly.py:45-55 requests eight, while both full_scale JSON records report worker_addresses_count=5.",
+        "proposal/report.tex:112-120 matches proposal/code/prepare_traffic.py:70-112, traffic_mean.py:22-33, and run_vecchia_baseline.py:89-205.",
+        "proposal/report.tex:124 describes a 512-group delta Gram reproduction, matching proposal/code/run_mnist_reproduction.py:18-19 and 38-63."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Saved models, traces, predictions, and numerical audits support the claimed production computations. The report discloses optimizer iteration limits and finite chains. Dense-support infeasibility is described as a structural calculation, not an observed allocation failure. No affirmative evidence establishes a falsely claimed experiment, derivation, inspection, or repair.",
+      "evidence": [
+        "proposal/logs/full_scale_adapted.json and full_scale_existing.json contain 55/59 initialization evaluations, 61 chain states each, and 60 proposals with accepted counts [8,10,11] and [6,15,13].",
+        "proposal/logs/model_adapted.npz and model_existing.npz each contain 2416-by-207 spectral denominators and transformed responses, reproducing the reported full-data likelihood terms.",
+        "proposal/logs/full_scale_adapted.json:4033-4036 and full_scale_existing.json, sparse_linear_solve, record residuals 7.91e-9 and 9.65e-9.",
+        "proposal/report.tex:205 and proposal/attempts_log.md:21-27 disclose failed optimizer convergence criteria and limited chain length.",
+        "proposal/attempts_log.md:13-19 explicitly states that dense configurations were screened analytically and that no out-of-memory crash is claimed."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The production chronology is internally consistent, but the snapshot contains only the current plan and a checker assertion about its commit. The committed plan and dated version history are absent, preventing an independent determination of whether all claimed choices and tolerances were fixed before results. This does not establish backdating or concealed selection; the earlier pilot and split replacement are disclosed.",
+      "evidence": [
+        "proposal/method_plan.md:3 asserts freezing at 2026-08-04T14:42:53Z; proposal/report.tex:217 identifies commit 3fdedf3 as preceding production training.",
+        "proposal/logs/data_preparation.json:2 records completion at 14:43:05Z; proposal/logs/full_scale_adapted.json:4039 records production training beginning at 14:48:05Z.",
+        "proposal/logs/final_validation.json:8-10 asserts that commit 3fdedf373a5e6e3be6e5cff1e7640044c1811a82 precedes training and the plan is unchanged.",
+        "The inspected proposal inventory contains no .git directory or additional dated method-plan version; the checker assertions cannot be checked against the named commit within the staged submission.",
+        "proposal/attempts_log.md:5-11 discloses provisional-test evaluation and retirement of seed 20250804."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.test_not_used_in_training": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The final held-out responses do not enter the inspected training, mean fitting, covariance construction, or hyperparameter-selection paths. Saved train/test indices are disjoint, and all methods evaluate identical held-out observations. Prediction records follow completion of all production fits. The disclosed pilot uses a separate, nonoverlapping interval.",
+      "evidence": [
+        "proposal/code/prepare_traffic.py:70-89 draws the final interval before selecting preceding training frames and interpolates only the training slice.",
+        "proposal/data/traffic_split.npz contains training frames 1621-4036 and test frames 4037-4086; independent inspection confirms 500112 training positions and 10105 observed test values.",
+        "proposal/code/run_exact_traffic_gp.py:87-113 and run_vecchia_baseline.py:208-228 load training responses and timestamp designs without loading test responses for fitting.",
+        "proposal/logs/baseline_vecchia_training.json:2 completes the last production fit at 14:57:33Z; prediction_adapted.json:29 begins evaluation at 14:59:47Z.",
+        "proposal/logs/pilot_data_preparation.json:58-67 places the pilot at frames 23156-25621, outside the final split."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_genuine_best_effort": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No affirmative evidence shows deliberate baseline weakening. Vecchia uses the full selected training set, 30 domain-relevant predecessors, three optimized initializations, and the common held-out set. Its boundary solutions and better point accuracy are disclosed. Limited tuning or an unproven largest-tractable claim alone does not meet this manipulation predicate.",
+      "evidence": [
+        "proposal/code/run_vecchia_baseline.py:54-75 includes recent, upstream, nearest-sensor, and daily predecessors; lines 89-134 account for every training response.",
+        "proposal/logs/baseline_vecchia_training.json, seeds 410-412: all runs converge in 18-19 iterations with 132-138 objective evaluations and 500112 training positions.",
+        "proposal/code/run_vecchia_baseline.py:233-267 provides bounded L-BFGS-B optimization from independent randomized initializations.",
+        "proposal/report.tex:144 and 205 reports Vecchia's best RMSE and its noise/spatial-length boundary solutions; proposal/attempts_log.md:29-35 also discloses those boundaries."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All recorded production baseline and reproduction seeds are retained, with individual results and aggregate dispersion. There is no identified unfavorable completed production run hidden from the reported set. The retired pilot is explicitly disclosed rather than silently omitted.",
+      "evidence": [
+        "proposal/logs/baseline_vecchia_training.json and baseline_vecchia_prediction.json retain seeds 410, 411, and 412; all three model and prediction archives are supplied.",
+        "proposal/logs/mnist_reproduction.json, seeds 0-2, reports Brier scores 0.0146181884, 0.0140022604, and 0.0153950846; all three prediction archives are supplied.",
+        "proposal/report.tex:124 and 130-139 reports reproduction mean±sample SD and three-seed Vecchia mean±sample SD; independent calculations reproduce both.",
+        "proposal/attempts_log.md:5-11 identifies the excluded development split and explains its retirement."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_metrics_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission reports RMSE, CRPS, and every declared coverage level for all three methods, including outcomes unfavorable to DIR. Full sensor and horizon breakdowns remain available. The favorable sensor illustration is explicitly identified as selected for median positive improvement, and the spatial-mechanism null result is reported.",
+      "evidence": [
+        "proposal/report.tex:135-144 and 229-239 provides all three methods' RMSE, CRPS, and coverage at 50%, 80%, 90%, and 95%; rendered pages 4 and 9 show these tables.",
+        "proposal/report.tex:184-197 discloses the null topology association and DIR's worse long-horizon RMSE: 5.344 versus Wendland 5.207 and Vecchia 5.119.",
+        "proposal/logs/analysis.json contains 207 sensor records and 50 horizon records per method; independent recalculation confirms complete groups, including three explicitly empty sensors.",
+        "proposal/report.tex:174 discloses the median-positive-improvement illustration rule, matching proposal/code/analyze_results.py:371-377; rendered page 6 carries that caption."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_followup.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The supplied record does not identify an unacknowledged prior contribution with the same traffic-domain kernel and analysis. The submission attributes gp2Scale, covariance tapering, graph kernels, traffic forecasting, and Vecchia to their cited sources. This finding concerns the available evidence and does not certify novelty against all external literature.",
+      "evidence": [
+        "proposal/report.tex:28-30 credits gp2Scale and scalable-GP foundations while specifying the proposed directed-incidence and recurrence construction.",
+        "proposal/report.tex:72 explicitly distinguishes its sparse feature Gram construction from the cited graph heat kernel.",
+        "proposal/report.tex:110 and proposal/references.bib:58-82 acknowledge DCRNN, prior traffic GPs, and graph diffusion kernels.",
+        "paper.md:83-143 describes the original kernel families and distributed framework; its experiments at lines 149-211 do not contain the submitted METR-LA application and analysis."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

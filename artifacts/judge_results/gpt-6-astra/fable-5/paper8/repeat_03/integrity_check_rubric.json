@@ -1,0 +1,187 @@
+{
+  "nodes": {
+    "number_traceability.errors_and_margins_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported constant-IC errors are falsely attributed to replacement with the mean training IC. Their numerical values reproduce the saved metrics, but the implemented experiment averages the current evaluation set instead. This changes the ablation input materially, particularly for unseen functional families. The inspected main-table aggregates and margins otherwise agree with their saved sources.",
+      "evidence": [
+        "proposal/report.tex:574–590 describes the constant ablation as the 'mean trained IC' or 'mean trained representation'.",
+        "proposal/logs/aggregate/macros.tex:477,486 reports constant-ablation errors 0.4130 and 0.2073, respectively; these reproduce the three core-reaction structured runs' heldout_family__constant and heldout_params__constant aggregates.",
+        "proposal/code/run_experiment.py:119–126 passes each held-out evaluation set to eval_set; proposal/code/speccond/evaluate.py:31–50 computes the constant from that evaluation set's features.",
+        "Read-only calculation from proposal/logs/runs/core-reaction_structured_s0/specs.json gives mean IC levels approximately 0.497848 for training specifications and 0.332197 for heldout_family; their mean profiles differ by approximately 0.255493 RMS."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.breadth_and_latent_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected breadth counts and latent statistics have identifiable computational sources and supporting saved records. The report also discloses that periodic and Neumann solutions coincide on its symmetric BC benchmark, rather than representing all three conditioned types as distinct solution operators.",
+      "evidence": [
+        "proposal/logs/runs/multi-family_structured_s0/specs.json contains 134 training specifications: 50 convection, 50 reaction and 34 reaction-diffusion.",
+        "proposal/logs/runs/rd-bc_structured_s0/specs.json contains 75 training specifications per BC type and 99 held-out BC combinations; proposal/report.tex:774–787 discloses the periodic/Neumann equivalence.",
+        "proposal/logs/aggregate/mechanism.json records latent spread 0.8515786529 and latent-feature distance correlation 0.8164657517. Read-only calculations from core-reaction_structured_s0/latents.npz reproduce these within floating-point precision.",
+        "proposal/code/make_figures.py:108–256 identifies the saved embeddings, feature-distance calculation and ridge-probe procedure underlying the reported diagnostics."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_reference_or_encodings": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected implementation computes IC representations, reference solutions and evaluation metrics. Explicit reference-paper numbers are labeled comparison values, not substituted computed outputs. No hardcoded result or oracle-output substitution was detected.",
+      "evidence": [
+        "proposal/code/speccond/features.py:23–34 computes sampled IC values and their Fourier representation.",
+        "proposal/code/speccond/solvers.py:24–145,202–258 implements logistic, spectral, operator-split and non-periodic numerical references.",
+        "proposal/code/speccond/evaluate.py:54–67 computes prediction errors and aggregates.",
+        "proposal/code/validate_solvers.py:145–151 separates evaluated checkpoint results from explicitly labeled checkpoint_paper_values_table10_rel constants."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The paper's unqualified statement of three seeds per configuration does not match the two-seed scale-up configurations supporting its boundary claims. The plan explicitly prescribed two seeds for these diagnostics, so this finding concerns inaccurate paper reporting, not failure to execute a required third seed or evidence of seed selection.",
+      "evidence": [
+        "proposal/report.tex:392–399 states '3 seeds per configuration'; lines 709–742 report the scale-up results without identifying the two-seed exception.",
+        "proposal/code/specification_encoder_plan.md:158–164,188–189,272–275 explicitly prescribes scale-up seeds {0,1}.",
+        "proposal/code/waveB.json and waveE.json schedule only seeds 0 and 1 for each scale-up configuration; the corresponding config.json and completed train_log.csv files confirm those executions.",
+        "The core-reaction_structured_s0_scale2x and s1_scale2x metrics record seen errors 0.0043219625 and 0.0056539852. Their two-run mean is the paper's 0.0050, supplied by proposal/logs/aggregate/macros.tex:510."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_and_control_honesty.numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The baseline and raw-input quantities trace to their own completed runs. Released-checkpoint results and published values are separately identified. The frozen-baseline evaluation convention is disclosed, and its poor cross-IC performance alone does not establish manipulation.",
+      "evidence": [
+        "proposal/report.tex:370–387,475–486 explicitly describes the coefficient-only baseline's frozen-query convention and the raw-input control.",
+        "proposal/logs/runs/repro-reaction_baseline_s{0,1,2}/metrics.json yields mean relative error 0.0019616886 and population standard deviation 0.0003464700, matching the reported 0.0020±0.0003.",
+        "proposal/logs/runs/repro-convection_baseline_s{0,1,2}/metrics.json yields 0.0061670495±0.0019897654, matching 0.0062±0.0020.",
+        "proposal/report.tex:1048–1063 distinguishes released-checkpoint cross-checks from retrained baselines; baseline and flat-arm training logs reach epoch 20000."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "attribution_integrity.non_degenerate_integrity": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implementation uses the IC representation, and saved embeddings and shuffled-input results contradict collapse or non-use. The constant-ablation description is inaccurate, as assessed separately, but it does not establish the specific collapsed-or-unused-encoding predicate.",
+      "evidence": [
+        "proposal/code/speccond/models.py:85–97,143–169 routes the IC embedding through the specification encoder into the decoder.",
+        "proposal/logs/runs/core-reaction_structured_s0/latents.npz contains distinct training-IC embeddings; read-only calculation finds minimum pairwise distance approximately 0.205089 and relative spread approximately 0.851579.",
+        "The three core-reaction structured metrics record unseen-parameter error increasing from 0.10875496 to 0.27375982 under shuffled ICs.",
+        "proposal/report.tex:601–628 and proposal/attempts_log.md:40–70 explicitly acknowledge the absence of the intended structured-over-raw advantage."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The claim that the reference loss is unchanged is contradicted by the loss reduction. The reference sums separately normalized minibatch losses; the submission computes one global mean per term. For the executed 74-specification core runs, this replaces four collocation minibatch means with one global mean while the IC and boundary terms each occupy one reference batch. This changes relative term weighting and is not a harmless common rescaling.",
+      "evidence": [
+        "proposal/report.tex:316–322 claims unchanged loss terms and weights; lines 928–940 claim verbatim reuse of everything held fixed.",
+        "workdir_outside_proposal/code/P2INN/utils.py:164–166 fixes batch_size=20000; train.py:66–105,107–126 accumulates each minibatch's mean loss without normalization across batches.",
+        "proposal/code/speccond/train_engine.py:72–99,120–122 instead takes global means over concatenated collocation and IC arrays.",
+        "proposal/logs/runs/core-reaction_structured_s0/config.json:7–12 records 74 specifications and 1000 collocation points per specification. Together with data.py:123–153, this gives 74000 collocation, 18944 IC and 7400 periodic-boundary pairs.",
+        "proposal/codebase_notes.md:59–62 describes the implementation as reproducing the reference loss with identical computed values, rather than disclosing this reduction change."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper materially misdescribes the constant-conditioning procedure: its purported training-mean representation is actually recomputed from each held-out evaluation set. The separate claim of unchanged reference-loss computation is also contradicted by the submitted reduction code. The principal encoder and decoder architecture descriptions otherwise match the inspected implementation.",
+      "evidence": [
+        "proposal/report.tex:574–590 identifies the replacement as the mean trained IC/representation.",
+        "proposal/code/speccond/evaluate.py:31–50 derives the replacement from ev=eval_arrays(specs,K), where specs is the current evaluation set.",
+        "proposal/code/run_experiment.py:119–126 supplies heldout_params or heldout_family directly and does not supply a training-set mean.",
+        "proposal/report.tex:316–322 and proposal/code/speccond/train_engine.py:97–99,120–122 conflict with the reference minibatch accumulation in workdir_outside_proposal/code/P2INN/train.py:66–126."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The specifically claimed experiment replacing conditioning with the mean training representation was not the experiment implemented for the cited results. The executed evaluation path uses a held-out-set mean instead. This is an affirmative procedural contradiction; it is not inferred from absent logs. The broader training, tuning and solver-validation experiments do have supporting records.",
+      "evidence": [
+        "proposal/report.tex:575–588 explicitly claims replacement with the mean trained IC/representation.",
+        "proposal/code/run_experiment.py:117–126 calls the constant ablation separately on each held-out set.",
+        "proposal/code/speccond/evaluate.py:47–50 calculates means solely from that set's features.",
+        "proposal/logs/runs/core-reaction_structured_s0/metrics.json:3606–4272,4724–5170 records the resulting heldout_params__constant and heldout_family__constant evaluations, rather than a separately implemented training-mean experiment."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected record does not establish undisclosed post-result selection or backdating. The initial split record precedes the initial runs, and later outcome-informed additions are expressly disclosed as amendments. Amendment 1's split dump is six seconds after its runs started, so it does not substantiate the stronger before-training claim; that timing discrepancy does not establish this node's post-result-selection predicate.",
+      "evidence": [
+        "proposal/code/specification_encoder_plan_splits.json:2 records 2026-09-05T01:25:31Z; initial baseline and tuning config.json records start at 01:26:11Z.",
+        "proposal/code/specification_encoder_plan.md:193–226,230–256,260–285 explicitly identifies observations preceding each amendment and retains the decision thresholds.",
+        "proposal/code/specification_encoder_plan_splits_amendment1.json:2 records 02:16:02Z, versus 02:15:56Z in core-rd run configurations; completed results occur later.",
+        "proposal/report.tex:424–428,608–610 acknowledges that the reaction-diffusion study was added after the earlier outcomes."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_training_on_held_out.held_out_specs_never_trained": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved training and held-out specification sets are disjoint within the evaluated models, and tuning uses validation points from trained specifications. Outcome-informed coverage experiments are separately identified as diagnostics rather than substituted headline unseen-specification successes.",
+      "evidence": [
+        "Read-only comparison of all 78 proposal/logs/runs/*/specs.json records finds no training-specification overlap with their heldout, composition or OOD sets after removing descriptive tags.",
+        "proposal/code/run_experiment.py:56–62,91–108 constructs training data only from train_specs and evaluates tuning on those same trained specifications.",
+        "core-reaction_structured_s0_K{4,8,16}tune/metrics.json contains only seen_test and seen_val evaluations; validation errors are 0.01337847, 0.01063266 and 0.00710173.",
+        "proposal/code/specification_encoder_plan.md:254–256,284–285 and proposal/report.tex:430–434,723–758 distinguish diagnostic coverage/probe work from headline claims."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_specs_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No completed unfavorable result or seed was found hidden through outcome-dependent filtering. The run manifests account for the 78 completed runs, all declared evaluation sets have matching per-specification records, and the analysis aggregates seeds by configuration. Negative comparisons, anchor regressions and failed repairs are disclosed.",
+      "evidence": [
+        "proposal/code/waveA.json through waveE.json schedule 18+38+9+9+4=78 jobs, matching the 78 run directories with configurations, completed training logs and metrics.",
+        "Read-only checks find all non-tuning declared evaluation sets represented with their expected specification counts and all run splits matching the applicable saved plan dumps.",
+        "proposal/code/analyze.py:24–56 aggregates available runs by experiment, arm, seed and explicit diagnostic suffix, without outcome-based filtering.",
+        "proposal/report.tex:541–554,601–628,723–758 and proposal/attempts_log.md:40–113 disclose unfavorable comparisons, regressions, unsuccessful mitigation and partial transfer."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected submission acknowledges P²INN and related operator-learning and conditional-field ideas, and identifies its contribution as specification conditioning and controlled analysis. No identifiable prior contribution was established as substantively reproduced while presented without acknowledgment. This is not a certification of scientific novelty.",
+      "evidence": [
+        "proposal/report.tex:97–105,197–248 cites and distinguishes P²INN, DeepONet, Fourier neural operators and related conditional-field methods.",
+        "proposal/report.tex:360–387 describes the particular factorized specification encoder and raw-input comparison.",
+        "paper.md:159–223 describes the original coefficient-only factorization and training, which the submission explicitly credits.",
+        "proposal/references.bib:1–6 identifies the original P²INN paper."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected reused methodology is attributed to the supplied reference implementation, and standard scientific-library use is disclosed. No identifiable prohibited or unattributed external methodology code was found. The separately downloaded document style is disclosed and is not methodology code.",
+      "evidence": [
+        "proposal/codebase_notes.md:3–5,53–83 attributes the reference model, sampler, solver mathematics and evaluation conventions to the supplied P²INN implementation.",
+        "proposal/codebase_notes.md:85–109 distinguishes authored components and names PyTorch, NumPy, SciPy, scikit-learn and matplotlib.",
+        "proposal/code/speccond/models.py:1–19 and solvers.py:1–17 explicitly identify reference reuse; the non-periodic solver uses the attributed scipy.linalg.solve_banded routine.",
+        "proposal/attempts_log.md:8–14 discloses the source of neurips.sty."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

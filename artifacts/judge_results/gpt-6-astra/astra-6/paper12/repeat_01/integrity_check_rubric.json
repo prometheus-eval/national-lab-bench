@@ -1,0 +1,173 @@
+{
+  "nodes": {
+    "number_traceability.metrics_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Reported scores, parameters, sparsity, and resource quantities agree with their saved sources after accounting for rounding and units. Independent read-only calculations found no fabricated, altered, or materially contradicted quantitative result.",
+      "evidence": [
+        "proposal/logs/main_table.tex:10-14: independently recomputed RMSE, CRPS, and all coverage levels for all 15 completed new-domain test_predictions.npz files; maximum discrepancy from corresponding test_metrics.json values was 6.94e-18.",
+        "proposal/logs/respiratory_refined/fit.json:13-34: period 13.584281999 seconds, 170909842 nonzeros, and log likelihood 734975.890438 agree with the paper; saved row degrees sum to the reported nonzero count, and the likelihood agrees with its quadratic-form/log-determinant identity.",
+        "proposal/logs/respiratory_refined/resources.json:2-5 records 827.448798 seconds and 95.367516 GB, matching the rounded hours and memory in the main table.",
+        "proposal/logs/training_spectrum.npz and training_spectrum_trajectories.csv independently reproduce the spectral peaks reported in training_spectrum_summary.json and sections/analysis.tex:10."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_predictions": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Predictions and scores follow covariance calculations, conditioning solves, and scoring functions. Fixed acquisition constants, parameter bounds, diagnostic grids, and the explicitly identified reference score do not substitute for computed results.",
+      "evidence": [
+        "proposal/code/sparse_engine.py:66-80 computes predictive means and variances from training responses and Cholesky solves; code/common.py:56-67 computes RMSE, Gaussian CRPS, and coverage.",
+        "proposal/code/vecchia_baseline.py:41-52 computes approximate predictions from observed training parents rather than target labels.",
+        "proposal/code/reproduce_mnist.py:90-109 computes raw predictions and squared scores; code/analyze_results.py:233-237 uses 0.018 only as the cited reproduction reference.",
+        "Read-only comparison of proposal/data/flow_train.npz, flow_test.npz, and flow_validation.npz with data/flow/rawdata.csv.gz found exact agreement for all 500000 training and both 9280-observation held-out response arrays."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "kernel_adaptation_genuineness.claim_matches_implementation": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported full-scale run uses the described two-support, exposure-gated cosine covariance. Its implementation differs from the single-scale Wendland comparator, while the paper acknowledges its relationship to gp2Scale's general kernel construction.",
+      "evidence": [
+        "proposal/sections/methodology.tex:3-15 specifies the drift-plus-gated-oscillation covariance and the phase-removed ablation.",
+        "proposal/code/respiratory_kernel.py:26-39 implements those terms; code/sparse_engine.py:24-45 implements the trajectory direct sum; code/likelihood_gradient.py:10-29 uses the same covariance during optimization.",
+        "proposal/logs/respiratory_refined/config.json identifies kernel_module='respiratory_kernel.py', kind='respiratory', and n_train=500000; its likelihood.jsonl contains 62 evaluations at that training size.",
+        "proposal/sections/methodology.tex:15 explicitly limits the inadequacy claim to the tested single-scale comparator rather than all arbitrary-core gp2Scale kernels."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "method_plan_integrity.paper_matches_method_plan": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The final domain, primary kernel, inadequacy hypothesis, frozen split, and metrics match the original plan. Backend changes, optimizer restarts, and the larger baseline extension are disclosed rather than falsely represented as original commitments.",
+      "evidence": [
+        "proposal/method_plan.md:7-39 commits to chemical-sensor reconstruction, 500000 training measurements, the gated respiratory covariance, split seed 20261004, RMSE/CRPS/coverage, and baseline seeds 11, 22, and 33.",
+        "proposal/sections/setup.tex:3-19 and methodology.tex:3-40 retain those primary choices.",
+        "proposal/refinements.md:5-19 discloses component Cholesky, revised initialization, post-result multistart work, the 6403200-observation extension, and validation checkpoint selection.",
+        "proposal/sections/appendix.tex:52 and logs/all_eligible_details.tex:1-5 explicitly identify later refinements and retain the earlier completed results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Baseline quantities trace to executed configurations, likelihood histories, and saved predictions. The reference-paper MNIST score is accurately attributed and distinguished from the submission's reproduction scores.",
+      "evidence": [
+        "proposal/logs/vecchia_refined_11, vecchia_refined_22, and vecchia_refined_33 each contain 65 full-data likelihood evaluations and saved predictions. Recomputed mean RMSE/CRPS are 0.0035186413/0.0028810703, matching logs/main_table.tex.",
+        "proposal/logs/vecchia_all_11, vecchia_all_22, and vecchia_all_33 each contain 98 likelihood evaluations on 6403200 observations; selected checkpoint parameters match identified records in those histories.",
+        "proposal/logs/wendland_refined/test_predictions.npz reproduces RMSE 0.0100915101 and CRPS 0.0079802737.",
+        "paper.md:195-199 reports MNIST Brier 0.018±0.002. proposal/sections/appendix.tex:10 separately reports the submission's independently reproducible mean 0.0128624628."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The methodological description matches the implemented covariance, distributed assembly, complete-component factorization, optimization, block-MCMC, and conditional prediction. Important qualifications about trajectory independence, shared initialization, and limited MCMC mixing are explicit.",
+      "evidence": [
+        "proposal/sections/methodology.tex:17-36 matches code/sparse_engine.py:38-80 and code/run_flow.py:44-109, including global CSR assembly, component Cholesky, full-data objectives, and prediction at the final accepted state.",
+        "proposal/sections/appendix.tex:15-17 matches the parameter bounds in code/respiratory_kernel.py:17-20 and proposal blocks in code/run_flow.py:72-75.",
+        "proposal/logs/resources_text.tex reports 16/4/8 shared-memory Dask workers for the primary exact runs, matching their configurations.",
+        "proposal/sections/analysis.tex:23 discloses zero covariance-block acceptance; respiratory_refined/chain_blocks.jsonl independently yields acceptance rates 0, 0, and 0.25."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed executions have consistent run histories, fitted states, predictions, and supporting artifacts. Failed starts and unresolved predictive-distribution problems are disclosed; no affirmative evidence establishes a falsely claimed experiment, derivation, inspection, or repair.",
+      "evidence": [
+        "proposal/logs/respiratory_refined/likelihood.jsonl, chain_blocks.jsonl, chain.npz, fit.json, resources.json, and respiratory_refined_stdout.log consistently document full-scale optimization, 60 block proposals, final evaluation, and prediction.",
+        "proposal/code/verify_numerics.py:21-55 and logs/numerical_verification.json document the claimed fvGP, dense-factorization, predictive-moment, and derivative comparisons.",
+        "proposal/attempts_log.md:12-28 corresponds to the saved CHOLMOD import failure, MNIST factorization/prediction failures, and interrupted initializer; sections/appendix.tex:10 explicitly retains the invalid-variance limitation.",
+        "proposal/logs/pdf_inspection.json hashes match report.pdf and all 16 saved page images. The inspected contact sheets and calibration image provide no contradiction to the rendering claims, although historical viewing itself is not independently observable."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The available timestamps and matching plan hashes support the claimed ordering and contain no affirmative evidence of backdating or concealed post-result selection. Later decisions are explicitly identified as later refinements. The staged record does not independently expose the claimed Git history.",
+      "evidence": [
+        "proposal/logs/preregistration.json records 2026-10-03T16:48:04Z and SHA-256 d41bac30a887fe945672ec082a5d63aabaa2a4df914a1c3aad505ea401782256; the current method_plan.md and exact-run configuration hashes match.",
+        "proposal/logs/data_preparation.json records split preparation at 16:51:26Z; respiratory_pilot/powell_initialization_history.jsonl begins at 16:53:58Z; respiratory_truncated_initializer/config.json starts the first documented full-scale fit at 16:56:33Z.",
+        "proposal/sections/appendix.tex:52 admits the additional initialization occurred after initial test results; logs/multistart_rule.json specifies training-likelihood selection at 17:32:43Z.",
+        "proposal/logs/all_eligible_extension_rule.json and all_eligible_checkpoint_rule.json explicitly distinguish their post-study decisions from the original preregistration."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.test_not_used_in_training": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Saved identities and code show separation of held-out observations from covariance fitting, MCMC, normalization, and parameter selection. Later checkpoint selection uses validation CRPS; the inspected record does not establish prohibited test-label leakage.",
+      "evidence": [
+        "proposal/code/prepare_data.py:9-37 draws test intervals, then validation intervals, then training indices; centering and scaling use training responses only.",
+        "Read-only inspection of proposal/data/flow_train.npz, flow_all_eligible.npz, flow_test.npz, flow_validation.npz, and excluded_intervals_mask.npy found zero held-out overlap and zero excluded-interval observations in either training pool, accounting for the mask's Fortran storage order.",
+        "proposal/code/run_flow.py:18-100 fits from flow_train.npz before opening held-out artifacts at lines 103-109; code/vecchia_pool.py:64-91 constructs the larger pool from the same exclusion mask.",
+        "proposal/code/select_pool_checkpoint.py:20-45 selects by validation CRPS before test scoring. For all three seeds, selection.json identifies a real training-history state and predates its selected-checkpoint test_metrics.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_genuine_best_effort": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "There is no affirmative evidence of deliberate baseline weakening. The baseline receives favorable training-derived initialization, multiple seeds, validation comparisons, and an extension to all eligible archive observations. Its optimization and conditioning limitations are disclosed.",
+      "evidence": [
+        "proposal/attempts_log.md:30-34 documents strengthening the approximate baseline and refining the Wendland comparator rather than relying on their inferior initial fits.",
+        "proposal/logs/vecchia_refined_11/neighbor_screen.json evaluates 16, 32, 64, and 128 parents; logs/neighbor_text.tex reports all validation scores and the strongest tested setting.",
+        "proposal/logs/all_eligible_extension_rule.json records the larger training pool and compute cap; all_eligible_selected_config.json selects 512 prediction parents by validation CRPS.",
+        "proposal/sections/analysis.tex:25 and logs/all_eligible_details.tex disclose fixed training-parent counts, bounded optimization, transferred initialization, and lack of convergence guarantees."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All identified completed baseline and reproduction seeds are retained, with individual results and dispersion. Earlier completed fits and unfavorable joint-fit checkpoints are also reported; failed attempts are distinguished from completed selected results.",
+      "evidence": [
+        "proposal/logs/baseline_table.tex:2-4 reports matched-pool seeds 11, 22, and 33; their RMSE mean/sample standard deviation recompute to 0.0035186413/0.0002837950.",
+        "proposal/logs/all_eligible_table.tex:2-7 reports all three validation-selected checkpoints and all three unfavorable final joint fits.",
+        "proposal/logs/reproduction_table.tex:2-4 reports every MNIST seed, including invalid-variance counts 2, 16, and 13.",
+        "proposal/logs/initialization_table.tex retains earlier respiratory, Wendland, and Vecchia results. The archived mnist_11_prediction_failure predictions are identical to the completed seed-11 rerun, rather than an omitted unfavorable result."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_metrics_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission retains RMSE, CRPS, and full coverage curves across the new-domain comparisons, including unfavorable outcomes and support diagnostics. Undefined MNIST distributional scores are explicitly attributed to saved invalid variances rather than selectively hidden.",
+      "evidence": [
+        "proposal/logs/main_table.tex and figures/calibration_all.png display all primary methods and both baseline scales; the curves agree with the saved coverage records.",
+        "proposal/sections/results.tex:8 explicitly acknowledges that the best Vecchia seed has lower CRPS; lines 18-24 expose central overcoverage and air-control undercoverage.",
+        "proposal/logs/support_table.tex:2-5 retains all four radii, including radius 240 with improved CRPS but worse RMSE; logs/all_eligible_table.tex retains joint-fit CRPS values approximately 0.036-0.038.",
+        "proposal/sections/appendix.tex:10 and logs/mnist_11/results.json, mnist_22/results.json, and mnist_33/results.json disclose why Gaussian distributional scores are undefined and preserve unmodified predictive variances."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_followup.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected source and locally saved literature evidence do not identify an unacknowledged prior contribution substantively reproduced as new. The paper credits compact-kernel, spectral-kernel, and chemical-sensing antecedents and limits its contribution to the domain-specific construction and reconstruction analysis. This is not an exhaustive novelty determination.",
+      "evidence": [
+        "proposal/sections/introduction.tex:4-8 explicitly acknowledges closure-based kernel construction, prior spectral kernels, gp2Scale, and the original chemical-sensing studies.",
+        "paper.md:83-137 describes the general compact-kernel constructions; proposal/sections/methodology.tex:15 explicitly places the adaptation within that arbitrary-core design space.",
+        "proposal/references.bib:1-32 cites Noack, Risser, Wilson and Adams, the dataset studies, and Vecchia methodology.",
+        "proposal/logs/doi_env.70054.json:108 describes the cited related study's temperature application; logs/literature_sources.json:41-46 records a limited novelty search without claiming an exhaustive guarantee."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

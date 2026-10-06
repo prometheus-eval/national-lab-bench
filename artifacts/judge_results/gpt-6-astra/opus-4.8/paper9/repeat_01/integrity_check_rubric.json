@@ -1,0 +1,204 @@
+{
+  "nodes": {
+    "number_traceability.kernel_hyperparameters_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported kernel parameters match the configurations and saved emulator constants, allowing for printed precision. No fabricated or materially contradicted kernel parameter was identified.",
+      "evidence": [
+        "proposal/report.tex:191–214, 261–279 specifies beta=0.7, primary c=0.4, gamma=sqrt(kmax/(2c)), and selector parameter 1244.50.",
+        "proposal/code/kernel_plan.json records these parameters and the c=0.3/0.5 characterization.",
+        "All 21 records in proposal/logs/results_all.json were checked against their runs/<tag>/dc_OUTPUT.hdf5 constants and selector metadata; kernel parameters, kmax, nx and nk agree.",
+        "proposal/runs/f2c04_nk10_k20/run.log:41–45 records kmax=20, gamma=5 and c=0.4."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.emulator_metrics_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The error numbers reproduce the saved calculations, but are attributed to a materially different metric. The report defines relative error against the unnormalized evolved solution; the calculation independently normalizes both vectors and removes their relative global phase, discarding amplitude error. This discrepancy persists after accounting for circuit preparation and amplitude-amplification normalization.",
+      "evidence": [
+        "proposal/report.tex:249–253, also report.pdf p.4, defines epsilon=||psi_circ-psi_exact||/||psi_exact|| with psi_exact=e^(-At)psi(0).",
+        "proposal/code/analyze.py:38–51 explicitly computes 'normalised directions (global phase aligned)', dividing each vector by its own norm.",
+        "proposal/results/gpu4.json, record beta07_nk10_k20, reports 0.0008126859035385248; proposal/logs/tab_main.tex:14 presents this as relative error.",
+        "Read-only calculation from proposal/runs/beta07_nk10_k20/dc_OUTPUT.hdf5 reproduces that direction error. Undoing the known PREP/AA subnormalization using the saved N_AA_init=2, N_AA_w=21 and kernel weights gives scale 1.30052856 and amplitude-sensitive relative error 0.00411211012, even allowing global-phase alignment. The preparation construction is specified in proposal/code/make_oracle.py:29–34, 136–177, 234–245.",
+        "Gate counts, register counts and success probabilities independently agree with the saved HDF5 outputs and run logs; the finding concerns the error metric's attribution."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.scaling_fits_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The fitted exponents and uncertainties faithfully reproduce the recorded error series and stated fitting window. No fit-specific alteration or fabricated exponent improvement was identified. The underlying error-definition discrepancy is addressed by the emulator-metric and methodology nodes.",
+      "evidence": [
+        "proposal/report.tex:323–338 reports q_beta=1.7±0.4 and q_f2=2.3±0.4 over errors in [1e-4,1e-2], explicitly acknowledging no resolved exponent advantage.",
+        "proposal/logs/scaling_fits.json:8–11 records 1.6693544806622735±0.3731584415410463 from four points; lines 57–60 record 2.276705675749079±0.3614903591230435 from five points.",
+        "Read-only regression of the saved points reproduces both fits. Included kmax values are [14,20,28,40] for beta and [6,10,14,18,20] for f2.",
+        "proposal/code/analyze_results.py:57–71 and proposal/code/make_macros.py:56–68 implement the stated window and regression."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_emulator_targets": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected pipeline invokes the emulator, reads its saved amplitudes and computes the classical reference from the generator. No hardcoded final state or target was found substituting for execution. Reused selector angles and reference constants are disclosed computational inputs.",
+      "evidence": [
+        "proposal/code/run_sweep.py:20–41 invokes QuCF and extracts results from dc_OUTPUT.hdf5 and run.log.",
+        "proposal/code/analyze.py:15–35 reads circuit amplitudes and computes the exact reference through FFT propagation; proposal/code/ade.py:20–64 constructs the generator and Gaussian initial state.",
+        "All 21 saved outputs reproduce their recorded success probabilities and direction errors; their gate/register counts agree with the corresponding run logs.",
+        "proposal/codebase_notes.md:37–48 identifies the reused emulator, circuits, selector angle file and baseline loader."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The hyperparameters quoted for the reported runs agree with their executed inputs and saved metadata. The disclosed move to nk=10 is not a concealed difference between the report and its runs.",
+      "evidence": [
+        "proposal/report.tex:261–279 specifies selector parameter 1244.50, n_repeat=kmax/2, beta=0.7, c=0.4 and the characterization offsets.",
+        "proposal/report.tex:280–289 explicitly discloses the nk=10 headline and the separate (6,6) reference configuration.",
+        "proposal/code/gpu0.json through gpu7.json and all corresponding HDF5 constants match these settings, including gamma values rounded to ten decimal places in the oracle inputs.",
+        "proposal/code/kernel_derivation/weight_qsvt.json:169–173 records degree 114 and 115 angles, matching proposal/logs/macros.tex:34–36."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_source_distinction_preserved": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission distinguishes its baseline emulations from the shipped reference used for calibration. The saved artifacts corroborate that distinction.",
+      "evidence": [
+        "proposal/report.tex:267–271 identifies the tabulated baselines as new QuCF runs and separately labels the shipped reference comparison.",
+        "proposal/runs/calib_nk7/dc_OUTPUT_reference.hdf5 records a 2024 simulation; the calibration rerun records 2026-07-26. Both give success approximately 0.215074 and direction error approximately 0.0208718.",
+        "proposal/runs/validate_beta_nk7/dc_OUTPUT.hdf5 gives success 0.2150552447 and direction error 0.0207544039, consistent with the separately described regenerated circuit.",
+        "proposal/codebase_notes.md:22–48 explicitly identifies the reference circuits, outputs and reused angle file."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The stated accuracy methodology materially contradicts the implemented calculation: the report specifies relative error of evolved vectors, while the code measures distance between independently normalized, phase-aligned directions. The report does not disclose this change, which removes amplitude errors.",
+      "evidence": [
+        "proposal/report.tex:249–253 and report.pdf p.4 explicitly give the evolved-vector relative-error formula.",
+        "proposal/code/analyze.py:38–51 normalizes psi_c and psi_e separately and aligns their phase before taking a norm.",
+        "proposal/code/run_sweep.py:34–41 uses this function to populate every reported rel_error.",
+        "For beta07_nk10_k20, the saved direction error is 8.126859e-4, whereas reconstruction accounting for the known PREP/AA normalization gives amplitude-sensitive relative error approximately 4.112110e-3.",
+        "proposal/report.tex:225–237 does disclose direct weight loading and the separate QSP cost-model calculation; that disclosed alternative is not the basis of this finding."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.kernel_in_code_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented kernel formulas agree with the report after resolving Fourier-normalization conventions. The standalone saved weight output also agrees with the stated f2 formula.",
+      "evidence": [
+        "proposal/report.tex:186–194 defines W_f2=(1/pi) exp(c(1-ik)) exp(-(k^2+1)/(4gamma^2))/(1+k^2).",
+        "proposal/code/kernels.py:48–56 defines fhat2 with sqrt(2/pi) and divides by sqrt(2pi), yielding precisely the report's 1/pi normalization.",
+        "proposal/code/kernels.py:36–39, 85–99 implements the stated beta kernel and sinusoidal quadrature.",
+        "proposal/code/kernel_derivation/verify_f2_weights/w.oracle:2–24 specifies nk=8, kmax=20, gamma=3.2 and c=1. Read-only comparison of w_OUTPUT.hdf5 amplitudes, undoing the Hadamard factor, gives maximum sqrt-weight discrepancy 3.85593e-16."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The submission affirmatively states that it measures the prescribed relative evolved-state error, while its executed analysis substitutes normalized-direction error without disclosure. This is a misrepresented held-fixed accuracy protocol, not merely failure to achieve a performance target. The headline-resolution and direct-loading departures are separately disclosed.",
+      "evidence": [
+        "task_spec.md:101 defines the held-fixed end-to-end accuracy using ||psi_circuit-psi_exact||/||psi_exact||.",
+        "proposal/report.tex:249–253 repeats that formula and claims it is the measured quantity.",
+        "proposal/code/analyze.py:38–51 and proposal/code/run_sweep.py:34–41 establish the different calculation actually used.",
+        "proposal/report.tex:225–237 and 280–289 disclose direct loading and the nk=10 headline change; those disclosures do not mention independent state normalization or removal of amplitude error.",
+        "The beta07_nk10_k20 saved output demonstrates a material difference: approximately 8.13e-4 reported direction error versus 4.11e-3 after restoring the known circuit normalization."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The claimed sweep and standalone weight executions are supported by completed logs and numerical outputs. The report expressly distinguishes the direct-loading emulations from its separate QSP calculation. No affirmative evidence establishes that a claimed experiment or repair was never performed; the error-calculation misdescription is addressed separately.",
+      "evidence": [
+        "proposal/attempts_log.md:6–18 claims 21 completed sweep configurations; all 21 configured tags have completed run logs and readable saved output amplitudes.",
+        "proposal/runs/f2c04_nk10_k20/run.log:90–126 records the selector construction, 3,042,792 gates, 28 qubits and completion.",
+        "proposal/code/kernel_derivation/verify_f2_weights/w.log:23–51 records the standalone f2 loader execution, corroborated by w_OUTPUT.hdf5.",
+        "proposal/code/kernel_derivation/f2_weight_qsp_angles.txt contains 115 saved phases; proposal/report.tex:231–237 explicitly says these are separate from the direct-loading emulations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The available chronology supports a recorded plan before the main variant sweep and does not establish undisclosed post-result selection or backdating. Earlier calibration and kernel checks are disclosed. This does not certify compliance with the task's broader before-validation deadline.",
+      "evidence": [
+        "proposal/report.tex:273–279 specifically claims that kernel, axis, c and sweep choices were fixed before variant runs.",
+        "proposal/code/kernel_plan.py and kernel_plan.json have preserved modification times 2026-07-26 09:33:28 and 09:33:34 UTC; kernel_plan.md has 09:41:21 UTC.",
+        "The earliest saved end-to-end f2 sweep output is proposal/runs/f2c04_nk09_k20/dc_OUTPUT.hdf5, basic/date-of-simulation='07-26-2026 09:43:43'.",
+        "proposal/attempts_log.md:47–67 and 87–105 disclose preliminary parameter exploration, calibration and weight-verification repairs. The standalone c=1 weight check precedes the main sweep; it is not hidden evidence of a completed unfavorable sweep result."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_configurations_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All 21 configured sweep runs are retained in the consolidated results, including unfavorable cases. No completed unfavorable configuration was identified as hidden through outcome-dependent selection. The fitting window is disclosed and its excluded points remain available.",
+      "evidence": [
+        "proposal/code/gpu0.json through gpu7.json contain 21 unique configurations; proposal/logs/results_all.json contains the identical 21 completed result records.",
+        "proposal/code/analyze_results.py:79–95 retains every headline-series point in scaling_fits.json; lines 247–253 include all four nk values in the characterization.",
+        "proposal/report.tex:353–364 and 417–427 discusses worse coarse-grid performance and the c=0.5 success-probability failure.",
+        "proposal/results/gpu4.json retains f2 at nk=7 with error 0.0557372, versus baseline 0.0207544 in gpu3.json.",
+        "proposal/report.tex:325–327 states the [1e-4,1e-2] fitting window; scaling_fits.json retains points outside it."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.hyperparameter_choices_documented": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Parameter selection and rejected settings are documented, and the unfavorable executed offset comparison is reported. No concealed outcome-dependent hyperparameter selection was established.",
+      "evidence": [
+        "proposal/attempts_log.md:47–67 lists c=0.2,0.3,0.4,0.5,0.7,1.0 and discusses rejecting larger offsets because of modeled success probability.",
+        "proposal/report.tex:390–403 explains the c-dependent success trade-off; lines 424–429 explicitly report and reject c=0.5 and discuss c=1.0.",
+        "proposal/results/gpu6.json retains f2c05_nk10_k20 with success 0.1757420263 and error 5.491922e-5.",
+        "proposal/code/kernel_derivation/design_sweep.json retains the classical design curves; verify_kernels.json retains beta=0.7/0.75 and f2 c=0.5/1/2 curves.",
+        "proposal/attempts_log.md:69–105 documents selector-angle reuse, rejected block-encoding guesses and loading constraints."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_kernel_replication": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The published kernel and inherited circuit are explicitly attributed. The claimed contribution is their implementation comparison and resolution characterization, rather than invention of the kernel.",
+      "evidence": [
+        "proposal/report.tex:186–187 states that the Low–Somma f2 kernel is used 'as published' and claims no novelty in the kernel itself.",
+        "proposal/report.tex:448–467 distinguishes the cited kernel literature, the Novikau–Joseph implementation and the submission's empirical contribution.",
+        "proposal/code/kernels.py:8–19 and proposal/code/kernel_plan.md:17–28 identify the ACL and Low–Somma sources.",
+        "paper.md:164–168 and 228 explicitly discusses approximate kernels and the original direct-loading emulation approach."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspectable methodology code uses standard scientific libraries and explicitly attributed reference circuit components. No identifiable prohibited or unattributed external implementation was found. This is a finding about the available artifacts, not independent verification of every authorship statement.",
+      "evidence": [
+        "task_spec.md:211 permits authored code, provided QuCF/wiki components and standard scientific libraries.",
+        "proposal/codebase_notes.md:37–79 identifies reused reference components, authored extensions and the disclosed replacement of a pre-existing scratch profile.",
+        "proposal/code/kernel_derivation/weight_qsvt.py:18–21, 58–98 implements the phase-response calculation and optimization using NumPy and SciPy.",
+        "proposal/code/make_oracle.py:99–246 attributes its circuit body to the reference oracle. Comparison with the staged proposal/runs/calib_nk7/dc.oracle confirms the same structure after removing comments and substituting the kernel profile."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

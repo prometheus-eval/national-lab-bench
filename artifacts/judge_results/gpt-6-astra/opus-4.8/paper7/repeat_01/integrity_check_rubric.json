@@ -1,0 +1,264 @@
+{
+  "nodes": {
+    "rh.number_traceability.main_table_values_traceable": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The rendered primary table matches the saved numerical results after rounding. The headline delta uses the logged bootstrap mean, explaining its difference from subtracting the displayed point estimates. No fabricated, altered, or contradictory table value was detected.",
+      "evidence": [
+        "proposal/report.pdf, p. 5, Table 1; proposal/report.tex:297–324.",
+        "proposal/logs/main_results_N2.json:17–110: M0=-0.4702285, M1=0.4759127, M2=0.4839293, HCL=0.6292681; selection-aware delta=-0.1526337, CI [-0.2561970,-0.0702635].",
+        "proposal/code/make_numbers.py:43–73 maps these records into proposal/logs/numbers.tex; identifiability_N2.json.coarse and confound.json.chromatic_N2 supply the remaining comparison rows."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.parameter_estimates_traceable": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Reported parameter estimates and interval endpoints trace to the saved fitted or bootstrap summaries. The L exponent at 0.10 corresponds to the implemented optimization bound and is disclosed as a boundary result; it is not evidence of a substituted estimate.",
+      "evidence": [
+        "proposal/logs/gray_replication.json:227–235: q=0.6657251, CI [0.6048754,0.7269140], distance ratio=1.5863654.",
+        "proposal/logs/main_results_N2.json:159–191: effective-exponent means [0.1000000,0.3686013,0.3158322] and their intervals; proposal/code/make_numbers.py:70–73.",
+        "proposal/code/model_core.py:21–43 defines the exponent bounds; proposal/report.tex:439–442 explicitly reports the L exponent reaching the floor."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.prose_claims_consistent": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The numerical results described in prose agree with the saved comparisons, recovery summaries, and reference-paper example. Disagreements about the strength of the biological or curvature interpretation concern scientific validity rather than a demonstrated alteration of these results.",
+      "evidence": [
+        "proposal/report.tex:337–389 reports the nonsignificant M2–M1 interval, negative M2–best-M3 interval, and discrimination accuracy 0.985.",
+        "proposal/logs/main_results_N2.json.bootstrap and proposal/logs/identifiability_N2.json:155–196 contain those quantities, including positive cardinal-model comparison intervals.",
+        "proposal/report.tex:263–268 distinguishes its fitted ratio 1.59 from the cited 2022 example; paper.md:329 gives the original distances 1.36 and 2.06."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_hardcoded_fit_targets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The empirical estimates are produced by optimization against loaded observations, and the report macros are derived from saved results. Fixed seeds, parameter bounds, coordinate transforms, and synthetic generator settings do not substitute for fitted empirical outcomes.",
+      "evidence": [
+        "proposal/code/fit_chromatic.py:98–132 minimizes an observation-based objective and selects restarts by training objective.",
+        "proposal/code/fit_gray.py:53–81 fits the Thurstonian likelihood.",
+        "proposal/code/make_numbers.py:24–117 reads estimates and intervals from JSON records rather than assigning desired result values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_oracle_leakage": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Known generator parameters are confined to the explicitly synthetic identifiability analyses. Recovery and discrimination invoke the fitting routines on generated observations; the empirical fitting pipeline does not receive oracle parameters or reference-paper outcomes.",
+      "evidence": [
+        "proposal/code/identifiability.py:124–147 generates synthetic observations from known parameters and then calls fc.fit or held-out fitting routines.",
+        "proposal/code/identifiability.py:158–183 distinguishes generator truths from recovered estimates and classification results.",
+        "proposal/code/run_main.py:25–44 and proposal/code/fit_chromatic.py:32–60 load the empirical datasets independently of synthetic truth settings."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.test_set_integrity.bootstrap_from_training_set": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Bootstrap procedures include observations outside the training folds despite the task's explicit training-fold restriction. The M2 parameter bootstrap fits every chromatic pair, and the gray parameter bootstrap resamples the complete triad collection. The score bootstrap also resamples held-out observations.",
+      "evidence": [
+        "task_spec.md:120 requires that bootstrap resamples come from training folds; proposal/analysis_plan.md:68–70 repeats that restriction.",
+        "proposal/code/run_main.py:35–44 resamples subjects and calls fc.fit with np.ones masks for both complete pair sets; lines 109–127 execute and save these refits.",
+        "proposal/code/fit_gray.py:115–126 resamples the full triad dataset; lines 223–231 use these results for the reported interval.",
+        "proposal/code/run_main.py:87–107 bootstraps observations and their held-out predictions; proposal/logs/main_results_N2.json records B_boot=2000 and B_exp=800."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.test_set_integrity.test_set_for_evaluation_only": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The ordinary CV predictions use training-only masks, but observations assigned to held-out folds also enter the parameter refits used for inferential reporting. Those refits violate this task's training-fold requirement. This finding does not assert that the separately computed CV point predictions were trained on their own test labels.",
+      "evidence": [
+        "task_spec.md:75 and 120 establish train/test discipline and training-fold bootstrap requirements.",
+        "proposal/code/run_main.py:47–73 correctly separates training and test pairs for CV predictions.",
+        "proposal/code/run_main.py:35–44 fits M2 bootstrap samples using all pair observations, including the held-out pairs; proposal/code/fit_gray.py:115–126 likewise uses all triads.",
+        "proposal/report.tex:208–211 claims test folds never influence fitting and describes the exponent procedure as a training-data refit bootstrap."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.baseline_honesty.gray_replication_from_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The gray-axis result is explicitly attributed to Bujack et al. and presented as a replication. The submission also acknowledges the two 2025 contributions and distinguishes its proposed alignment comparison from their findings. No unacknowledged reproduction presented as novelty was detected.",
+      "evidence": [
+        "proposal/report.tex:259–272 labels the gray experiment a replication and compares its magnitude with the 2022 paper.",
+        "proposal/report.tex:459–476 credits the gray-axis, chromatic non-constancy, and geometry contributions to their respective prior papers.",
+        "paper.md:229–299 describes the original gray analysis; proposal/report.bbl:8–23 and 75–82 contain the relevant citations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.baseline_honesty.baseline_numbers_from_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The empirical baseline quantities agree with the submitted run records and computation paths. The 2022 numerical example is separately identified as a reference result. The gray quantity called accuracy is a probability-agreement score in the code; its labeling does not establish fabrication or false source attribution.",
+      "evidence": [
+        "proposal/logs/gray_replication.json.gray_N2.cv_summary records M0=0.8967952494 and M1=0.9024427340 for ho_acc.",
+        "proposal/code/fit_gray.py:83–112 computes that score as weighted 1-|observed rate-predicted rate| on held-out triads.",
+        "proposal/logs/main_results_N2.json:18–26 supplies the chromatic M0/M1 results; proposal/report.tex:266 cites the original 1.36/2.06 example separately."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report describes the M2 exponent uncertainty procedure as a training-data refit bootstrap and states that test folds never influence fitting. The executed bootstrap instead fits complete pair sets without fold exclusion. This is a concrete methodological contradiction, not merely an inadequate explanation.",
+      "evidence": [
+        "proposal/report.pdf, p. 3, §2.4; proposal/report.tex:205–212.",
+        "proposal/code/run_main.py:35–44 constructs the subject bootstrap and fits with all-true Helm and Ekman masks.",
+        "proposal/code/run_main.py:109–127 executes that worker and stores m2_exponents; proposal/logs/main_results_N2.json:159–191 contains the resulting summaries."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.models_in_paper_match_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented distance family, nesting, fixed control panel, and coarse cardinal/rotated models correspond to the models described in the report. Scientific concerns about the gauge or biological interpretation do not establish a different model being secretly fit.",
+      "evidence": [
+        "proposal/report.tex:153–187 and proposal/code/model_core.py:29–58 implement the weighted inner powers, outer power, simplex weights, and effective-exponent parameterization.",
+        "proposal/code/spaces.py:62–100 implements the five fixed control transforms, including CIELAB coordinates and wrapped HCL hue differences.",
+        "proposal/logs/main_results_N2.json.models lists all eight primary models; proposal/code/identifiability.py:56–69 and 200–218 implements the reported two-channel comparisons."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.hyperparameters_match": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "Experimental Setup states an unqualified minimum of 2000 bootstrap resamples, but the uncertainty runs supporting the reported parameter intervals use 800 M2 refits and 1000 gray refits. The ten-fold CV and 2000-resample held-out score bootstrap do match; the discrepancy concerns the broader bootstrap-count claim.",
+      "evidence": [
+        "proposal/report.tex:253–257 states K=10 and at least 2000 bootstrap resamples.",
+        "proposal/logs/main_results_N1.json:3–5 and proposal/logs/main_results_N2.json:3–5 record Kf=10, B_boot=2000, B_exp=800.",
+        "proposal/code/run_main.py:109–119 executes B_exp refits; proposal/code/fit_gray.py:225 explicitly calls bootstrap_gray_q with B=1000."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.statistical_inference_integrity.simulation_clearly_labeled": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Synthetic observations are identified as recovery and discrimination simulations in the methods, results, figures, and code. They are separate from the empirical model-comparison results. No synthetic perceptual observations were found presented as collected human responses.",
+      "evidence": [
+        "proposal/report.tex:219–226 and 249–251 explicitly limit synthetic data to identifiability and power analyses.",
+        "proposal/report.pdf, p. 6, Figure 3 labels synthetic recovery and distinguishes generator conditions.",
+        "proposal/code/identifiability.py:72–89 replaces response arrays with generated observations; proposal/logs/identifiability_N2.json separates recovery, discrimination, and real-data coarse results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.identifiability_disclosure.no_overclaim_cone_specificity": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The reported cone-alignment null and discrimination accuracy are not materially contradicted by the saved results. The report acknowledges unresolved individual L/M attribution. Whether the selected simulation strengths and coarse comparison justify the breadth of the earned-null and mechanism claims remains a scientific-validity issue.",
+      "evidence": [
+        "proposal/report.tex:370–389 claims an earned null while limiting resolvable granularity; lines 439–447 describe unresolved regimes.",
+        "proposal/logs/identifiability_N2.json:155–168 records classification accuracy 0.985, cone-generator win frequency 0.9733333, and opponent-generator win frequency 0.9966667.",
+        "proposal/logs/identifiability_N2.json:186–196 records positive cardinal-vs-M1 and cardinal-vs-rotated intervals; main_results_N2.json.bootstrap.m2_bestM3 is entirely negative.",
+        "proposal/code/identifiability.py:124–136 shows the specific generator configurations actually tested."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report claims compliance with training-only fitting and describes a training-data parameter bootstrap, while the implementation uses full-data refits. This deviation from the task's training-fold restriction is not disclosed in Methodology or Setup. Other disclosed choices, such as the approximate cone conversion, are not the basis of this finding.",
+      "evidence": [
+        "task_spec.md:120 requires training-fold bootstrap resampling; line 133 requires held-fixed deviations to be disclosed.",
+        "proposal/report.tex:208–212 claims test-fold exclusion and a training-data refit bootstrap.",
+        "proposal/code/run_main.py:35–44 and proposal/code/fit_gray.py:115–126 use full-data bootstrap fits.",
+        "proposal/attempts_log.md:74–83 discloses a fold-count change but claims the remaining bootstrap/UQ protocol matches the plan."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The claimed execution of a training-data M2 refit bootstrap is affirmatively contradicted by the submitted execution path: it runs a full-data subject bootstrap with every pair included. The finding concerns that specific claimed procedure; missing records for other asserted robustness variants are not treated as proof of nonexecution.",
+      "evidence": [
+        "proposal/report.tex:211–212 explicitly states that M2 exponent intervals come from a training-data refit bootstrap.",
+        "proposal/code/run_main.py:35–44 and 112–127 execute and serialize full-data exponent refits.",
+        "proposal/logs/main_results_N2.json.B_exp=800 and m2_exponents record the corresponding output; proposal/logs/run_main.out:4 reports the same exponent summaries."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The plan is self-dated and explicitly claims to precede fitting-script creation, but the staged record lacks a versioned chronology or dated fit-start records establishing that ordering. The disclosed fold-count revision does not itself prove undisclosed post-result selection or backdating.",
+      "evidence": [
+        "task_spec.md:132 specifies the deadline as before the fitting scripts, not merely before evaluation.",
+        "proposal/analysis_plan.md:3–8 claims a timestamp of 2026-07-25 06:43 UTC and states that fitting scripts were written afterward.",
+        "proposal/logs/run_main.out and proposal/logs/identifiability.out report elapsed durations without dated start records.",
+        "proposal/attempts_log.md:74–81 discloses the K=5 to K=10 change; no version history is included in the staged proposal."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.model_variants_reported": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "All eight primary models appear in the table, figure, and logs, including unfavorable cone results. The weaker lumchrom2 coarse variant is omitted from the paper's narrative but retained in the submitted results. That omission alone does not establish the required outcome-dependent concealment.",
+      "evidence": [
+        "proposal/report.pdf, pp. 5–6, Table 1 and Figure 2 show M0/M1/M2 and all five controls.",
+        "proposal/logs/main_results_N1.json.perfold and main_results_N2.json.perfold retain ten folds for every primary model.",
+        "proposal/logs/identifiability_N2.json:171–184 and proposal/logs/identifiability.out retain lumchrom2 R²=0.3523865 alongside cardinal2=0.5836034 and M1=0.4759127."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.all_specifications_reported": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "Both executed normalizations and the logarithmic-family comparison are retained, and the parameterization repair and fold-count change are disclosed. The record does not establish an unfavorable completed specification being concealed through outcome-dependent selection. Missing support for some asserted robustness checks is not evidence of hidden unfavorable results.",
+      "evidence": [
+        "proposal/logs/main_results_N1.json, main_results_N2.json, and robustness_logfamily.json preserve the executed specification results.",
+        "proposal/report.tex:349–350 and 449–455 reports normalization and logarithmic-family findings.",
+        "proposal/attempts_log.md:22–32 and 74–83 discloses the parameterization repair and protocol revisions.",
+        "proposal/report.tex:449–451 asserts with/without color-deficient-subject variants, but no corresponding completed unfavorable result is identifiable in the submitted records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.held_fixed_disclosure.data_sources_respected": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspectable loaders use the task-permitted gray, Wiebel, Helm, Ekman, and cone-fundamental sources. The approximate spectral bridge is disclosed. No affirmative evidence shows use of an outside perceptual dataset.",
+      "evidence": [
+        "task_spec.md:86–93 lists the permitted source families.",
+        "proposal/code/datasets.py:24–43, 48–83, and 92–121 loads the corresponding provided data paths.",
+        "proposal/code/cone_space.py:43–66 derives the bridge from the two provided spectral tables; proposal/report.tex:130–143 discloses the approximation.",
+        "proposal/logs/stimulus_cone_coordinates.json identifies the four empirical stimulus collections and their counts."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.data_provenance_integrity.only_provided_datasets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The empirical data paths correspond to the provided datasets, and synthetic observations are confined to the explicitly permitted recovery/identifiability work. Fixed color-space matrices and literature citations are not additional perceptual datasets.",
+      "evidence": [
+        "task_spec.md:70 permits synthetic data only for labeled recovery/identifiability checks and restricts empirical sources to the provided data.",
+        "proposal/code/datasets.py:20–121 contains the empirical loading paths; proposal/code/fit_chromatic.py:32–60 builds its observations from those loaders.",
+        "proposal/code/identifiability.py:72–89 and 124–147 confines generated responses to synthetic analyses.",
+        "proposal/report.tex:238–251 identifies sources, licenses, and the separation of synthetic from empirical observations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

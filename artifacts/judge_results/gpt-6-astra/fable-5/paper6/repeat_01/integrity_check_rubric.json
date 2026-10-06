@@ -1,0 +1,236 @@
+{
+  "nodes": {
+    "rh.code_paper_alignment.scheme": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The S1 benchmark is repeatedly described as dynamically neutral with no static background. Its implementation instead adds a nonzero uniform jellium background to compensate the finite-time-step charge imbalance. At the production resolution this background density is approximately 0.00119959. Although small, this directly contradicts the stated neutralization mechanism; the finding does not imply that the underlying update is nonvariational.",
+      "evidence": [
+        "proposal/report.tex:374–376, 749–756, 927–929 explicitly state that S1 has no static background.",
+        "proposal/code/runs/run_S1.py:41–57 initializes the species and assigns sim.rho_bg[:] = -rho0.mean(), explicitly describing compensation by uniform jellium.",
+        "proposal/logs/S1/dx0.04_spectra.npz, Q_series[0] = -0.024567645437830958 in a box of length 20.48, corroborates the nonzero matter-charge imbalance."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.gauge": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report claims that the quenched B1 runs respect the stated Gauss constraint by construction. The implementation freezes zero dynamical electric fields without solving Gauss or adding a neutralizing background, while a saved realization has nonzero total matter charge. Thus the stated constraint cannot hold in that realization. This finding concerns the claimed preservation property, not the scientific acceptability of the disclosed quenched approximation.",
+      "evidence": [
+        "proposal/report.tex:266–269 defines div(E) = rho + rho_bg; lines 531–534 and 586–589 claim unchanged conservation properties and Gauss preservation in quenched runs.",
+        "proposal/code/runs/run_B1.py:69–76 solves Gauss and supplies a background only when backreact=True; otherwise it sets freeze_gauge=True and g0=NaN.",
+        "proposal/code/qedlat/core.py:252–260 initializes electric fields and rho_bg to zero; lines 106–127 and 156–159 skip gauge updates when frozen.",
+        "proposal/logs/B1/eps1_spectrum.npz, Q_series[0] = 5.03511662813729. With length 51.2 and no background, the spatially averaged Gauss residual has magnitude approximately 0.09834, rather than zero."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.integration": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected production kernels implement the described explicit staggered updates, and the holonomy extension implements the stated spectral leapfrog recurrence. Continuum reference integrations are separate from lattice evolution. The replacement of an expensive spread-state reference calculation by vectorized RK4 is disclosed. No material contradiction in the integration-method description was identified.",
+      "evidence": [
+        "proposal/report.tex:236–285 describes the site update; lines 659–670 specify the holonomy action and recurrence.",
+        "proposal/code/qedlat/core.py:83–166 and proposal/code/qedlat/holonomy.py:106–121 implement these updates.",
+        "proposal/code/qedlat/theory.py:88–125 implements the independent DOP853 Bogoliubov reference.",
+        "proposal/attempts_log.md:91–94 discloses the spread-state reference-integrator replacement and its time-step check."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.ensemble_and_resolution": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The stated ensemble sizes and numerical resolutions match the inspected configurations and saved outputs. The report distinguishes the original-size reproduction from longer spectral runs, discloses the smaller coarse R2 ensemble, and specifies that the B1 resolution sweep uses the quantum-seeded configuration. No affirmative misrepresentation of these execution parameters was established.",
+      "evidence": [
+        "proposal/report.tex:724–790 specifies the configurations for R1, R2, S1, S2, B1 and B2.",
+        "proposal/logs/R1/summary_runs.json records the 512-point, 1024-step, 100-member reproduction and three longer 100-member resolution runs; proposal/logs/S1/summary_runs.json records 100 members at each of three resolutions.",
+        "proposal/logs/R2/a1_dx0.04_summary.json and a16_dx0.04_summary.json record 200 members each; a1_dx0.08_summary.json records 50.",
+        "proposal/logs/B1/summary.json records 100 unseeded members, 2000 members for each seeded production/sweep configuration, and 500 backreaction members; proposal/logs/S2/summary.json and proposal/logs/B2/summary.json contain the stated remaining configurations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.pre_stated_method.tolerances_consistent_throughout": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No undisclosed change in the numerical acceptance thresholds was identified. The dispersion, transit, scattering and modewise spectrum outcomes use the declared thresholds. The B2 detector revision and B1 estimator revision are disclosed in the attempts record. The incorrect all-branch maximum and integrated-yield uncertainty are assessed separately as numerical misreporting, rather than treated as changes to the declared thresholds.",
+      "evidence": [
+        "proposal/report.tex:314–328, 374–390, 400–431, 562–579 and 625–629 declare the relevant tolerances and failure criteria.",
+        "proposal/report.tex:1225–1257 applies 0.05m, 5%, 1% and the stated B1 spectrum bound in Table 1.",
+        "proposal/code/make_numbers.py:223–248 applies max(3 standard errors, resolution envelope) to the production band; read-only evaluation of the saved spectra confirms all 77 selected modes satisfy that bound.",
+        "proposal/attempts_log.md:75–94 and 190–205 disclose detector and estimator changes."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The implementation-verification section explicitly claims finite-difference stationarity testing with respect to every interior degree of freedom. The submitted checker instead tests 60 randomly selected matter/spatial-gauge coordinates and 20 randomly selected temporal-gauge coordinates. Its reported maximum comes from this sample, not an exhaustive test. This is affirmative contradiction of an inspection claimed as performed.",
+      "evidence": [
+        "proposal/report.tex:291–299 claims testing with respect to 'every interior degree of freedom' and reports the largest relative gradient.",
+        "proposal/code/selfcheck_variational.py:112–117 defines a 16-site, two-species, eight-step test; lines 180–210 perform only 60 plus 20 random coordinate checks.",
+        "proposal/logs/selfcheck/selfcheck_variational.json records stationarity_max_rel = 1.3559624986986285e-10, the sampled statistic used in the report."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The task specifies that predictions and criteria appear in Methodology before Results; it does not require a separately timestamped preregistration before execution. Although the report uses stronger phrases such as 'pre-registered,' the available dated record does not establish undisclosed post-result selection or backdating. The concrete post-result detector and estimator revisions are explicitly disclosed.",
+      "evidence": [
+        "task_spec.md:30, 53 and 100 define the required placement of predictions and criteria before results.",
+        "proposal/report.tex:373–390, 562–579 and 625–629 state the final criteria in Methodology.",
+        "proposal/attempts_log.md:75–94 records the B2 detector revision; lines 158–205 record the resumed verification and B1 estimator correction.",
+        "proposal/report.tex:974–991 openly distinguishes the first wrong-sign S2 run from the corrected runs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.main_results_table_cells_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Table 1 labels the S1 charge entry as relative drift of total charge, but the reported 4.7e-15 uses a reference charge scale of 49.152 rather than the actual net matter charge, approximately -0.02456765. Rescaling the saved numerator by that net charge gives approximately 9.3e-12. The source explicitly labels its normalization differently, so this is a non-equivalent attribution, not rounding.",
+      "evidence": [
+        "proposal/report.pdf, page 18, Table 1; proposal/report.tex:1195–1207 and 1235–1239 label the charge entries as relative drifts of total charge.",
+        "proposal/code/runs/run_S1.py:110–120 divides by 2*abs(QE)*N0*N*dx and logs the result as |dQ|/Qsp.",
+        "proposal/logs/S1/dx0.04_spectra.npz contains dQ_rel = 4.668563260949952e-15 and Q_series[0] = -0.024567645437830958.",
+        "proposal/numbers.tex, SoneDQ, transfers the differently normalized statistic into the table."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.outcome_column_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The S1 outcome says all resolvable branches are within 0.002m, but the saved production-resolution ion-pair deviation is 0.00287522m, which rounds to 0.003m. The table-generation code excludes that resolved branch when computing the purported all-branch maximum. The declared 0.05m acceptance target still passes; the contradiction concerns the reported achieved bound.",
+      "evidence": [
+        "proposal/report.pdf, page 18, Table 1; proposal/report.tex:1235–1238 reports 'all resolvable branches within' SoneMaxDevAll.",
+        "proposal/code/make_numbers.py:110–120 computes the ion-pair maximum separately but excludes ipair from SoneMaxDevAll.",
+        "proposal/logs/S1/summary_peaks.json, convergence_max_abs_dev.ipair.dx0.04 = 0.002875222765064578.",
+        "proposal/report.tex:935–939 explicitly identifies the ion-pair branch as resolved; proposal/numbers.tex gives SoneMaxDevIpair = 0.003 and SoneMaxDevAll = 0.002."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.figures_regenerable_from_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Figure 2 presents shared quantitative colorbars for panels that use different numerical scales. The left charge panel spans ±0.06 while its displayed shared bar spans ±0.8. The electromagnetic panels likewise use separate maxima but display only the right panel's absolute-energy scale. Visual inspection confirms this in the rendered report. The plotting sources are present, but the displayed scale attribution materially contradicts the saved densities.",
+      "evidence": [
+        "proposal/report.pdf, page 11, Figure 2 was visually inspected: each row has one shared colorbar labeled in absolute density units.",
+        "proposal/code/figs_extra.py:44–69 uses charge limits 0.06 and 0.8, independently normalizes each electromagnetic panel, and creates both shared colorbars from the right-hand panels.",
+        "proposal/logs/R2/a1_dx0.04_maps.npz and a16_dx0.04_maps.npz have uem maxima 8.051035871505738 and 1419.0632971191405 respectively.",
+        "proposal/report.tex:835–845 describes physical charge and electromagnetic energy densities without disclosing independent panel scales."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.intext_quantitative_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The quoted 1.9% ensemble error is attached to the full integrated B1 yield, but its calculation includes only the 77 production-band modes while the yield includes all 1280 modes. Applying the same error propagation to the saved errors for the full estimator gives approximately 6.86%. The quoted uncertainty therefore belongs to a different estimator; the 0.7% central-value deviation itself is traceable.",
+      "evidence": [
+        "proposal/report.pdf, page 14; proposal/report.tex:1073–1079 reports integrated-density agreement of 0.7% with ensemble error 1.9%.",
+        "proposal/code/runs/run_B1.py:144–165 calculates n_a_total_per_length by summing all modes.",
+        "proposal/code/make_numbers.py:254–259 takes that full yield but computes its uncertainty using stderr_a[sel], the 77-mode band defined at lines 223–230.",
+        "Read-only calculations from proposal/logs/B1/eps1_spectrum.npz give full mean 0.11423518082554829, band mean 0.11915623341960194, full propagated error 0.007894398784913012 and band error 0.002229498942865978. Against reference density 0.11500115805397604 in summary.json, the errors are 6.8646% and 1.9387% respectively."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_predictions_in_sim_loop": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected simulation loops advance the fields or spectral modes from their previous states. Analytic dispersion roots, scattering coefficients and Bogoliubov spectra are computed separately for comparisons. Numerical constants used as physical parameters, initialization choices or tolerances do not substitute for the required evolution. No hardcoded result injection was found.",
+      "evidence": [
+        "proposal/code/qedlat/core.py:83–166 implements current evaluation and field evolution.",
+        "proposal/code/qedlat/holonomy.py:106–121 evolves spectral amplitudes rather than assigning continuum predictions.",
+        "proposal/code/qedlat/theory.py contains separately computed dispersion, scattering and Bogoliubov references.",
+        "proposal/code/runs/run_R1.py, run_S1.py, run_S2.py, run_B1.py and run_B2.py call the evolution routines and derive observables from resulting states."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.citations_and_derivations.resolve_to_real_sources": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The supplied original paper corroborates many inherited bibliographic records, but independent records for additional references are not staged. In particular, the newer follow-up and quantum-computing citations cannot be resolved from the available materials. The bibliography and the submission's own literature-search account are not independent verification. No affirmative bibliographic evidence of fabrication was established.",
+      "evidence": [
+        "paper.md, References entries 24, 29–31 and 40 corroborate several records in proposal/references.bib.",
+        "proposal/references.bib includes additional records keyed shu2021, ieee2022, sundar2025, shi2024quantum and christiansen2021; their source documents or independent bibliographic records are absent from both staged artifact trees.",
+        "proposal/attempts_log.md:100–112 supplies the author's search account, rather than independently inspectable source records.",
+        "proposal/report.bbl contains the rendered bibliographic entries."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.citations_and_derivations.contain_attributed_results": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "Attributions to the supplied original paper can be checked and generally match its scheme, dispersion relations, demonstrations and reported conservation errors. However, the additional sources supporting the Sauter formula, holonomy discussion and later-method claims are not available for content inspection. The included independent derivations and numerical checks do not establish what those cited publications actually contain.",
+      "evidence": [
+        "paper.md, Sections II–III, Eq. (23), Appendix A and the discussion of qAΔ < 2π support corresponding original-paper attributions in proposal/report.tex.",
+        "proposal/report.tex:488–504 attributes the Sauter expression to additional literature; lines 675–678 cite Manton for the holonomy discussion; lines 108–113 attribute later methodological developments.",
+        "proposal/references.bib records narozhnyi1970, gavrilov1996, dunne2005, manton1985 and the later follow-ups, but their full texts are not staged.",
+        "proposal/code/runs/derive_recoil_check.py and derive_S2_well_check.py, with their saved JSON outputs, document internal derivation checks rather than external-source content."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_disclosed_or_absent": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The methodology code is inspectable and uses standard scientific-library dependencies allowed by the task. No identifiable copied external solver, gauge fixer or lattice implementation, or contradictory provenance notice, was found. This is a finding about the available evidence, not independent certification of authorship.",
+      "evidence": [
+        "task_spec.md:111 permits standard scientific Python libraries and defines the external-methodology-code restriction.",
+        "proposal/report.tex:715–722 describes the implementation and libraries; proposal/code/README.md describes its modules.",
+        "proposal/code/qedlat/core.py, holonomy.py, wigner.py and theory.py contain the substantive methods; imports use NumPy, SciPy, Numba and standard-library facilities.",
+        "Both proposal/ and workdir_outside_proposal/ were inspected; the supplied NeurIPS style file is a document template, not external methodology code."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.no_substantive_replication_of_existing_followup": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "No identifiable prior contribution in the accessible evidence is shown to have been reproduced as an unacknowledged new contribution. The original discretization and standard scattering, Wigner and Bloch ingredients are attributed. Shared canonical physics alone does not satisfy the task's substantive-replication predicate. This does not establish exhaustive novelty across unavailable literature.",
+      "evidence": [
+        "task_spec.md:93 and 113 expressly distinguish allowed canonical overlap from replication of a prior follow-up's combined tests, failures and fixes.",
+        "proposal/report.tex:100–125 attributes the original scheme and discusses later work; lines 138–184 describe the submission's benchmark combination while citing standard antecedents.",
+        "proposal/report.tex:531–545 attributes Wigner seeding, and lines 675–678 acknowledge prior holonomy theory.",
+        "Comparison with paper.md shows that the original demonstrations are presented as reproductions, not as newly invented methods."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.log_paper_consistency.substantive_runs_in_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The material unfavorable results found in the run records are disclosed: wrong-sign scattering, weaker laser depletion, the large backreaction projection artifact, and unstable or inaccurate coarse holonomy runs. No completed unfavorable result was identified as selectively concealed to misrepresent the overall evidence.",
+      "evidence": [
+        "proposal/report.tex:974–991 reports the wrong-sign S2 result; proposal/logs/S2/summary_wrongsign_20260814.json preserves R = 0.03667303463212568.",
+        "proposal/report.tex:863–908 discusses weaker above-threshold depletion rather than claiming quantitative reproduction of that feature.",
+        "proposal/report.tex:1100–1112 reports the approximately 33-fold apparent backreaction yield and explains its projection limitation.",
+        "proposal/report.tex:1346–1355 reports coarse-step divergence and errors; proposal/logs/B2/summary.json and stability_scan.json preserve the corresponding results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.log_paper_consistency.no_undisclosed_test_swaps": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The identified outcome-informed changes are disclosed rather than concealed as the original investigation. The record explains the S2 sign repair, B1 peak-estimator change, B2 reversal-detector revision and reference-integrator replacement. The erroneous earlier cavity-run account is explicitly corrected, and the final report distinguishes the actual wrong-sign run from the intended barrier test.",
+      "evidence": [
+        "proposal/attempts_log.md:144–188 corrects the cavity account, identifies the actual wrong-sign field-sheet run, preserves its artifacts and documents the rerun.",
+        "proposal/report.tex:974–991 states that subsequent S2 numbers come from corrected-sign runs.",
+        "proposal/attempts_log.md:190–205 discloses replacing the B1 maximum-over-modes estimator with a fixed peak-window mean.",
+        "proposal/attempts_log.md:75–98 discloses the B2 detector, time-step, reference-integrator and large-gauge-test adjustments."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

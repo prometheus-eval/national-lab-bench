@@ -1,0 +1,201 @@
+{
+  "nodes": {
+    "number_traceability.phase_and_threshold_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Two rendered curves materially contradict their stated statistics and saved data. Figure 3(b) converts any nonzero classification fraction into 100% accuracy. Figure 5 claims seed-median absolute deviations but still plots absolute means of residuals. For U=10, δ=-0.3, η=1, the latter displays approximately 0.07390 rad instead of the saved median absolute deviation of 2.30055 rad. The four principal threshold estimates themselves reproduce from the raw records.",
+      "evidence": [
+        "proposal/report.pdf, p. 8, Figure 3(b), visually inspected; proposal/code/analyze.py:344-348 converts classify_correct through Boolean truthiness.",
+        "proposal/logs/noise/noise_U10_d+0.30_T20_SC-A_csrt_eta1.json, results['10000'].classify_correct = 0.25; Figure 3(b) displays 1.0.",
+        "proposal/report.pdf, p. 12, Figure 5 and caption, visually inspected; proposal/report.tex:813-819 explicitly specifies medians rather than means.",
+        "proposal/code/analyze.py:419-432 computes abs(mean(residual)); proposal/logs/analysis.json, legs['U10-NT'].phi_qc.bias[-1] = 2.3005545384149153. Recalculation from the η=0 and η=1 seed records gives absolute mean 0.07389953727182198."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.noise_rates_and_shots_in_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The device rates and nominal shot grids match the saved configurations. However, the report's assertion that every executed measurement circuit receives finite-shot sampling is contradicted for the mitigation calibration circuits. Their contrast factors are calculated directly from exact output probabilities and reused across shots and seeds, without sampling calibration outcomes. Thus the reported finite-shot scope of the mitigated results omits an actual infinite-sampling component.",
+      "evidence": [
+        "proposal/report.tex:50-53 claims genuine finite-shot sampling in every circuit; lines 291-293 specify drawing S outcomes after readout error.",
+        "proposal/report.tex:892-907 describes executed noise-estimation circuits and their additional circuit cost.",
+        "proposal/code/noisy_eval.py:301-303,319-336 obtains F_layer and F_end directly from probability vectors.",
+        "proposal/code/run_noise.py:83-117 samples energy and connection measurements but divides by those deterministic contrast factors; lines 168-181 activate this path for mitigation runs.",
+        "proposal/logs/noise_mit/noise_U10_d-0.30_T20_SC-A_csrt_eta1_mit.json records mitigate=true, 32 seeds, finite-shot result blocks, and mean_F_end=0.065768661804369."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.resource_counts_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The reported peak depths and CNOT counts agree with the saved noiseless summaries. Variational-loop counts, controlled-readout counts, and published-reference counts are distinguished rather than improperly equated. No material numerical contradiction was established. The absent trajectory bundles limit independent reconstruction of every selected operator, but their absence is not evidence that the reported counts were fabricated.",
+      "evidence": [
+        "proposal/logs/table_main.tex:22-40 reports depth/CNOT pairs 13/136, 11/104, 86/912 and 85/890.",
+        "proposal/logs/sweep/noiseless_U0_d-0.30_T20.json and noiseless_U10_d-0.30_T20.json, avqds.depth_peak and avqds.n_cx_peak, contain 13/136 and 86/912 respectively; the corresponding positive-δ records support the other two pairs.",
+        "proposal/code/run_noiseless.py:80-83 derives peak resources from trajectory counts; proposal/code/circuit.py implements ansatz_resources, controlled_resources and gate compilation.",
+        "proposal/report.tex:513-535 discloses resource differences from the published archive; lines 915-921 separately compare controlled-readout costs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_ground_truth": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submitted pipeline constructs the Hamiltonian and computes its ED Berry reference through eigenvectors and a Wilson loop. Variational phases are assembled from computed components. The expected 0/π labels in the protocol and tests do not replace that computation. The noiseless control-variate contribution to noisy integration is explicitly disclosed and comes from the submission's own calculated trajectory.",
+      "evidence": [
+        "proposal/code/model.py:91-136 constructs the Hamiltonian and pool; lines 202-233 compute the ED Berry phase from successive eigenvector overlaps.",
+        "proposal/code/run_noiseless.py:42-50 invokes runtime ED; lines 74-78 compute the variational phase and circular deviation.",
+        "proposal/code/run_noise.py:59-70,119-134 documents and implements the computed phase-component assembly.",
+        "proposal/report.tex:345-360 discloses the noiseless-value-plus-measured-deviation estimator."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The mitigation setting used for the cited results contradicts the paper's explicit statement that no mitigation is applied to φ_qc. The executed mitigation branch unfolds both sampled interferometer quadratures before atan2. Because the readout errors are asymmetric, this changes the phase, rather than merely applying a common scale that cancels.",
+      "evidence": [
+        "proposal/report.tex:896-898: 'No mitigation is applied to φ_qc, which does not need it.'",
+        "proposal/code/run_noise.py:127-133 subtracts e10−e01 and divides by 1−e01−e10 in both quadratures whenever mitigate is true.",
+        "proposal/code/run_noise.py:180-189 passes the mitigation flag into sampling and records it in the output.",
+        "proposal/logs/noise_mit/noise_U10_d-0.30_T20_SC-A_csrt_eta1_mit.json records mitigate=true, e01=0.007 and e10=0.013. Its saved readout probabilities give phases 0.77610 rad before unfolding and −1.82800 rad after unfolding, demonstrating that the setting is consequential."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.numbers_from_own_runs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The final Figure 7 caption falsely attributes noiseless accuracy within 10^-3 to the displayed baseline comparison, which includes U=10. The corresponding Trotter run has a logged deviation of 0.00975711 rad. Section 8.2 correctly discloses this shortfall, but the contradictory accuracy assertion remains in the rendered figure. This finding concerns the false reported baseline accuracy, not failure to achieve the optional matching target.",
+      "evidence": [
+        "proposal/report.pdf, p. 13, Figure 7(b) and caption, visually inspected: both U=0 and U=10 comparisons are displayed, with the claim 'both within 10^-3 of the exact value noiselessly.'",
+        "proposal/report.tex:879-884 contains the same caption.",
+        "proposal/logs/analysis.json, trotter['U10-NT'].noiseless.deviation = 0.00975711118118383; proposal/logs/trotter_run.log:8-14 independently prints 9.757e-03.",
+        "proposal/report.tex:939-945 and proposal/attempts_log.md:483-504 disclose the actual larger deviations, establishing the conflict within the final submission."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper claims to preserve the adaptive algorithm and cutoff, but the implementation adds a growth-abandonment rule that permits evolution while L² remains above 10^-4. This is exercised in the saved runs: the interacting nontrivial case records 27 stalls and maximum L²≈0.0197163, approximately 197 times the cutoff. The paper's disclosed deviations cover regularization and reference-state choice, not this change to the growth stopping condition.",
+      "evidence": [
+        "paper.md:65 specifies continuing adaptive growth until L² falls below the cutoff; task_spec.md:23-29 describes the same held-fixed adaptive procedure.",
+        "proposal/report.tex:193-204 and 223-247 claim the algorithm and cutoff are unchanged and enumerate two disclosed implementation choices.",
+        "proposal/code/adaptive.py:217-238,263-267 sets stall_ratio=0.8 and abandons growth after insufficient relative improvement, even above the cutoff.",
+        "proposal/code/berry.py:114-147 advances RK4 after that return without requiring L² below the cutoff.",
+        "proposal/logs/sweep/noiseless_U10_d-0.30_T20.json: config.L2cut=0.0001, avqds.stalls=27, avqds.L2_max=0.019716276280532172; the trivial interacting run records 32 stalls and L2_max=0.021554139023908982."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "There are affirmative method/code contradictions: the purported median-based mechanism plot uses absolute means; the claimed unmitigated interferometer is readout-corrected in mitigation runs; and adaptive growth can stop above the supposedly enforced cutoff. These are implemented and observable discrepancies, not simply missing methodological explanation or weak scientific performance.",
+      "evidence": [
+        "proposal/report.tex:813-819 versus proposal/code/analyze.py:419-432; proposal/report.pdf, p. 12, confirms the unrepaired mean-based curve is embedded in the final report.",
+        "proposal/report.tex:896-898 versus proposal/code/run_noise.py:127-133 and the mitigate=true records under proposal/logs/noise_mit/.",
+        "proposal/report.tex:193-225 versus proposal/code/adaptive.py:217-267 and proposal/code/berry.py:114-147.",
+        "proposal/logs/sweep/noiseless_U10_d-0.30_T20.json, avqds.stalls and avqds.L2_max, confirms the above-cutoff growth-stop behavior occurred."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The attempts record explicitly claims that Figure 5 was repaired and that its φ_qc curve now rises through the tolerance. The final plotting function and rendered report establish that this claimed figure repair was not completed. The aggregate analysis and crossing macro were corrected, but the plotted statistic remained unchanged.",
+      "evidence": [
+        "proposal/attempts_log.md:424-428 states that the median-based fix was made and 'the figure's φ_qc curve now rises through the tolerance instead of running flat.'",
+        "proposal/code/analyze.py:1333-1349 implements medians for the aggregate analysis, whereas lines 425-432 still use abs(mean(v)) for Figure 5.",
+        "proposal/report.pdf, p. 12, Figure 5(b), visually inspected: the solid φ_qc curve remains below the 0.314159-rad tolerance through η=1.",
+        "proposal/logs/analysis.json, legs['U10-NT'].phi_qc, records eta_cross=0.32 and final median deviation 2.3005545384149153, inconsistent with the purportedly repaired plotted curve."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The report's 'before any noisy result' wording is broader than the documented chronology: pilot noise results preceded fixation of the production grid and node count. However, the attempts record explicitly discloses those pilot-informed choices, subsequent grid extensions and post-hoc descriptive analyses. The node specifically requires undisclosed post-result selection or backdating; the inspected record does not establish that predicate. This does not verify compliance with a before-any-results deadline.",
+      "evidence": [
+        "proposal/report.tex:252-254 claims fixation before any noisy result.",
+        "proposal/logs/protocol.json:2-3 dates the protocol and expressly describes fixation before production sweeps.",
+        "proposal/attempts_log.md:199-221 discloses earlier 16-seed/24-node pilots, their influence on grids and node count, and later descriptive analyses.",
+        "proposal/attempts_log.md:298-326 discloses the Trotter and TI-B grid extensions and retained bounds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_levels_and_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All four configurations and all 18 planned main noise levels are present, with all eight shot counts and 32 seed records per combination: 18,432 main seed results. The threshold analysis consumes the complete deviation arrays, including failures and high-noise re-entry. No completed unfavorable run or seed was identified as selectively excluded. The erroneous plotted aggregations are quantitative contradictions, rather than evidence of a separate run-selection procedure.",
+      "evidence": [
+        "proposal/logs/protocol.json:4-32,56-89 specifies the configurations, 18 noise levels, eight shot counts and 32 seeds.",
+        "proposal/logs/noise/ contains 72 corresponding JSON records; read-only inspection confirmed every planned level, shot block and seed-array length.",
+        "proposal/code/analyze.py:38-45,54-105 loads records and processes whole seed arrays without favorable-seed filtering.",
+        "proposal/logs/analysis.json, thresholds['U10-TR'].median_curve, retains failures followed by re-entry at η=0.1 and 0.32; proposal/report.tex:926-945 also reports the unfavorable interacting comparison with Trotter."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "threshold_extraction_integrity.threshold_by_prestated_rule": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Read-only recomputation reproduces the four main thresholds exactly using the stated first-failure sustained-compliance rule and interpolation linear in deviation and logarithmic in η. The strict, mitigated, TI-B and Trotter point estimates also reproduce. Later high-noise re-entry is not used to inflate robustness, and grid extensions are disclosed. No affirmative evidence establishes a substituted outcome-favoring extraction rule.",
+      "evidence": [
+        "proposal/logs/protocol.json:92-97 defines tolerances, sustained compliance, interpolation, 2000 bootstrap resamples and the separate shot-floor rule.",
+        "proposal/code/analyze.py:54-105 implements that threshold rule and bootstrap procedure.",
+        "proposal/logs/analysis.json, thresholds: U0-NT=0.30250117423377554, U0-TR=0.13480972725260376, U10-NT=0.003821226518324885, U10-TR=0.004294732323141573; all match independent calculations from saved seed deviations.",
+        "proposal/attempts_log.md:298-326 discloses extensions and distinguishes unresolved single-channel bounds from interpolated thresholds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "variational_simulation_integrity.ansatz_growth_uses_measurable_signals": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Operator ranking and growth decisions use M, V, energy variance and the resulting McLachlan residual. Exact-state fidelity is computed separately for validation and diagnostics, rather than fed into generator ranking or growth stopping. The above-cutoff stall rule is a method-alignment issue, but it is not an oracle-driven growth decision.",
+      "evidence": [
+        "proposal/code/adaptive.py:142-163 computes M, V, variance and L²; lines 166-213 rank candidate additions using those quantities.",
+        "proposal/code/adaptive.py:217-267 selects disjoint-support operators by candidate L²; lines 286-303 use variational gradients and parameter velocities.",
+        "proposal/code/run_noiseless.py:56-61 computes ground-state fidelity after AVQITE; lines 74-98 perform AVQDS before evaluating the ED infidelity trace.",
+        "proposal/code/berry.py:97-101 uses optional ED states only when recording diagnostics."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The supplied evidence identifies no substantive prior contribution reproduced as new without acknowledgment. The report credits the original Berry-phase pipeline, AVQDS/TETRIS antecedents, interferometry and published mitigation methods, and distinguishes its proposed noise-characterization contribution from adjacent work. This finding is limited to the inspectable submission and supplied source paper; it is not independent certification of global novelty.",
+      "evidence": [
+        "proposal/report.tex:86-104 credits the existing adaptive Berry-phase method.",
+        "proposal/report.tex:1016-1044 discusses AVQDS(T), TETRIS and earlier Berry-phase measurement algorithms.",
+        "proposal/report.tex:1046-1065 discusses adjacent contributions and expressly claims no novelty for the published mitigation methods.",
+        "proposal/references.bib:1-29,108-118,226-242,386-411 supplies the corresponding attributions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected code exposes implementations of the Hamiltonian, adaptive engine, circuit compiler, noise channels and analysis. Identified external software consists of acknowledged general-purpose libraries. Archive reading and ansatz replay are separated into reference-inspection code rather than used to replace production Hamiltonian construction or adaptive growth. No affirmative prohibited reuse or falsely claimed external methodology code was established.",
+      "evidence": [
+        "proposal/codebase_notes.md:114-131 identifies NumPy, SciPy, h5py and Matplotlib and states the scope of the study's implementation.",
+        "proposal/code/model.py:91-136 and proposal/code/pauli.py:217-235 construct the Hamiltonian and operator pools; proposal/code/adaptive.py implements the variational engine.",
+        "proposal/code/extract_archive.py:34-65 extracts attributed reference traces; its separate ansatz-inspection routine performs the disclosed replay check.",
+        "proposal/code/run_noiseless.py:42-78 constructs and evolves its own model and ansatz rather than loading the archive's preoptimized ansatz."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

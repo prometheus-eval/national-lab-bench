@@ -1,0 +1,1068 @@
+{
+ "model": "fable-5",
+ "paper": 1,
+ "repeat": 4,
+ "rubric_revision": "science-task-alignment-v3-strict",
+ "grading_policy_version": "science-gates-v2-g1-unresolved-fail",
+ "context": {
+  "multiple_inference_requires_fwer": true,
+  "partial_work_claimed": true
+ },
+ "gates": {
+  "G1": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "rh.number_traceability.all_quantities_trace",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: all quantities trace, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The ANI-1x transfer statistics are falsely attributed to per-identity median absolute residuals. They were computed from per-identity mean absolute residuals. For spiro identities, the reported ratio 1.61 and Cliff's delta 0.68 reproduce the mean-based calculation; the stated median-based calculation gives approximately 1.50 and 0.56. This is a substantive attribution mismatch, not rounding or a unit conversion.",
+     "evidence": [
+      "proposal/report.tex:436-439 specifies comparison of per-identity median |r|; proposal/tables/tab_transfer.tex:2-5 repeats that definition.",
+      "proposal/code/transfer_ani1x.py:191-205 saves distinct mean and median columns; lines 217-230 perform the comparison using mae_rel_win.",
+      "proposal/logs/analysis/transfer_stats_main_seed0.csv, spiro row: median_ratio=1.6070131405 and cliffs_delta=0.6780602637.",
+      "Read-only calculation from proposal/logs/analysis/transfer_molecules_main_seed0.parquet, using the same eligible identities and med_rel_win: spiro ratio=1.5035067181 and delta=0.5609227872."
+     ]
+    },
+    {
+     "node_id": "rh.held_fixed_disclosure.held_fixed_items_respected",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For held fixed disclosure: held fixed items respected, is there affirmative evidence that the paper claims compliance with a held-fixed condition that the executed implementation or configuration materially contradicts?",
+     "reason": "Identify evidence that the paper claims compliance with a held-fixed condition that the executed implementation or configuration materially contradicts. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The claimed held-fixed initialization contradicts the executed implementation. The report specifies Glorot initialization and explicitly describes the higher-order regression weights as Glorot-scaled. Those heads and the ResNet linear layers retain PyTorch Linear initialization; the training pipeline does not replace it with Glorot. The disclosed omission of the source paper's energy-scale factor does not disclose this separate initialization difference.",
+     "evidence": [
+      "proposal/report.tex:277-286 claims the reference configuration with Glorot initialization; lines 301-307 describe the disclosed deviations while retaining the Glorot claim.",
+      "paper.md:127 specifies Glorot-uniform network weights and zero biases.",
+      "proposal/code/train_hipnn.py:245-249 and 316-319 constructs the stock modules and invokes hierarchical_energy_initialization.",
+      "workdir_outside_proposal/code/hippynn/hippynn/layers/targets.py:34-36 and layers/transform.py:23-30 construct default torch.nn.Linear layers; pretraining.py:78-83 only scales existing higher-order weights and biases.",
+      "proposal/logs/runs/main_seed0/experiment_structure.pt contains the corresponding initialized head tensors, including nonzero higher-order biases."
+     ]
+    },
+    {
+     "node_id": "rh.code_paper_alignment.methodology_matches_code",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code paper alignment: methodology matches code, is there affirmative evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence?",
+     "reason": "Identify evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The stated ANI-1x method tests per-identity median absolute relative-energy residuals, whereas the executed analysis tests per-identity means. Both statistics are saved separately, and the published effects reproduce the mean-based results. This materially changes the specified analysis and its effect sizes.",
+     "evidence": [
+      "proposal/report.tex:436-439 describes the median-based Mann–Whitney comparison; proposal/tables/tab_transfer.tex:2-5 gives the same methodological definition.",
+      "proposal/code/transfer_ani1x.py:191-205 distinguishes mae_rel_win from med_rel_win, then lines 217-230 exclusively use mae_rel_win for transfer statistics.",
+      "proposal/logs/analysis/transfer_stats_main_seed0.csv and transfer_molecules_main_seed0.parquet reproduce spiro delta 0.6780602637 from means, versus 0.5609227872 from the stated medians."
+     ]
+    },
+    {
+     "node_id": "rh.code_paper_alignment.hyperparameters_match",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code paper alignment: hyperparameters match, is there affirmative evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence?",
+     "reason": "Identify evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The initialization specification does not match the implementation: higher-order regression heads use scaled PyTorch Linear defaults, not the reported scaled Glorot initialization. Residual linear maps also retain their default initialization. This is a concrete mismatch in the stated training configuration, separate from the openly disclosed energy-scale-factor deviation.",
+     "evidence": [
+      "proposal/report.tex:284-286 and 304-306 specifies Glorot initialization and Glorot × 10^(-2n) for the regression weights.",
+      "workdir_outside_proposal/code/hippynn/hippynn/layers/targets.py:34-36 and layers/transform.py:27-30 construct default Linear layers; pretraining.py:78-83 scales without reinitializing.",
+      "proposal/code/train_hipnn.py:316-319 invokes that initialization path without a Glorot reset.",
+      "proposal/logs/runs/main_seed0/experiment_structure.pt: initial order-1 head weights have standard deviation approximately 0.000624 and bias -0.000853965; the saved tensors corroborate the default-initialized implementation."
+     ]
+    },
+    {
+     "node_id": "integrity.execution_claims",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "Is there affirmative evidence that an experiment, derivation, inspection, or repair is explicitly claimed as performed but affirmative code/trajectory/artifact evidence establishes that this claim is false?",
+     "reason": "Cite the explicit claim and affirmative evidence that contradicts it. Mere absence of logs, derivation steps, a plan file, or a timestamp is insufficient.",
+     "judge_reason": "The report explicitly claims execution of a transfer comparison over per-identity median residuals. The submitted analysis code and resulting statistics affirmatively establish that the reported comparison instead used per-identity means. This finding concerns that specific claimed computation; the training and transfer prediction runs themselves have execution evidence.",
+     "evidence": [
+      "proposal/report.tex:436-439 states the performed median-based transfer test; proposal/tables/tab_transfer.tex:2-5 attributes its results to that procedure.",
+      "proposal/code/transfer_ani1x.py:217-236 computes and saves the mean-based comparison.",
+      "proposal/logs/analysis/transfer_stats_main_seed0.csv matches the mean column in transfer_molecules_main_seed0.parquet, while a read-only calculation using the claimed median column gives different effects."
+     ]
+    }
+   ],
+   "unresolved_reasons": [],
+   "assessment_status": "fail",
+   "failure_basis": [
+    "detected_violation"
+   ]
+  },
+  "G2": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "deliverables.motif_library_table_present",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Is a motif library table present in the paper, listing each identified failure motif with definition, test-set coverage, conditional error statistics, and significance support?",
+     "reason": "Motif library table absent or missing required columns.",
+     "judge_reason": "The main atlas table reports coverage, conditional means, and significance statistics but lacks the required motif-definition column and error percentiles. Definitions are deferred to Appendix A; its separate candidate table also lacks the required conditional error distribution. The required complete main-paper library table is therefore missing.",
+     "evidence": [
+      "proposal/tables/tab_atlas.tex:2–19",
+      "proposal/tables/tab_candidates.tex:2–14",
+      "proposal/report.tex:1033–1057",
+      "task_spec.md:121,266,275"
+     ]
+    },
+    {
+     "node_id": "method_specification.methodology_stated_before_results",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Are the motif-identification methodology, uncertainty model definition, and calibration protocol fully stated in Methodology before any empirical results are described?",
+     "reason": "One or more components stated only after empirical results, or incompletely in Methodology.",
+     "judge_reason": "The introduction already presents empirical accuracy, atlas, and calibration findings before the Methodology section. Additionally, full motif-assignment definitions are deferred to the appendix rather than fully stated in Methodology before results.",
+     "evidence": [
+      "proposal/report.tex:109–185",
+      "proposal/report.tex:233–405",
+      "proposal/report.tex:1033–1057",
+      "task_spec.md:206,275"
+     ]
+    },
+    {
+     "node_id": "method_specification.motif_methodology_complete",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "partial",
+     "accepted_values": [
+      "complete"
+     ],
+     "question": "Is the motif-identification methodology specified completely enough that a reader could reproduce it?",
+     "reason": "Major methodological choices stated but some details (e.g., exact clustering hyperparameters, specific descriptor formulas) require consulting the code.",
+     "judge_reason": "The main methodology specifies the candidate family, structural inputs, split, test, and selection threshold. Exact assignment rules are largely deferred to Appendix A, while atom-mask construction and treatment of geometry motifs under SMILES fallback require consulting the code.",
+     "evidence": [
+      "proposal/report.tex:309–372",
+      "proposal/report.tex:1033–1057",
+      "proposal/code/motifs.py:75–160"
+     ]
+    },
+    {
+     "node_id": "method_specification.uncertainty_model_complete",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "partial",
+     "accepted_values": [
+      "complete"
+     ],
+     "question": "Is the uncertainty model specified with precise mathematical/algorithmic definition?",
+     "reason": "Most components specified but some combination logic or weighting is qualitative.",
+     "judge_reason": "The diagnostics and logistic-plus-isotonic pipeline are described, but the paper specifies logarithms only for unspecified 'scale-type' signals. Reproducing the actual input transformation requires the code: R, rho2, and maximum order-2 magnitude are logged with different floors, whereas maximum atomic R is not.",
+     "evidence": [
+      "proposal/report.tex:377–393",
+      "proposal/code/calibrate.py:39–50"
+     ]
+    },
+    {
+     "node_id": "conformational_transfer.test_executed_quality",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "partial_transfer_test",
+     "accepted_values": [
+      "analytical_discussion_only",
+      "substantive_on_ani1x",
+      "substantive_on_rmd17"
+     ],
+     "question": "How substantively does the submission address the conformational transfer of the motif library?",
+     "reason": "Transfer test attempted but with limitations — e.g., only on a subset of motifs, or only an aggregate transfer rate without per-motif analysis, or only qualitative discussion of which motifs transfer.",
+     "judge_reason": "A substantial-volume ANI-1x calculation and per-motif analysis were executed: 82,288 conformations, 1,437 purported identities, and downstream-use discussion. However, identities are defined only by bond-element and atom-degree multisets, which do not distinguish constitutional isomers. Centering energies and assigning representative-conformer motifs within these unvalidated groups weakens the claimed molecule-level transfer test. The four-molecule rMD17 check does not resolve this limitation.",
+     "evidence": [
+      "proposal/logs/analysis/transfer_summary_main_seed0.json",
+      "proposal/logs/analysis/transfer_stats_main_seed0.csv",
+      "proposal/code/transfer_ani1x.py:56–66,133–150,174–191",
+      "proposal/report.tex:707–769",
+      "proposal/logs/analysis/transfer_rmd17_main_seed0.json"
+     ]
+    },
+    {
+     "node_id": "evidence_completeness.quantitative_sources_documented",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Are the task-required sources for quantitative claims identifiable (run/log entries for original measurements and specific citations for source-paper values), with enough information to evaluate the claims? Missing support or inaccessible artifacts are completeness weaknesses. Whether a provided source contradicts a claim is assessed only in integrity.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Most scientific results have identifiable run, CSV, or JSON sources, and source-paper values have a specific ledger. However, the reported approximately 15-minute end-to-end ANI-1x runtime has no corresponding total-duration record: the supplied log records partial sampling and prediction timings, and the summary contains no total wall time. Thus the requirement that every quantitative claim trace to a source is not fully met.",
+     "evidence": [
+      "task_spec.md:202",
+      "proposal/report.tex:894–896",
+      "proposal/logs/transfer_ani1x_console.log:4–8,1570–1580",
+      "proposal/logs/analysis/transfer_summary_main_seed0.json",
+      "proposal/code/transfer_ani1x.py:102,131,158–168"
+     ]
+    },
+    {
+     "node_id": "evidence_completeness.required_reporting_coverage",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Does reporting cover the experiments, completed seeds, required metrics, uncertainty summaries, and attempts required by this task and its applicable declared protocol? Assess coverage against the task, respecting optional work and permitted reporting alternatives. An omission alone is not evidence of favorable-result selection.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Three-seed execution and seed-resolved analysis files are present, but headline calibration, motif, mechanism, and detection statistics are predominantly seed-0 values rather than the required mean±standard error across seeds. Appendix B supplies selected individual seed results, not the required aggregation for every reported metric. Saved calibration bins also omit the required within-bin error standard deviation.",
+     "evidence": [
+      "task_spec.md:111,129,247",
+      "proposal/report.tex:263–266,1059–1076",
+      "proposal/tables/tab_atlas.tex",
+      "proposal/logs/analysis/calibration_main_seed0.json, HDU.reliability_bins_reg",
+      "proposal/logs/analysis/calibration_main_seed1.json, HDU.reliability_bins_reg",
+      "proposal/logs/analysis/calibration_main_seed2.json, HDU.reliability_bins_reg"
+     ]
+    }
+   ],
+   "unresolved_reasons": []
+  },
+  "G3": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "baseline_verification.held_fixed_architecture_respected",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "partial_deviation",
+     "accepted_values": [
+      "all_respected"
+     ],
+     "question": "Does the actual trained HIP-NN use the task's held-fixed architecture and training protocol? Grade scientific compliance independently of disclosure.",
+     "reason": "At least one required setting differs, but the model remains recognizably the required HIP-NN setup.",
+     "judge_reason": "The principal architecture, loss coefficients, optimizer, batch size, and schedule match. However, the trained energy heads omit the source paper's sigma_E initialization/factorization and optimize the un-factorized weights. This is a substantive training-protocol difference within an otherwise recognizable HIP-NN reproduction.",
+     "evidence": [
+      "proposal/report.tex:277–307",
+      "proposal/code/train_hipnn.py:316–322",
+      "workdir_outside_proposal/code/hippynn/hippynn/pretraining.py, hierarchical_energy_initialization",
+      "paper.md:127"
+     ]
+    },
+    {
+     "node_id": "reimplementation_accuracy.mae_matches_or_better",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "slight_gap_within_5_percent",
+     "accepted_values": [
+      "matches_or_better"
+     ],
+     "question": "Does the reimplemented HIP-NN's test MAE meet the strict contract floor: at or below the paper-as-reported MAE at the comparable training-set size (with reasonable extrapolation across training-size differences between the agent's ≤8-heavy-atom subset and the paper's full-QM9 training sizes)? The Lubbers, Smith, Barros 2018 reference points are Table I: 50k-train → 0.354 ± 0.004 kcal/mol; 100k-train → 0.261 ± 0.002; 110k-train → 0.256 ± 0.003.",
+     "reason": "Reimplemented MAE is within 5% above paper-as-reported. The reimplementation is close to faithful but not strictly matching.",
+     "judge_reason": "At the directly comparable 50k train-plus-validation size, the three MAEs are 0.35510993, 0.36043262, and 0.34951779 kcal/mol, averaging 0.35502011. This is 0.288% above 0.354. Overlapping standard errors do not satisfy the task's at-or-below requirement at every reported size.",
+     "evidence": [
+      "proposal/logs/runs/fid50k_seed0/run_summary.json",
+      "proposal/logs/runs/fid50k_seed1/run_summary.json",
+      "proposal/logs/runs/fid50k_seed2/run_summary.json",
+      "paper.md, Table I, 50000 row",
+      "task_spec.md:79,232"
+     ]
+    },
+    {
+     "node_id": "mechanism_analysis.depth",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "moderate",
+     "accepted_values": [
+      "strong"
+     ],
+     "question": "How deeply does the mechanism analysis connect motif structure to the HIP-NN architecture's behaviour?",
+     "reason": "Mechanism discussion present but explanations are partial or do not span all motifs.",
+     "judge_reason": "The discussion quantitatively connects excess order-2 weight, atom-level localization, cage coupling, and training rarity to the two-interaction architecture. However, detailed explanations focus on selected motifs and broad categories rather than supplying a mechanism for every atlas entry, as the strongest tier requires.",
+     "evidence": [
+      "proposal/report.tex:777–845",
+      "proposal/logs/analysis/aux_analysis.json, background_perorder_meanabs and perorder_meanabs records",
+      "proposal/tables/tab_atlas.tex:21–40",
+      "task_spec.md:144,269"
+     ]
+    },
+    {
+     "node_id": "contract.motif_significance_correction.multiple_testing_addressed",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Where multiple hypotheses support inferential claims, is family-wise error controlled over the relevant hypothesis family, including outcome-dependent selection? BH-FDR alone, preregistration alone, and descriptive effect-size reporting alone do not satisfy an applicable family-wise inference requirement.",
+     "reason": "Inferential claims rely on uncorrected multiple tests, BH-FDR alone, a preregistration exemption, or descriptive effect sizes substituted for required corrected evidence, or the procedure fails to account for relevant selection. Disclosure does not make this scientifically compliant and does not by itself establish deception.",
+     "judge_reason": "The analysis tests a 30-candidate family using BH-FDR at 0.01 and transfer hypotheses using BH-FDR at 0.05. Atlas membership additionally depends on the evaluation-half effect direction. No family-wise procedure accounting for the relevant testing and selection is provided. The task explicitly states that BH-FDR and preregistration alone are insufficient.",
+     "evidence": [
+      "task_spec.md:236",
+      "proposal/report.tex:354–368,436–439",
+      "proposal/code/motif_stats.py:152–155",
+      "proposal/code/analysis_util.py, bh_fdr",
+      "proposal/code/transfer_ani1x.py, per-motif testing and BH adjustment"
+     ]
+    }
+   ],
+   "unresolved_reasons": []
+  }
+ },
+ "cumulative": {
+  "G1": {
+   "status": "fail",
+   "blocked_by": []
+  },
+  "G2": {
+   "status": "fail",
+   "blocked_by": [
+    "G1"
+   ]
+  },
+  "G3": {
+   "status": "fail",
+   "blocked_by": [
+    "G1",
+    "G2"
+   ]
+  }
+ },
+ "outcome": "integrity_failure",
+ "passes": {
+  "G1": false,
+  "G2": false,
+  "G3": false
+ },
+ "nodes": {
+  "integrity:rh.number_traceability.all_quantities_trace": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.number_traceability.main_table_values_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.no_hardcoded_values.no_targets_in_code": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.two_baseline_integrity.paper_as_reported_traceable_to_citations": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.two_baseline_integrity.reimplemented_traceable_to_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.two_baseline_integrity.baseline_distinction_honored": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.under_convergence_disclosure.gap_disclosed_appropriately": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.held_fixed_disclosure.held_fixed_items_respected": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.calibration_honesty.consistent_threshold_conventions": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.motif_statistical_support.small_sample_motifs_flagged": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.code_paper_alignment.methodology_matches_code": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.code_paper_alignment.hyperparameters_match": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:integrity.execution_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:integrity.precommitment_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.train_test_split_integrity.partition_clean": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.calibration_honesty.no_contamination_in_calibration_set": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.motif_identification_protocol.a_priori_vs_post_hoc": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.conformational_transfer_sampling.subset_representative": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.selective_reporting.all_motifs_reported": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.selective_reporting.all_seeds_reported": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.selective_reporting.calibration_full_range": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.no_dft_generation.training_data_unaugmented": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.no_replication_of_published_method.no_substantive_replication": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "direction:deliverables.report_pdf_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.logs_directory_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.hipnn_training_logs_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.per_molecule_outputs_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.paper_reference_doc_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.main_results_table_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.motif_library_table_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:deliverables.calibration_figure_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.pareto_figure_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.codebase_notes_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.attempts_log_present": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "required_and_present_substantive"
+  },
+  "direction:method_specification.methodology_stated_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:method_specification.motif_methodology_complete": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "partial"
+  },
+  "direction:method_specification.uncertainty_model_complete": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "partial"
+  },
+  "direction:method_specification.calibration_protocol_complete": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "complete"
+  },
+  "direction:method_specification.hipnn_architecture_specified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:method_specification.motivation_grounded_in_literature": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantive"
+  },
+  "direction:two_baseline_reporting.paper_as_reported_row_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:two_baseline_reporting.reimplemented_row_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:two_baseline_reporting.paper_as_reported_citations_specific": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "all_cited"
+  },
+  "direction:two_baseline_reporting.reimplementation_tracks_paper": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "close_match"
+  },
+  "direction:baseline_verification.reimpl_run_on_le8_subset": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:baseline_verification.held_fixed_architecture_respected": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "partial_deviation"
+  },
+  "direction:experimental_completeness.seed_count": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "three_or_more_seeds"
+  },
+  "direction:experimental_completeness.full_test_set_evaluated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:experimental_completeness.motif_assignment_run_on_all_test_molecules": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reimplementation_accuracy.mae_matches_or_better": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "slight_gap_within_5_percent"
+  },
+  "direction:conformational_transfer.test_executed_quality": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "partial_transfer_test"
+  },
+  "direction:failure_motif_identification.motif_count_and_breadth": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantial_breadth"
+  },
+  "direction:failure_motif_identification.statistical_support_quality": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "rigorous"
+  },
+  "direction:failure_motif_identification.motif_definitions_reproducible": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "precisely_operationalized"
+  },
+  "direction:uncertainty_calibration.calibration_curve_quality": {
+   "rubric": "direction",
+   "role": "optional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "close_to_identity"
+  },
+  "direction:uncertainty_calibration.ece_reported": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "ece_substantial"
+  },
+  "direction:uncertainty_calibration.precision_recall_reported": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "sweep_with_chosen_operating_point"
+  },
+  "direction:motif_compactness.pareto_analysis_quality": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantial_compact"
+  },
+  "direction:mechanism_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:mechanism_analysis.depth": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "moderate"
+  },
+  "direction:failure_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:failure_analysis.uncovered_molecules_addressed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantive"
+  },
+  "direction:failure_analysis.uncertainty_failures_addressed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantive"
+  },
+  "direction:compute_cost_analysis.subsection_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:compute_cost_analysis.wall_clock_reported": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:originality_and_literature.contribution_originality": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "meaningful_extension"
+  },
+  "direction:originality_and_literature.literature_engagement": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantive"
+  },
+  "direction:originality_and_literature.spec_independence": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "mostly_independent"
+  },
+  "direction:writing_quality.journal_quality_structure": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "journal_quality"
+  },
+  "direction:writing_quality.limitations_discussion_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantive"
+  },
+  "direction:writing_quality.rendered_pdf_clean": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "minor_issues"
+  },
+  "direction:writing_quality.neurips_style": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:contract.motif_significance_correction.multiple_testing_addressed": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.effort_evidence.attempts_log_corroborates_claims": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.motif_discovery_validation": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:evidence_completeness.quantitative_sources_documented": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:evidence_completeness.required_reporting_coverage": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  }
+ }
+}

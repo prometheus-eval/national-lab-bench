@@ -1,0 +1,209 @@
+{
+  "nodes": {
+    "number_traceability.metric_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Hydrogen residuals are reported as same-detuning comparisons at 0.9 Å, but all 43 compare PIC measurements at 1.0 Å with baseline predictions at 0.9 Å. This is material: for hydrogen, Te=400 eV, B=1000 T, zz, matching the baseline detuning to the measurement changes eta from 0.266677 to approximately 0.399375, crossing the stated threshold.",
+      "evidence": [
+        "proposal/report.tex:163–177 claims comparisons at 0.9 Å uniformly across cells.",
+        "proposal/code/data_loader.py:94–99 selects the nearest available hydrogen sample; the supplied hydrogen files select 1.0 Å. proposal/code/sweep_eval.py:53–58 evaluates the baseline at 0.9 Å.",
+        "proposal/logs/sweep_provided.json:1556–1571 records g_PIC=1.285599, g_V=1.753114472342561 and eta=0.2666770936628306.",
+        "Read-only calculation using proposal/code/vlasov_baseline.py:173–181,196–257 gives S(1.0)/S(0.9)=1.2209325185 for this saved plasma configuration, producing the stated matched-detuning residual."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.boundary_threshold_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported 0.30 threshold and 0.2 gain floor match the plan, code and saved log. All 128 saved classifications reproduce from their logged gains under this rule.",
+      "evidence": [
+        "proposal/report.tex:168–177 and proposal/code/sweep_plan.md:48–82 define the threshold, floor and indeterminate rule.",
+        "proposal/code/sweep_eval.py:20–22,78–85 implements those definitions.",
+        "proposal/logs/sweep_provided.json:2–5 records gfloor=0.2 and eta_threshold=0.3; read-only checking found no classification-arithmetic mismatches."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.pic_gain_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The hydrogen PIC gains are falsely attributed to 0.9 Å measurements. Their actual sources identify 1.0 Å. The numbers themselves are preserved, and the new EPOCH gains reproduce from saved SDF outputs; the finding concerns the misreported measurement parameter.",
+      "evidence": [
+        "proposal/report.tex:281–284,313–314 reports hydrogen gains 2.05 and 0.67 under the table-wide 0.9 Å detuning.",
+        "workdir_outside_proposal/data/pic_simulations/processed/PIC_processed_data/n3T400/zz/gain_B0_zz.txt:6–10 assigns 2.047104 to 1.00 Å.",
+        "workdir_outside_proposal/data/pic_simulations/processed/PIC_processed_data/n3T1200/zz/gain_B0_zz.txt:6–10 assigns 0.668473 to 1.00 Å.",
+        "proposal/code/data_loader.py:94–99 uses nearest-sample selection without interpolation; all 43 hydrogen records use 1.0 Å."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_gains_or_thresholds": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No result constant substitutes for the reported gain computation. The stored calibration coefficient is a rounded, traceable reference-cell calculation; the threshold is a declared design parameter. Saved baseline and PIC values reproduce through the submitted calculations.",
+      "evidence": [
+        "proposal/code/sweep_eval.py:63–78 computes the calibration and per-cell baseline and residual.",
+        "proposal/logs/sweep_provided.json:2 records calibration_C=2.167403534125426; proposal/code/analyze_new.py:18,36–40 uses its rounded value 2.1674.",
+        "proposal/code/analysis_pipeline.py:70–143 computes gains from saved fields.",
+        "Read-only recalculation reproduced all 128 provided-data baseline values, ten new-run baseline values, and thirteen completed-run PIC gains."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.metric_definition_matches_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The executed absolute-difference formula and max(|g_V|, |g_PIC|, 0.2) normalization match the paper and plan. The detuning provenance error does not change the algebra or normalization assessed by this node.",
+      "evidence": [
+        "proposal/report.tex:163–175 and proposal/code/sweep_plan.md:48–69 state the primary and secondary formulas.",
+        "proposal/code/sweep_eval.py:78–79 and proposal/code/analyze_new.py:55–58 implement the primary formula consistently.",
+        "Read-only calculations reproduce every primary residual in proposal/logs/sweep_provided.json and the ten main records in proposal/logs/sweep_new.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.vlasov_from_own_reconstruction": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report attributes behavior to its reconstructed baseline that its saved results contradict: perpendicular z–y gain supposedly remains near zero, and z–z gain supposedly decreases monotonically. The recorded baseline has substantial perpendicular z–y gains and nonmonotonic z–z gains. The partial reconstruction and calibration are otherwise disclosed and numerically traceable.",
+      "evidence": [
+        "proposal/report.tex:213–218 explicitly attributes both qualitative reproduction claims to the reconstructed baseline.",
+        "proposal/logs/sweep_provided.json:1484–1517 gives perpendicular z–y g_V=0.468578 at 5000 T and 0.577134 at 6400 T.",
+        "proposal/logs/sweep_provided.json:188–223 gives parallel z–z g_V increasing from 0.357418 at 5000 T to 0.471524 at 6400 T.",
+        "proposal/report.tex:92–95,137–158 discloses the partial model and calibration; read-only baseline recalculation confirms the contradictory logged values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The described common-detuning methodology materially differs from the implementation. The paper says both gains are evaluated at 0.9 Å for every cell, whereas the hydrogen loader silently selects 1.0 Å measurements while leaving the baseline at 0.9 Å.",
+      "evidence": [
+        "proposal/report.tex:163–177 describes the common 0.9 Å comparison and uniform application.",
+        "proposal/code/data_loader.py:77–101 implements nearest-detuning hydrogen selection.",
+        "proposal/code/sweep_eval.py:53–58 fixes baseline evaluation at 0.9 Å.",
+        "The supplied n3T400 and n3T1200 gain files identify the selected measurements as 1.00 Å; all 43 hydrogen log records follow this implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper claims uniform compliance with the committed comparison definition, including common 0.9 Å inputs, but uses a different measurement detuning for hydrogen without disclosure. The disclosed domain reduction and partial baseline are not the basis of this finding.",
+      "evidence": [
+        "task_spec.md:97 makes the committed agreement-metric definition a held-fixed condition.",
+        "proposal/code/sweep_plan.md:50–59 fixes PIC and baseline gains at the same 0.9 Å detuning.",
+        "proposal/report.tex:163–177 claims that definition is applied uniformly.",
+        "proposal/code/data_loader.py:94–99 versus proposal/code/sweep_eval.py:53–58 establishes the undisclosed 1.0 Å/0.9 Å mismatch."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed ten main EPOCH runs and three additional seed realizations have completed execution records and saved fields. Reprocessing those fields reproduces the reported gains. No affirmative evidence establishes that a claimed completed experiment was never performed.",
+      "evidence": [
+        "proposal/report.tex:327–347 describes ten main runs and three additional random-seed realizations.",
+        "proposal/code/runs/val_phi30_zz_B200/epoch.log:19,39–67 records 16 processing elements and completed runtime; corresponding completion logs and 0000–0006.sdf files exist for all thirteen completed runs.",
+        "proposal/logs/sweep_new.json:2–137 records the main results and seed summary.",
+        "Read-only SDF processing reproduces validation gain 0.318269726 and additional seed gains 0.570967689, 0.562830053 and 0.558559246."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The dated plan precedes the saved residual and PIC execution records. It contains the reported metric, threshold and mechanism hypotheses; model and configuration revisions are disclosed. No dated evidence establishes concealed post-result selection or backdating.",
+      "evidence": [
+        "proposal/code/sweep_plan.md:3–4,48–82,114–151 records the commitment and its contents.",
+        "Staged modification times: sweep_plan.md 2026-08-31T15:42:30Z; logs/sweep_provided.json 2026-08-31T23:15:11Z.",
+        "proposal/code/runs/validate_B0_zz_dL0.9/out/deck.status:1 records the initial PIC attempt at Unix time 1788219765.359, corresponding to 2026-08-31T23:42:45Z.",
+        "proposal/attempts_log.md:3–31,42–47 discloses configuration/model revisions and states that no alternative threshold was selected."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.provided_pic_data_used_as_is": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The extracted supplied data match the archive byte for byte, and all 128 loaded gain/error pairs match their source records. The detuning misdescription is established separately; no evidence shows outcome-dependent alteration or re-curation to manufacture agreement.",
+      "evidence": [
+        "Read-only comparison of workdir_outside_proposal/data/pic_simulations/PIC_processed_data.zip with its processed/PIC_processed_data extraction found no missing or changed archive files.",
+        "proposal/code/data_loader.py:13–101 reads source measurements and uses deterministic nearest-detuning selection.",
+        "All 128 g_PIC/e_PIC pairs in proposal/logs/sweep_provided.json exactly match the selected supplied records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_cells_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The completed comparison set is retained: 128 provided-data cells, ten main new-run cells and the additional seed results. The main table is explicitly a summary linked to the full log. No completed unfavorable cell was identified as selectively hidden.",
+      "evidence": [
+        "proposal/report.tex:250–252,281–288 identifies the table as a summary and points to the full 128-cell log.",
+        "proposal/logs/sweep_provided.json contains 58 holds, 47 breaks and 23 indeterminate records.",
+        "proposal/code/sweep_grid.json:45–57 and proposal/logs/sweep_new.json contain all ten completed main new-run cells.",
+        "proposal/code/plot_boundary.py:46–58 includes every provided carbon classification in the boundary figure."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All four completed realizations of the replicated intensity cell are reported, and their values reproduce from saved fields. The extra I=1.0 seed directories contain decks without completed results; they do not establish hidden unfavorable seeds.",
+      "evidence": [
+        "proposal/report.tex:343–347 and proposal/logs/sweep_new.json:123–136 report 0.538, 0.571, 0.563 and 0.559.",
+        "proposal/code/runs/seed_s1_int_phi30_zz_B1000_I2.0, seed_s2_int_phi30_zz_B1000_I2.0 and seed_s3_int_phi30_zz_B1000_I2.0 contain completion logs and SDF outputs.",
+        "Read-only recalculation gives population standard deviation 0.01203696, consistent with reported 0.012.",
+        "The three seed_s*_int_phi30_zz_B1000_I1.0 directories contain only input decks."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.mechanism_attribution_full_set_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report discusses the proposed mechanisms, explicitly labels H2 untested, and acknowledges competing explanations for the intensity result. Contrary outcomes, including strong-field z–y agreement, are reported. Weak attribution support does not establish concealed selection of completed mechanism tests.",
+      "evidence": [
+        "proposal/code/sweep_plan.md:114–151 lists H1–H4 and C1–C3.",
+        "proposal/report.tex:349–357 reports strong-field z–z disagreement alongside z–y agreement.",
+        "proposal/report.tex:395–411 discloses the intensity attribution's C2/C3 ambiguity and comparison limitations.",
+        "proposal/report.tex:441–448 states the partial magnetized-ion treatment and that H2 was untested."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission acknowledges its PIC, kinetic-theory and eigenmode antecedents and distinguishes the boundary analysis from those methods. The inspected materials do not identify a prior contribution reproduced substantively while presented as new without acknowledgment.",
+      "evidence": [
+        "proposal/report.tex:61–87,92–113 acknowledges Shi–Moody and the companion Vlasov theory.",
+        "proposal/report.tex:474–487 credits established kinetic frameworks and standard EPOCH validation practice.",
+        "proposal/refs.bib and proposal/report.bbl include the cited antecedents.",
+        "paper.md:40–86,116 documents the source analysis pipeline, which proposal/codebase_notes.md:18–34 explicitly credits."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected methodology code uses standard scientific libraries and an acknowledged port of the supplied analysis pipeline. EPOCH and the additional SDF toolchain are disclosed. No affirmative evidence identifies prohibited or unattributed external methodology code.",
+      "evidence": [
+        "task_spec.md:211 permits supplied EPOCH/MATLAB code and standard scientific libraries.",
+        "proposal/codebase_notes.md:9–16,18–34,50–63 identifies reused components, the Python port and SDF dependencies.",
+        "proposal/code/vlasov_baseline.py:29–33 and proposal/code/eigenmodes.py:17–18 use NumPy/SciPy and local modules.",
+        "proposal/code/analysis_pipeline.py:1–14 explicitly attributes the pipeline to Gain_Real_Modes.m and identifies its SDF dependency."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

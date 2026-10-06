@@ -1,0 +1,204 @@
+{
+  "nodes": {
+    "number_traceability.kernel_hyperparameters_in_logs": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "Available standalone-weight and QSVT parameter records are consistent with the corresponding reported values after rounding. However, the main sweep's per-run configurations and outputs are absent, preventing verification of the parameters underlying most reported results. This absence does not establish fabricated parameters.",
+      "evidence": [
+        "proposal/report.tex:343–348 and 376–381 describe the standalone and QSVT configurations.",
+        "proposal/logs/weights_standalone/verification.json records the variant at kmax=14.436885865457295, gamma=3.75, c=0.175.",
+        "proposal/code/kernel_derivation/qsvt_angles/baseline_nk8_nt11/report.json records kmax=53.9934, consistent with the reported 53.99.",
+        "proposal/report.tex:727–731 identifies proposal/logs/runs/ as the per-circuit source; that directory is absent from the staged submission."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.emulator_metrics_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report states that all 24 matched-accuracy comparisons have equal or higher variant success probability, but its underlying comparison records contain six counterexamples. For example, the claimed twofold query reduction for mollified Cauchy lowers success probability from 0.626338 to 0.554816. This materially contradicts the reported comparison and is not a rounding issue.",
+      "evidence": [
+        "proposal/scaling_text.tex:3 says the 24 comparisons are 'always at equal or higher success probability'.",
+        "proposal/logs/analysis/report_numbers.json, matched_accuracy_nk8[13]: QA_base=150, QA_var=75, p_base=0.6263382427412161, p_var=0.5548158360539043.",
+        "The same array has lower variant success at indices 0, 1, 5, 6, 12 and 13.",
+        "proposal/code/make_report.py:179–202 selects comparisons using accuracy and query count, records both probabilities, then emits the unconditional success-parity assertion."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.scaling_fits_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported baseline two-parameter log–log fit is materially contradicted by its saved source. The paper gives p=1.27±0.42 from nine points; the saved fit is 2.520966±0.189988. A read-only least-squares calculation using the nine baseline points recoverable from the final comparison summary reproduces the saved value. Uniform query-unit rescaling changes the intercept, not this slope, so it cannot explain the discrepancy.",
+      "evidence": [
+        "proposal/failure_text.tex:1–5 specifies QA=A[log(1/epsilon)]^p, epsilon in [1e-4,10^-1.5], and baseline p=1.27±0.42 with n=9.",
+        "proposal/logs/analysis/analysis.json, scaling_nk8.beta0.7.loglog: p=2.520965520549742, p_err=0.18998828115323343, n=9.",
+        "proposal/code/analyse.py:74–85 implements the stated log–log regression and uncertainty calculation.",
+        "Read-only calculation from proposal/logs/analysis/report_numbers.json, matched_accuracy_nk8 baseline points, yields p=2.5209655205497445 and standard error=0.18998828115323385."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_emulator_targets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected execution and collection code reads circuit amplitudes and gate counts from emulator outputs, computes the exact reference through runtime propagation, and calculates errors and success probabilities from those arrays. Available raw outputs support this computation path. No hardcoded final state or target metric substituting for emulator computation was identified.",
+      "evidence": [
+        "proposal/code/run_lchs.py:270–312 reads HDF5 amplitudes and counters, scatters the output vector, computes the reference, and derives the reported metrics.",
+        "proposal/code/lchs/core.py:77–81 implements exact propagation using matrix exponentiation.",
+        "proposal/logs/smoke2/base_nt4_nk6/dc_OUTPUT.hdf5: summing squared output amplitudes gives 0.4774750349498812; basic/N_gates=61094.",
+        "proposal/logs/smoke2/base_nt4_nk6/result.json:31–32 records the matching success probability and gate count."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The inspectable baseline and standalone configurations match their associated descriptions. Most headline and sweep results lack the executed configurations needed to compare quoted parameters with parameters actually used. The available smoke variant is a distinct configuration and is not evidence that the headline variant used incorrect parameters.",
+      "evidence": [
+        "proposal/tab_main.tex:14 reports the baseline at kmax=19.38, beta=0.7, t=0.0125.",
+        "proposal/logs/smoke2/base_nt4_nk6/result.json:2–14 records nx=6, nk=6, kmax=19.381456286218192, t=0.0125 and beta=0.7.",
+        "proposal/tab_main.tex:19 reports a headline variant with gamma=4.25 and c=0.075; its corresponding per-run record is not present.",
+        "The main execution-record directory proposal/logs/runs/ is absent; saved design configurations alone do not establish which parameters produced every cited result."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_source_distinction_preserved": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report explicitly distinguishes the reference paper's approximate success probability, a reproduction using the provided implementation, and the submission's comparison runs. The available reproduction output supports its stated gate count and success probability. No false attribution between these baseline sources was identified.",
+      "evidence": [
+        "proposal/report.tex:434–440 distinguishes the paper's approximately 0.2 success probability from the reproduced 0.2151 and states that subsequent baseline numbers come from the submission's own runs.",
+        "proposal/logs/smoke/dc_OUTPUT.hdf5 records basic/N_gates=2692135; its saved output amplitudes give success probability 0.21507418612076082.",
+        "paper.md, Section V and Figures 8–9, describe the original ADE circuit simulations.",
+        "proposal/report.tex:396–401 and 403–414 disclose the changed simulation time and compilation/normalization conventions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper defines QA as the number of U_C block-encoding applications, but the collector counts angle pairs. Each counted pair in the executed OPT2 implementation inserts W and W-adjoint, each containing two controlled block-encoding applications. Thus the saved example labeled QA=300 contains 1200 controlled U_C/U_C-adjoint applications under the paper's stated definition. The common factor preserves ratios but materially contradicts the absolute query metric.",
+      "evidence": [
+        "proposal/report.tex:403–420 defines QA=75*n_t and explicitly says QA counts applications of U_C.",
+        "proposal/code/run_lchs.py:307–312 calculates QA=n_t*(nang-1)//2.",
+        "proposal/code/qucf_lchs_kernels/src/QCircuit.cpp:3400–3412 constructs W from BE and BE-adjoint; lines 3463–3476 insert both W and W-adjoint per counted angle pair.",
+        "proposal/logs/smoke2/base_nt4_nk6/run.log:96–108 confirms 151 angles, four repetitions and OPT2 execution; result.json:35 reports QA=300.",
+        "proposal/code/qucf_lchs_kernels/src/QCircuit.cpp:467–545 copies and inserts the constituent gates without eliminating these applications."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.kernel_in_code_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented rational/exponential seed, Gaussian mollifier, sinusoidal FCC weights and discrete normalization agree with the reported kernel construction. The baseline's disabled-mollifier convention is also represented consistently. No material kernel-form contradiction was identified; mathematical validity and performance are separate questions.",
+      "evidence": [
+        "proposal/report.tex:300–313 gives the sinusoidal weights and division by their discrete sum; lines 339–344 give the six-parameter kernel.",
+        "proposal/code/kernel_select.py:34–55 implements the same kernel and normalized FCC weights.",
+        "proposal/code/qucf_lchs_kernels/src/QCircuit.cpp:1882–1934 implements the same factors and prepares sqrt(ws[ii]/wsum).",
+        "proposal/logs/weights_standalone/verification.json reports maximum amplitude discrepancies of 2.2029569e-15, 4.8384059e-15 and 4.0031882e-16 for the three tested constructions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper explicitly claims complete block-encoding cost accounting, but its reported primitive query counts omit the factor of four between angle-pair iterations and compiled block-encoding applications. This contradicts the held-fixed accounting claim even though the full STMC gate count includes the constructed gates. The disclosed shorter time and direct-decomposition weight path are not the basis of this finding.",
+      "evidence": [
+        "task_spec.md:99 and 209 require block-encoding overhead in the reported counts and transparent disclosure of deviations.",
+        "proposal/report.tex:330–337 says no cost is externalized and every reported gate and query count comes from the compiled circuit.",
+        "proposal/tab_main.tex:2 defines each reported query as containing one U_AH and one U_Bm.",
+        "proposal/code/run_lchs.py:307–312 counts angle pairs, whereas proposal/code/qucf_lchs_kernels/src/QCircuit.cpp:3400–3412 and 3463–3476 contains four controlled block-encoding applications per pair.",
+        "proposal/report.tex:396–401 and proposal/limitations_text.tex:19–22 explicitly disclose the time change and lack of end-to-end QSVT weight execution."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "Saved emulator outputs and angle-generation records support several actual computations. They do not establish the claimed execution of all 509 circuits, whose primary records are missing. No affirmative evidence establishes that those missing runs were never executed, so the execution claim remains unresolved rather than being classified as fabricated.",
+      "evidence": [
+        "proposal/report.tex:60–68 claims 509 emulated circuits; proposal/logs/analysis/report_numbers.json records n_circuits=509.",
+        "proposal/report.tex:727–731 says every circuit's inputs, raw outputs and metrics are in proposal/logs/runs/, which is absent.",
+        "proposal/logs/smoke/, proposal/logs/smoke2/ and proposal/logs/weights_standalone/ contain actual emulator outputs and associated records.",
+        "proposal/code/kernel_derivation/qsvt_angles/ contains saved coefficients, angle files, solver logs and per-configuration reports.",
+        "proposal/limitations_text.tex:19–22 expressly states that the QSVT weight construction was not exercised end to end."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The paper makes an unqualified claim that its metrics and sweep grid were fixed before any validation emulation. The amended plan and attempts record instead document result-driven additions to the precision sweeps and selection of the headline fixed-kernel analysis after initial emulation results. Although these changes are acknowledged in the supporting artifacts, the paper retains the blanket prevalidation claim without the required disclosure of postvalidation refinement.",
+      "evidence": [
+        "proposal/report.tex:425–431 states that the kernel form, axis, problem, metrics and sweep grid were fixed before any validation emulation.",
+        "proposal/code/kernel_plan.md:185–196 labels Amendment 2 as occurring 'after the first emulation sweeps' and adds S1c and S1d, explicitly making S1d the headline exponent measurement.",
+        "proposal/attempts_log.md:136–156 explains that degeneracy and the unfavorable envelope exponent motivated these later sweeps and analysis choices.",
+        "proposal/attempts_log.md:187–191 records another outcome-driven change to the reduction rule.",
+        "task_spec.md:118 and 183 require postvalidation hyperparameter refinement to be disclosed in the paper."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_configurations_reported": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The missing master table and per-run records prevent comparison of all completed configurations with the reported set. The report identifies its envelope aggregation and includes unfavorable small-register results, so neither aggregation nor missing records alone establishes concealed selection. No particular completed unfavorable run can be shown to have been secretly excluded from the final analysis.",
+      "evidence": [
+        "proposal/report.tex:431–432 claims all declared families are reported.",
+        "proposal/tab_main.tex:2 describes the envelope and representative-point selection; proposal/code/make_report.py:50–57 implements the envelope.",
+        "proposal/failure_text.tex:25–35 reports worse variant floors at nk=5.",
+        "proposal/attempts_log.md:158–185 describes collecting and repairing the master dataset, but proposal/logs/runs/all_runs.csv and the corresponding per-run records are absent."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.hyperparameter_choices_documented": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "Design scans, selection code and rejected approaches are documented, including the abandoned state-specific optimization. However, the final completed-run inventory needed to audit whether unfavorable parameter choices were selectively omitted is unavailable. The documented refinements and disclosed aggregation do not by themselves establish concealed outcome-dependent selection.",
+      "evidence": [
+        "proposal/attempts_log.md:75–99 documents rejected state-error tuning, discrete normalization and the one-norm-budget amendment.",
+        "proposal/logs/design/opt_main.csv, opt_rel.csv and configs.json retain design and selection records.",
+        "proposal/attempts_log.md:134–200 documents later sweeps, unfavorable outcomes and reduction-rule changes.",
+        "proposal/code/make_report.py:71–88 reads the absent all_runs.csv and fixed-kernel CSV files; those completed-result sources are necessary to audit final selection."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_kernel_replication": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The identifiable prior kernels and circuit contributions are explicitly acknowledged. The report calls its proposition a restatement and generalization, identifies the Low–Somma special cases, and separately states its claimed extensions. No inspected prior contribution is substantively reproduced while being presented without attribution as new. This does not establish the scientific novelty of the claimed extensions.",
+      "evidence": [
+        "proposal/report.tex:571–588 credits An–Liu–Lin, An–Childs–Lin, analytic-extension work and Low–Somma, and differentiates the claimed contributions.",
+        "proposal/report.tex:581–585 expressly identifies the rational family and f1/f2 as Low–Somma constructions.",
+        "proposal/report.tex:590–599 credits the original FCC selector, qubitization/QSP methods and angle solver.",
+        "proposal/code/kernel_plan.md:39–57 labels the known special cases and their sources."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected nontrivial reused components are identified as provided QuCF code and its existing backend and angle solver. The added kernel profile and Python analysis code are distinguished from those components, and the solver's methodology is credited. No affirmative evidence of prohibited or unacknowledged external methodology code was found.",
+      "evidence": [
+        "task_spec.md:211 permits provided QuCF components and standard scientific libraries and requires acknowledgment of external methodology reuse.",
+        "proposal/codebase_notes.md:17 and 22–44 identifies the reused angle finder, QuEST backend, shipped angle sets and the added kernel profile.",
+        "proposal/codebase_notes.md:54–69 distinguishes newly written modules from reused framework code.",
+        "proposal/report.tex:597–599 credits Dong et al.'s symmetric-QSP angle solver.",
+        "proposal/code/qucf_lchs_kernels/include/compute_angles_class.h:24–29 references the Dong-21 construction used by the provided solver."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

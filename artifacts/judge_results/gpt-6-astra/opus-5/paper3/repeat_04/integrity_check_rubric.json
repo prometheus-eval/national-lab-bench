@@ -1,0 +1,217 @@
+{
+  "nodes": {
+    "number_traceability.values_trace_to_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report attributes the two-fold replicated-data curvature to the one-fold experiment. The reported baseline is twice its saved source value. The macros themselves reproduce the logs; the contradiction arises from selecting the wrong macro in the report.",
+      "evidence": [
+        "proposal/report.tex:459-460, also rendered in proposal/report.pdf p.6: reports curvatures 425.0 and 637.5 'against 425.0 at r=1', with growth factors 2.00 and 3.00.",
+        "proposal/logs/scaling.json, lipschitz: replicated_r1=212.5153677700161, replicated_r2=425.0307355400315, replicated_r3=637.5461033100477.",
+        "proposal/logs/numbers.tex:734-736 correctly defines scliprepone=212.5, scliprepthree=637.5 and sclipreptwo=425.0; report.tex:460 uses sclipreptwo for r=1. Neither rounding nor a unit conversion explains this factor-of-two discrepancy."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.trajectories_trace_to_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Figure 2 falsely identifies the source quantity of its right-hand curves as grid-searched optimal gradient steps. Those curves actually contain measured Hessian curvature. These are separately computed quantities with different saved values, despite their similar trends.",
+      "evidence": [
+        "proposal/report.tex:475-479 and rendered proposal/report.pdf p.7, Figure 2 caption: identifies the right panel as the grid-searched optimum of the gradient step.",
+        "proposal/figures/penalty.pdf, visually inspected: the right panel is labeled lambda_max; the middle panel contains L*.",
+        "proposal/code/make_figures.py:203-218 plots representation/*_fista/argmin in the middle panel; lines 221-240 plot lipschitz values in the right panel.",
+        "proposal/logs/scaling.json: MC_C3 curvature is 747.4037531702693, normalized by 212.5153677700161 to approximately 3.51694; the corresponding optimal-step ratio is 51.432746248396874/14.469631323738625, approximately 3.55453. The caption therefore attributes the curve to a different computation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_references": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected implementation computes objectives, reference comparisons, fitted optima and reported macros from solver outputs. No hardcoded target or oracle output substitutes for a solver computation. Fixed regularization parameters and published penalty rules are identified configuration constants.",
+      "evidence": [
+        "proposal/code/driver.py:30-37 computes the CDL objective from dictionary, coefficients and signal; lines 153-160 compute trajectory deviations and relative dictionary errors.",
+        "proposal/code/run_recovery.py:79-104 separately executes the reference and template and records their outputs.",
+        "proposal/code/run_scaling.py:35-70 computes grid results and interpolated optima from executed solves.",
+        "All 783 definitions in proposal/logs/numbers.tex reproduce from the saved JSON records using the submitted generation logic. The erroneous macro selection in report.tex does not constitute hardcoded replacement of the underlying computation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The quoted experimental configurations agree with the saved recovery, representation and interior-sweep settings. The smaller experiments and endpoint penalty tuning are disclosed. No affirmative evidence establishes that materially different solver settings produced the cited results.",
+      "evidence": [
+        "proposal/report.tex:308-323 matches proposal/logs/recovery_K4.json: K=4, N=64, M=16, 8x8 filters, 40 iterations, lambda=0.1, image seed 12345 and dictionary seed 54321.",
+        "proposal/report.tex:1174-1184 matches proposal/logs/recovery_K8.json: K=8, N=128, M=32, 100 iterations and image seed 777.",
+        "proposal/report.tex:485-493 and proposal/logs/multichannel_MC.json and multichannel_SC.json agree on K=4, N=256, M=64, C=3, 100 iterations and lambda=0.1.",
+        "proposal/report.tex:676-683 describes tuning the coupled-edge penalty once at the exact endpoint; proposal/code/run_reveal.py:103-118 and proposal/logs/reveal_gray.json/sigma_tuning record that procedure and selected sigma=2.1544346900318834."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.results_from_actual_runs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The report presents reconstructed time-budget convergence outcomes as empirical convergence in seconds without identifying the time coordinate as an estimate. The objective iterates were executed, but their assigned cumulative dictionary-update times come from multiplying iteration counts by a separate post-run benchmark. The finding concerns this representation of estimated timing outcomes, not the existence of the objective trajectories.",
+      "evidence": [
+        "proposal/report.tex:688-694 states that, given 10 seconds in dictionary updates, p=2 reaches 380.012 against 405.179 for p=0 and 423.525 for p=16.",
+        "proposal/code/run_reveal.py:63-73 measures a median of five additional dictionary steps after the convergence run and two warm-up steps, with the converged coefficient maps.",
+        "proposal/code/make_numbers.py:170-194 calculates the budget and selects saved objective iterations using floor(budget/time_per_dstep_s); it does not obtain these coordinates from cumulative timing measurements.",
+        "proposal/logs/reveal_gray.json yields an estimated budget of 9.581251144409181 seconds. Dividing by the post-run medians selects iterations 27, 32 and 10 for p=0,2,16 respectively, reproducing the reported objectives. Rounding that budget to 10 seconds is not the discrepancy.",
+        "proposal/code/make_figures.py:158-168 likewise constructs iteration_count multiplied by time_per_dstep_s and labels the axis 'cumulative time in the dictionary update (s)'."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.sporco_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submitted harness executes SPORCO reference solvers, and the saved reference arrays support the reported recovery comparisons. Published findings are separately cited. No fabricated or falsely attributed SPORCO baseline quantity was identified.",
+      "evidence": [
+        "proposal/code/driver.py:123-150 constructs ConvBPDNDictLearn, calls solve(), and extracts SPORCO objective statistics.",
+        "proposal/code/run_recovery.py:80-103 records independent template and SPORCO objective, fidelity and regularization arrays.",
+        "proposal/logs/recovery_K8.json, cells/CG: maximum objective deviation 2.1949879862816284e-9 and dictionary error 6.335899834782248e-8 are retained and reported in proposal/report.tex:329-336 and Appendix B.",
+        "proposal/code/run_multichannel.py:80-103 executes matched references at lambda=0.1 for both representations; proposal/report.tex:921-926 explicitly attributes the published serial/parallel ranking to the original paper rather than claiming an executed parallel baseline."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The solver implementation substantially matches the described template, but the reported timing methodology materially differs from the implementation. The report presents cumulative dictionary-update convergence times; the plotting and reporting code constructs those times from a post-run steady-state median. That distinction affects the claimed budget-dependent advantage.",
+      "evidence": [
+        "proposal/report.tex:676-694 presents dictionary-update-time comparisons and the claimed short-budget interior winner; lines 740-754 describe time-to-target figures.",
+        "proposal/code/run_reveal.py:56-73 and 136-144 performs fixed-iteration runs followed by separate clean_dstep_time benchmarks.",
+        "proposal/code/make_figures.py:144-168 assigns constant estimated time increments to every saved iterate; lines 273-298 compute time-to-target as the first hitting iteration multiplied by that benchmark.",
+        "proposal/code/template.py:325-416 and proposal/code/driver.py:86-107 support the described shared numerical iteration. This finding is confined to the evaluation timing methodology."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "genuine_abstraction_integrity.template_not_dispatcher": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission contains a shared parameterized dictionary-update iteration and a shared outer driver. Its branches select numerical kernels or parameter-dependent operations, rather than dispatching the proposed method to separate complete dictionary-learning solvers.",
+      "evidence": [
+        "proposal/code/template.py:325-393 implements the common residual-block solve, projection, dual update and extrapolation.",
+        "proposal/code/template.py:395-416 selects diagonal, CG or iterated Sherman-Morrison linear algebra within the same update.",
+        "proposal/code/driver.py:86-107 uses the same alternating sparse-coding/dictionary-update loop.",
+        "proposal/code/run_recovery.py:37-53 expresses the four recovered families as Params values; proposal/code/run_reveal.py:39-53 expresses partial-rank and grouped-consensus instances through the same interface.",
+        "The complete SPORCO solver dispatch appears separately in proposal/code/driver.py:123-150 for reference execution, consistent with proposal/report.tex:1148-1155."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "recovery_matching_integrity.match_against_actual_reference": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The recovery harness passes identical inputs, initialization, regularization and matched family settings to separately executed template and reference solvers. The saved deviations recompute from their paired arrays. No forcing, hand adjustment or substituted reference trajectory was found.",
+      "evidence": [
+        "proposal/code/run_recovery.py:70-100 shares S and D0, executes both paths, and directly compares their objectives and returned dictionaries.",
+        "proposal/code/run_multichannel.py:61-99 does the same for MC and SC, recording data and initialization hashes.",
+        "proposal/logs/multichannel_MC.json and multichannel_SC.json record the same color-image selection and data hash, with image seed 2468 and dictionary seed 1357.",
+        "Read-only recomputation of the 26 saved paired trajectory comparisons found no deviation inconsistency. For example, recovery_K4.json/cells/ISM gives maximum deviation 2.2004388746890943e-16, while recovery_K8.json/cells/CG retains the larger 2.1949879862816284e-9 deviation.",
+        "proposal/report.tex:1157-1165 explicitly discloses reference-specific dual initialization and the multi-channel normalization convention."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission discloses the material departures identified during inspection instead of claiming full held-fixed compliance. Reduced scale, single-seed comparisons, joint channel normalization and the optional changed sparse-coding objective are stated. Their scientific adequacy is separate from this integrity predicate.",
+      "evidence": [
+        "task_spec.md:49-58 states the parity constraints; paper.md, Section SVIII, supplies the original color experiment.",
+        "proposal/report.tex:1034-1044 states K=4 rather than forty color training images, one training-set and dictionary seed per comparison, and serial-only timings.",
+        "proposal/report.tex:1157-1165 and proposal/codebase_notes.md:67-79 disclose dual initialization and joint-over-channels normalization instead of per-channel normalization.",
+        "proposal/report.tex:1015-1017 identifies joint sparsity as a different sparse-coding prox and excludes it from the flattening identity; proposal/code/driver.py:65-75 and 98-101 implements and evaluates that changed objective."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_axis_switching.axes_committed_before_validation": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The observable change from grouped consensus to partial-rank majorization is explicitly disclosed, including that recovery runs were already underway. The original recovery targets and required representations remain visible. No affirmative evidence establishes an undisclosed switch falsely presented as an original choice.",
+      "evidence": [
+        "proposal/code/framework_plan.json:18-46 preserves the original axes, four recovery targets, MC/SC representations and grouped-consensus proposed cell.",
+        "proposal/code/framework_plan.md:197-238, amendment A1, records the novelty discovery, demotion of grouped consensus, and extension to per-block majorization.",
+        "proposal/attempts_log.md:8-37 states that the literature check occurred alongside initial recovery runs and explains the target change.",
+        "proposal/report.tex:1135-1138 acknowledges the amendment; task_spec.md:132 permits disclosed post-hoc refinement."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The specifically claimed solver executions and documented repairs have corresponding run artifacts and consistent implementation changes. No affirmative evidence establishes that a claimed solve, derivation, inspection or repair was never performed. The reconstructed timing outcomes identified elsewhere do not establish that the underlying fixed-iteration solves were unexecuted.",
+      "evidence": [
+        "proposal/logs/recovery_K4.json, recovery_K8.json, multichannel_MC.json and multichannel_SC.json contain the claimed configurations and complete recorded objective trajectories, with corresponding stdout records.",
+        "proposal/attempts_log.md:69-88 describes the failed exact-endpoint collapse and its repair; proposal/logs/superseded_reveal_gray_stepsize_bug.json preserves the failed outcome.",
+        "proposal/code/template.py:330-332 implements the documented zero-metric repair, and proposal/logs/reveal_gray.json/collapse contains the corrected reference comparisons.",
+        "proposal/attempts_log.md:140-160 describes the zero-penalty dual-initialization repair and reruns; the final template enforces that convention and the corresponding final sweep records are included."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The submission explicitly claims commitment before validation, but the staged record cannot establish the necessary relative chronology. It contains an authored plan timestamp and disclosed amendments, without the original version history or dated validation-start records. This supports neither a finding of backdating nor verification of the claimed deadline.",
+      "evidence": [
+        "proposal/code/framework_plan.md:3-11 and proposal/report.tex:1135-1138 explicitly claim the plan preceded validation runs.",
+        "proposal/logs/plan_timestamp.json gives plan_written_utc=2026-08-07T06:23:50.083991+00:00 and file hashes.",
+        "The current framework_plan.json matches its recorded hash; framework_plan.md differs, with amendments A1 and A2 explicitly acknowledging changes.",
+        "No .git history is staged under proposal/. The experiment JSON records lack execution-start dates or UTC timestamps, and their stdout files do not independently establish ordering relative to the plan.",
+        "proposal/code/framework_plan.md:240-256 identifies post-run edits, but the referenced original commit is unavailable within the staged submission."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_cells_and_attempts_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected record retains or explicitly discloses unsuccessful attempts and unfavorable completed results. No completed unfavorable result was identified as covertly excluded while the reported set was represented as complete or selected by a contrary rule.",
+      "evidence": [
+        "proposal/attempts_log.md:69-107 preserves and explains both the failed collapse experiment and the superseded coarse penalty sweep; their JSON files are included.",
+        "proposal/attempts_log.md:155-160 explicitly discloses deletion and replacement of incorrect uncoupled-edge runs, including the implementation error that invalidated them.",
+        "proposal/report.tex:645-655 reports that energy ordering is worse than an arbitrary subset at the tested midpoint; proposal/logs/spectrum.json and logs/table_spectrum.tex support that unfavorable comparison.",
+        "proposal/report.tex:698-717 and proposal/attempts_log.md:162-173 acknowledge that the interior does not beat the proximal-gradient corner in time at the tested sizes.",
+        "proposal/report.tex:742-745 states why configurations missing from the time-to-target panel did not reach its common target; their objective trajectories remain in the saved sweep records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The identifiable reused contributions are acknowledged, including the initially proposed cell discovered to be published already. The supplied evidence does not identify a prior contribution reproduced as the claimed new partial-rank cell without acknowledgment. This is not an independent guarantee of novelty.",
+      "evidence": [
+        "proposal/report.tex:1049-1062 credits the original algorithms, equivalences and multi-channel representations, and explicitly calls the known color-method runs replication baselines.",
+        "proposal/report.tex:1082-1103 discusses grouped consensus, block-proximal-gradient methods, accelerated consensus and related frameworks with citations.",
+        "proposal/code/framework_plan.md:199-232 and proposal/attempts_log.md:15-34 identify Choudhury et al. (2017), abandon the original novelty claim and credit grouped consensus.",
+        "paper.md, Sections III, VI and supplementary Section SIII, provides the acknowledged source algorithms and scaling analysis; the submitted reference bibliography records the cited follow-up literature."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The nontrivial external methodology components visible in the submission are attributed to SPORCO, and the report distinguishes those components from the submitted iteration and driver. No prohibited or falsely authored external methodology code was identified.",
+      "evidence": [
+        "task_spec.md:145 permits SPORCO and named standard-library methodology components with attribution.",
+        "proposal/report.tex:1148-1155 explicitly attributes array layout, constraint projection, low-rank solvers, FFT wrappers and sparse coding to SPORCO.",
+        "proposal/codebase_notes.md:19-34 identifies inspected SPORCO modules, the behavior reused from each, and components excluded from the implementation.",
+        "proposal/code/template.py imports and calls SPORCO numerical kernels; proposal/code/driver.py:22-25 and 65-78 uses the attributed layout, FFT and sparse-coding components.",
+        "proposal/codebase_notes.md:23-26 acknowledges reproduced objective evaluation, alternation order and momentum behavior rather than presenting them as independently invented."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

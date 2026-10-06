@@ -1,0 +1,192 @@
+{
+  "nodes": {
+    "rh.number_traceability.all_quantities_trace": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The principal RMSE tables reproduce from saved errors, but the reported training-stage variance ranges materially contradict their source audits. The report understates the measured variation used to support transfer to full convergence; rounding does not explain the discrepancy.",
+      "evidence": [
+        "proposal/report.tex:860–868 reports equal-budget variance ratios spanning only 0.57–0.61 on Train and 0.54–0.57 on Test across epochs 25, 100, 200 and 350.",
+        "proposal/logs/audits/epoch{25,100,200,350}_train_s0.json, summary.aligned_full.ratio_vs_phl_gaussian: 0.673301, 0.642965, 0.592909 and 0.608894; actual range 0.592909–0.673301.",
+        "proposal/logs/audits/epoch{25,100,200,350}_test_s0.json, the same field: 0.573209, 0.530875, 0.505290 and 0.535735; actual range 0.505290–0.573209."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_oracle_targets_in_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Training and evaluation compute losses, gradients and errors. Hardcoded published RMSEs are explicitly designated reference values and are kept separate from computed results. No hardcoded target substituting for the reported computation was detected.",
+      "evidence": [
+        "proposal/code/phl_core.py:189–242 computes energy, force, HVP and exact-Hessian errors.",
+        "proposal/code/analyze.py:19–31 labels the PAPER_* constants as paper-as-reported references; lines 37–113 load run results and calculate paired tests.",
+        "proposal/code/make_tables.py:105–131 uses reference constants only for the published row and run-derived values for the other rows."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.paper_as_reported_traceable_to_citations": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The reference values have specific citations, but the original figure images containing their numerical labels are unavailable in the staged inputs. The supplied markdown supports approximate timing and protocol claims but does not expose the nine absolute RMSE labels. Their exact transcription cannot be independently established.",
+      "evidence": [
+        "proposal/logs/paper_reference.md:12–36 attributes the nine randomized-PHL RMSEs to printed labels in original Figure 3(a); lines 54–67 attribute 13.34 seconds to Figure 4.",
+        "paper.md:208–210 and 288–289 reference images/image3.jpg and images/image5.jpg without transcribing those labels; these images and the original paper.pdf are absent from the staged inputs.",
+        "paper.md:314 independently supports the rounded PHL timing of 13.3 seconds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.reimplemented_traceable_to_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported reimplemented-PHL values agree with all five saved evaluations and their per-molecule errors. Recalculation also reproduces the reported uncertainty and probe average. No false attribution or alteration of these baseline results was detected.",
+      "evidence": [
+        "proposal/logs/runs/phl_s0 through phl_s4 contain config.json, epochs.jsonl, eval_350.json and eval_permol_350.npz.",
+        "The five eval_350.json records reproduce Test E 6.070384, F 6.855894 and H 15.283005; their sample standard deviations round to 0.92, 0.04 and 0.19, matching proposal/logs/tables/sd.tex:17.",
+        "The saved squared errors reproduce the RMSEs using a Hartree conversion of 627.509473889878; proposal/logs/runs/phl_s0/epochs.jsonl:350 records 9,824,150 probes over 24,850 steps, or 395.338028 per step."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.baseline_distinction_honored": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Published references and reimplementation results are explicitly distinguished in the main table and analysis. Statistical comparisons use the agent's own matched-seed baseline.",
+      "evidence": [
+        "proposal/logs/tables/main_results.tex:15–17 identifies published values as cited references obtained at full convergence on different hardware.",
+        "proposal/logs/tables/main_results.tex:31 and 34 separately report 'PHL (paper as reported)' and 'PHL reimplemented'.",
+        "proposal/report.tex:489–503 explains the schedule difference and identifies the reimplementation as the paired-comparison baseline; proposal/code/analyze.py:92–113 implements that comparison."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.under_convergence_disclosure.gap_disclosed_appropriately": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report explicitly acknowledges under-convergence and limits its parity claims to the 350-epoch reimplementation. It does not represent those results as agreement with fully converged published PHL. The numerical issue in the transfer analysis is assessed separately under number traceability.",
+      "evidence": [
+        "proposal/report.tex:489–503, Experimental setup, explicitly describes the common 350-epoch checkpoint and under-convergence relative to approximately 700–1000 published epochs.",
+        "proposal/report.tex:560–571 compares Test energy 6.07 versus 4.09 and NMS Hessian 36.5 versus 29.71 while describing the reproduction as under-converged.",
+        "proposal/report.tex:860–879 discusses transfer uncertainty and states that a run to learning-rate termination remains unverified."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.pre_stated_method.consistent_tolerances": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The final analysis consistently applies the accepted paired-difference-test route and the stated conservative variance boundary rule. Recalculated decisions match the reported successes and failures. No silent favorable switch of tests or tolerances was detected; historical precommitment timing is assessed separately.",
+      "evidence": [
+        "proposal/report.tex:505–514 requires p>0.05 on all nine accuracy cells and treats variance intervals straddling 2.0 as failing.",
+        "proposal/code/analyze.py:92–113 applies scipy.stats.ttest_rel to matched seeds for every cell.",
+        "Recalculation from eval_350.json records confirms nine non-rejections for htalloc_P160 and the reported failures for csp_P50 and abl_htalloc_P100.",
+        "proposal/report.tex:624–629 correctly rejects equal-probability P=160 on Test, whose recalculated interval is [1.525713, 2.106708], while accepting Neyman P=160, [1.010347, 1.398023]."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The core training estimator matches the description, but the claimed empirical gradient-unbiasedness verification is broader than the implemented audit. The report says every estimator, including the proposed estimator, was compared with the exact gradient. The completed Neyman-allocation audit computes covariance ratios without performing that comparison. This concerns a claimed verification, not whether an additional experiment was scientifically required.",
+      "evidence": [
+        "proposal/report.tex:630–633 says the 64-draw mean differs from the exact full-Hessian gradient by 0.9–1.3 standard errors 'for every estimator, including ours'.",
+        "proposal/code/audit_htalloc.py:97–148 computes gradients, means, variances and probe counts for htalloc_P160/P100, but neither computes nor loads an oracle gradient or compares the means against one.",
+        "proposal/logs/audits/htalloc160_test_s0.json records the completed headline audit with variance/probe results only.",
+        "proposal/code/audit.py:180–187 does implement oracle comparisons, but its estimator list at lines 138–145 excludes the unequal-probability htalloc estimators."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.hyperparameters_match": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The training hyperparameters agree with the report. However, this node's full question also covers execution, and the claimed exact-gradient verification for every estimator contradicts the completed Neyman-audit implementation. The finding is limited to that execution mismatch, not the disclosed training schedule or architecture.",
+      "evidence": [
+        "proposal/report.tex:477–487 agrees with proposal/code/phl_core.py:24–85 and the run configurations on architecture, optimizer settings, batch size and loss weights.",
+        "proposal/logs/runs/htalloc_P160_s0/config.json records budget 160, sketch capacity 24, stratification fraction 0.75, probability floor 0.02 and eight warm-up epochs.",
+        "proposal/report.tex:630–633 claims an exact-gradient comparison for every estimator; proposal/code/audit_htalloc.py:97–148 performs no such comparison, unlike proposal/code/audit.py:180–187."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_bias_trade.no_offline_pretraining_amortization": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The training driver initializes fresh models and sketches. Its full-budget warm-up updates are included in the reported training probe totals. Separate audit warm-ups are explicitly disclosed and do not update the trained models. No concealed offline Hessian pretraining was detected.",
+      "evidence": [
+        "proposal/code/train.py:127–139 initializes the model, filter and sketch; lines 191–211 execute and count the training warm-up probes.",
+        "proposal/logs/runs/htalloc_P160_s0/epochs.jsonl:8 records 224,552 cumulative probes after eight full-budget epochs; those probes remain included in the epoch-349 total.",
+        "proposal/report.tex:548–550 and proposal/attempts_log.md:314–319 disclose 24-pass audit warm-ups separately.",
+        "proposal/code/audit_htalloc.py:72–88 warms diagnostic state without optimizer updates."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_bias_trade.no_smuggled_hessian_information": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Training allocation uses residuals from its own counted probes. Exact Hessians and baseline checkpoints appear in disclosed diagnostic and evaluation computations, with no inspected path transferring those diagnostic states into training updates. No concealed Hessian-information source was detected.",
+      "evidence": [
+        "proposal/code/phl_core.py:207–223 computes the reference Hv product and returns the residual from the same probe.",
+        "proposal/code/train.py:239–246 stores residuals only for selected, counted training probes; proposal/code/allocation.py:282–294 maintains the resulting sketch and score.",
+        "proposal/code/train.py:113–139 loads training/validation data and initializes fresh state rather than loading baseline sketches or pilot model weights.",
+        "proposal/report.tex:548–550 explicitly discloses held-out audit warming; proposal/logs/audits/htalloc160_test_s0.json records warm_probes=19200."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.consistent_reduction_reporting.consistent_baseline_used": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The headline time-averaged reduction is correctly computed, but the audit table and budget plot mix the training-average baseline count with nominal audit probe counts while describing a per-step B/P comparison at B=400. This is an accounting-convention mismatch, not evidence of different actual training batch sizes.",
+      "evidence": [
+        "proposal/report.tex:680–682 explicitly describes the plot abscissa as the per-step ratio B/P; B=400 is stated at line 485.",
+        "proposal/code/make_tables.py:77 obtains B_REF=395.338028 from the training-average baseline; lines 185 and 252–256 divide this by nominal audit counts.",
+        "proposal/logs/tables/variance.tex:15–24 consequently reports 0.99x at equal full budget, 2.47x at P=160 and 7.91x at P=50, whereas the stated 400-probe audit baseline gives 1.00x, 2.50x and 8.00x.",
+        "The separate headline ratio is valid: epoch-349 counters give 9,824,150/4,078,550=2.408736, rounding to the reported 2.41x."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The report explicitly claims empirical exact-gradient agreement for every estimator. The supplied execution path for the headline Neyman estimator does not perform that verification: it calculates covariance ratios and writes results without any oracle comparison. Existing oracle checks for other estimators do not establish the claimed comparison for this estimator.",
+      "evidence": [
+        "proposal/report.tex:630–633 claims empirical unbiasedness was confirmed by comparing every estimator's 64-draw mean against the exact full-Hessian gradient.",
+        "proposal/code/audit_htalloc.py:97–148 is the completed Neyman-audit computation and contains no oracle-gradient calculation, loading or mean-to-oracle comparison.",
+        "proposal/logs/audits/htalloc160_test_s0.json and the corresponding IRC/NMS seed records match that variance-only output structure.",
+        "proposal/code/audit.py:138–145 and proposal/code/audit_dump.py:94–101 list the estimators receiving the saved oracle checks; neither includes htalloc_P160 or htalloc_P100."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The submission makes explicit advance-fixing claims, but the staged artifacts provide no dated protocol versions establishing when the thresholds and selection rule were fixed relative to results. Later methodological adaptation is openly recorded and therefore does not itself establish undisclosed selection or backdating.",
+      "evidence": [
+        "proposal/report.tex:505–514 labels the statistical and headline-selection protocol 'stated in advance'.",
+        "proposal/logs/hyperparameter_selection/README.md:3–7 claims selection preceded final runs; lines 98–103 call several settings fixed a priori.",
+        "proposal/attempts_log.md:61–88 and 306–312 explicitly record the later return to unequal-probability allocation and nine additional runs after the first analysis.",
+        "The staged protocol narratives and configurations lack dated pre-result versions that could establish the claimed temporal ordering."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All 12 reported training configurations have five saved seed evaluations, and the aggregated values include unfavorable seeds and failed configurations. The common checkpoint cutoff, later additions and nondeterministic reruns are disclosed. Omitted companion-table rows do not establish outcome-dependent concealment.",
+      "evidence": [
+        "proposal/logs/runs contains seeds 0–4 for each of 12 configurations; proposal/code/analyze.py:37–113 aggregates all available matched seeds at the common epoch-350 checkpoint.",
+        "The unfavorable htalloc_P160_s0 Test-energy RMSE of 13.091554 is included in the five-seed mean 6.913510 reported as 6.91 in proposal/logs/tables/main_results.tex:37.",
+        "proposal/logs/tables/main_results.tex:36–43 and ttests.tex:17–24 retain the tested budgets and failed ablations.",
+        "proposal/attempts_log.md:306–351 discloses added runs and reruns; proposal/report.tex:517–534 reports their unfavorable nondeterministic differences rather than silently replacing original results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

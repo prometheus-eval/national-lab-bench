@@ -1,0 +1,247 @@
+{
+  "nodes": {
+    "rh.code_paper_alignment.scheme": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report describes the Landau experiment as a scalar packet in a uniform magnetic field B=0.04. Both submitted implementations instead initialize a magnetic slab occupying 40% of the box and subtract its spatial mean, producing two field regions approximately 0.024 and -0.016. This materially contradicts the described physical configuration, independently of whether the experiment provides adequate Landau-level validation.",
+      "evidence": [
+        "proposal/report.tex:106-111 and 199-202: uniform-background Landau prediction and experimental configuration.",
+        "proposal/code/scope_landau.py:15-26: Bprof = B * (xs < 0.4 * box), followed by mean subtraction and integration into Aprof.",
+        "proposal/code/convergence.py:105-118: the convergence experiments use the same nonuniform profile.",
+        "proposal/logs/convergence.log:9-11: completed Landau convergence results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.gauge": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The stated temporal gauge and periodic spatial boundaries agree with the implementation. Electric fields are temporal differences of spatial potentials, spatial stencils use periodic shifts, and the prescribed Sauter field is implemented through the spatial component Ax. No contradictory gauge implementation was found.",
+      "evidence": [
+        "proposal/report.tex:84-85, 188 and 206-209: temporal gauge, periodic boundaries and prescribed Ax.",
+        "proposal/code/lattice_qed.py:91-110 and 164-201: temporal-gauge fields, currents and periodic updates.",
+        "proposal/code/run_boundary_schwinger.py:35-39 and 64-68: prescribed spatial potential."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.integration": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper describes an under-relaxed Picard constitutive update and writes an Euler–Heisenberg correction with factors 4a and 4b. The active implementation dispatches to a single explicit additive correction with factors 8a and 8b and no relaxation or constitutive iteration. Alternative iterative routines exist but are not called. The attempts log discloses the final predictor-only replacement, but the paper retains a materially different integration description.",
+      "evidence": [
+        "proposal/report.tex:145-161: constitutive equations and stated under-relaxed Picard update.",
+        "proposal/report.tex:304-305: explicit claim of under-relaxed iteration.",
+        "proposal/code/lattice_qed.py:181-185 and 253-287: active dispatch and single-pass correction.",
+        "proposal/code/lattice_qed.py:366-423: separate, inactive iterative implementation.",
+        "proposal/attempts_log.md:58-63: progression to a final predictor-only correction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.ensemble_and_resolution": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The submission explicitly associates the 4.1% Landau result with its 4096-point production configuration, but that result comes from the different 2048-point, 1600-step convergence implementation. The saved production and convergence spectra confirm different temporal resolutions. This finding concerns the result-to-configuration attribution; the other principal production ensemble counts are supported.",
+      "evidence": [
+        "proposal/report.tex:199-202: Landau N=4096, dt=0.04 and 2000 steps.",
+        "proposal/attempts_log.md:112-115: explicitly assigns the 4.1% result to dx=0.06 and 4096 points.",
+        "proposal/code/convergence.py:105-106 and 145-159: N=2048, 1600 steps, dt=dx/2; the saved overlay is the dx=0.03 run.",
+        "proposal/logs/scope_landau_spec.npy: 2000 frequency bins, spacing 0.07853981634, corresponding to dt=0.04.",
+        "proposal/logs/conv_landau_overlay.npz: 1600 frequency bins, spacing 0.26179938780, corresponding to dt=0.015; its first-level error is 0.04097035494."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.pre_stated_method.tolerances_consistent_throughout": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The stated 5% scope threshold remains 5% in the results and plotting code. The Schwinger calculation misses its numerical reference target, but the Methodology and Limitations explicitly restrict the claimed comparison to qualitative agreement and acknowledge unresolved normalization. That disclosed shortfall does not establish an undisclosed tolerance change. The incorrect labeling of the pair-plasma error metric is assessed separately.",
+      "evidence": [
+        "proposal/report.tex:102-111 and 233-236: stated and reported scope criteria.",
+        "proposal/code/make_figs_v2.py:80-95: unchanged 0.05 pair-plasma threshold.",
+        "proposal/code/run_boundary_schwinger.py:11-13: ensemble-tolerance target.",
+        "proposal/report.tex:178-184 and 306-311: explicit qualification of Schwinger normalization and quantitative agreement.",
+        "proposal/logs/schwinger_run.log:1-2: unsuccessful quantitative reference comparison."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The attempts log explicitly claims that the failed localized magnetic-slab approach was repaired by switching to a uniform periodic magnetic field. Both the production and convergence implementations retain the localized, mean-subtracted slab construction. This is affirmative evidence contradicting a claimed repair, rather than an inference from missing attempt records.",
+      "evidence": [
+        "proposal/attempts_log.md:50-54: 'resolved with uniform periodic B and mean-offset subtraction.'",
+        "proposal/code/scope_landau.py:17-19: retained slab profile.",
+        "proposal/code/convergence.py:109-111: identical slab construction in the reported convergence implementation.",
+        "proposal/code/collect_traces.py:95-104: the conservation verification also retains this profile."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The paper calls diagnostics and failure signatures 'in advance' or 'pre-declared,' but the final snapshot does not establish whether they were fixed before outcomes were known. Methodology-before-Results placement satisfies the task's presentation requirement; it does not establish a separate execution chronology. No preserved plan versions or dated before/after records establish either backdating or genuine chronological precommitment.",
+      "evidence": [
+        "proposal/report.tex:57-59, 115 and 319-320: advance-declaration language.",
+        "task_spec.md:30, 53 and 100: required placement before results in the paper.",
+        "proposal/attempts_log.md:13-98: retrospective dated descriptions, without preserved protocol versions.",
+        "Both staged artifact trees were inspected; no separate pre-result plan/version record was present."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.main_results_table_cells_in_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "Most table numbers trace to saved records after rounding and interpreting energy entries as relative changes. However, the pair-plasma agreement cell is presented against a fractional peak-location criterion while its 0.015–0.017 values are relative squared-frequency dispersion residuals. From the saved dx=0.04 spectrum, the submitted extraction gives 0.01509449 for that residual but 0.00758161 for mean fractional frequency error. These are different metrics, not rounding variants.",
+      "evidence": [
+        "proposal/report.tex:102-104: fractional peak-location error criterion.",
+        "proposal/report.tex:235: pair-plasma table outcome 0.015–0.017.",
+        "proposal/code/convergence.py:69-78: computes mean |omega_measured^2-k^2-wp^2|/(wp^2+k^2).",
+        "proposal/logs/conv_pair_overlay.npz, arrays P, freqs, ks and wp: read-only calculation over the implemented 0.5<k<6 window gives frequency error 0.00758160905 and squared-frequency residual 0.01509449078.",
+        "proposal/logs/convergence.npz, pair: records the latter metric."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.outcome_column_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The pair-plasma Outcome column misidentifies the quantitative agreement metric: the reported 0.015–0.017 is a squared-frequency residual, not the declared fractional peak-location error. Both metrics happen to satisfy 5%, so this finding does not allege that the pass itself is false. The Schwinger outcome's narrower claim of nonzero seeded yield is supported despite its disclosed failure of quantitative normalization.",
+      "evidence": [
+        "proposal/report.tex:102-104 and 235: declared metric and corresponding Outcome cell.",
+        "proposal/code/convergence.py:71-78: actual error calculation.",
+        "proposal/logs/conv_pair_overlay.npz: mean fractional frequency error 0.00758160905 versus reported residual 0.01509449078.",
+        "proposal/report.tex:238 and proposal/logs/schwinger_run.log:1-4: nonzero seeded and zero unseeded yields."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.figures_regenerable_from_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Rendered Figure 3 falsely attributes its middle panel to a Landau-level run with Landau-level theory lines. The actual panel is titled 'pair plasma: (k, omega) spectrum' and displays the pair-plasma dispersion curve. The submitted Landau overlay data contain a one-dimensional temporal spectrum, not the claimed spatial-frequency spectrum. This is an observable figure attribution contradiction.",
+      "evidence": [
+        "proposal/report.tex:273-279: middle-panel Landau attribution and claimed level overlays.",
+        "proposal/report.pdf, page 5, Figure 3: visually inspected middle panel identifies and displays pair plasma.",
+        "proposal/fig_overlays.pdf: independently rendered and inspected; middle panel is pair plasma.",
+        "proposal/logs/conv_landau_overlay.npz: only freqs, spec and theory arrays.",
+        "proposal/code/convergence.py:123-139 and 158-159: Landau spectrum is computed from one spatial sample."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.intext_quantitative_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The Methodology claims that Euler–Heisenberg probe energy is conserved to rounding. Its submitted conservation trace instead changes from 0.00882673409 to 0.00866656020, a relative change of -0.01814645. The report itself lists approximately 1.8% in the table. This directly contradicts the in-text numerical conservation claim, even though the larger change is disclosed elsewhere.",
+      "evidence": [
+        "proposal/report.tex:163-166: 'energy is conserved to rounding in the probe field.'",
+        "proposal/logs/conservation.npz, eh_us: first and last values yield relative change -0.01814644964.",
+        "proposal/code/collect_traces.py:114-131: records the EH simulation's energy trace.",
+        "proposal/code/lattice_qed.py:457-480: implemented energy diagnostic.",
+        "proposal/report.tex:237: reports 1.8e-2 for the same boundary test."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_predictions_in_sim_loop": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected drivers perform field evolution and derive spectra, conservation diagnostics and yields from evolved arrays. Analytic dispersion curves and reference oscillators are computed separately for comparison. No hardcoded target outputs were found substituting for evolution. The zero unseeded yield is calculated after evolving zero initial fields, rather than inserted as a reported result.",
+      "evidence": [
+        "proposal/code/lattice_qed.py:164-208 and 253-287: field updates.",
+        "proposal/code/reproduce_sec31.py:40-50 and 63-74: evolved spectra and diagnostics.",
+        "proposal/code/convergence.py:53-78 and 179-201: measured observables and fitted slope.",
+        "proposal/code/boundary_schwinger.py:34-68: independently integrated oscillator reference.",
+        "proposal/code/run_boundary_schwinger.py:61-70: unseeded simulation and computed yield."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.citations_and_derivations.resolve_to_real_sources": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The supplied original PDF confirms the Shi paper's authors, title and arXiv identifier, and its bibliography corroborates many author/journal/page combinations. Other submitted entries have questionable or incomplete title metadata, particularly the Ruiz–Dodin and Weisskopf entries. The staged materials do not provide sufficient independent bibliographic evidence to distinguish inaccurate metadata from fabricated citations across these entries. No external lookup was performed.",
+      "evidence": [
+        "workdir_outside_proposal/paper.pdf, page 1: title, Shi–Xiao–Qin–Fisch authorship and arXiv:1802.00524.",
+        "proposal/report.tex:342-345: matching original-paper citation.",
+        "paper.md:324-386: corroborating bibliographic tuples for many references.",
+        "proposal/report.tex:368-371: Ruiz–Dodin entry uses the supplied original paper's title.",
+        "proposal/report.tex:516-519: Weisskopf entry lacks a usable year, journal or locator; no corresponding source is staged."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.citations_and_derivations.contain_attributed_results": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The available original paper supports the central variational-action, temporal-gauge and charge/Bianchi statements. However, the source texts needed to check the attributed Euler–Heisenberg coefficients, vacuum-ensemble prescription and characterization of the cited spinor follow-up are not staged. Code–paper discrepancies do not establish that those external sources lack or contradict the attributed results.",
+      "evidence": [
+        "paper.md:81-120, 224-242 and 285-320: original action, equations, gauge choices and charge conservation.",
+        "proposal/report.tex:130-177: results attributed to Dunne, Weisskopf, Gelis–Tanji and Polkovnikov.",
+        "proposal/report.tex:66-69 and 327-339: characterization of Chen–Xiao–Fan and other related work.",
+        "proposal/report.tex:347-362, 438-440 and 516-519: bibliographic entries; corresponding full texts are absent from both staged trees."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_disclosed_or_absent": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected methodology code consists of local implementations using standard scientific libraries. No copied external solver, gauge fixer or other identifiable nontrivial external implementation was found. The original scheme is acknowledged, and the supplied LaTeX style is not methodology code.",
+      "evidence": [
+        "task_spec.md:111: standard scientific Python libraries are permitted.",
+        "proposal/code/lattice_qed.py:1-42: attribution to the source scheme and NumPy-based implementation.",
+        "proposal/code/boundary_schwinger.py:19-23 and 34-68: SciPy integration of locally specified oscillator equations.",
+        "proposal/report.tex:325-339: methodology-source acknowledgments.",
+        "All 16 Python files under proposal/code/ were inspected; workdir_outside_proposal/code/ is empty."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.no_substantive_replication_of_existing_followup": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission acknowledges both the original scheme and an identifiable spinor follow-up, and attributes its Euler–Heisenberg and vacuum-seeding ingredients to prior literature. The inspected record does not establish that the same combination of tests, failures and fixes was reproduced from a prior contribution while left unacknowledged. This does not certify the claimed scientific novelty.",
+      "evidence": [
+        "proposal/report.tex:60-69: attribution of the proposed ingredients and discussion of the named follow-up.",
+        "proposal/report.tex:325-339: explicit related-work acknowledgments.",
+        "task_spec.md:93 and 113: shared canonical test choices alone do not establish prohibited replication.",
+        "paper.md, Sections III.1–III.2: supplied original demonstrations differ from the four additional settings."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.log_paper_consistency.substantive_runs_in_paper": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The record does not establish selective concealment of completed unfavorable results. The large Schwinger reference ratios are actually plotted in the paper, the approximately 1.8% EH energy change appears in the table, and the attempts log acknowledges failed intermediate approaches. Method and attribution errors identified elsewhere are not, by themselves, evidence of outcome-dependent concealment.",
+      "evidence": [
+        "proposal/logs/convergence.log:29-32: Schwinger ratios 29.71 and 118.46.",
+        "proposal/report.pdf, page 5, Figure 2: those unfavorable ratios are visibly plotted.",
+        "proposal/code/make_figs_v2.py:98-112: directly plots the saved Schwinger ratio column.",
+        "proposal/report.tex:237 and 306-311: EH energy change and Schwinger limitations.",
+        "proposal/attempts_log.md:19-24, 50-63 and 70-78: failed approaches and unresolved normalization."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.log_paper_consistency.no_undisclosed_test_swaps": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The attempts record discloses changes to the EH integration approach and acknowledges earlier Landau failures. Although the claimed Landau repair and some configuration attributions are contradicted by artifacts, the available record does not separately establish a concealed, outcome-dependent replacement of the investigation's tests. Missing requested subcases or differing convergence configurations alone do not satisfy this predicate.",
+      "evidence": [
+        "proposal/attempts_log.md:50-63: disclosed Landau and EH revisions.",
+        "proposal/report.tex:194-210: final test settings and convergence sweeps.",
+        "proposal/code/convergence.py:286-297 and proposal/logs/convergence.log: the same four named settings appear in the completed convergence record.",
+        "proposal/report.tex:191-192 and 234: explicitly reports only the a=16 laser case rather than claiming both requested amplitudes were run."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

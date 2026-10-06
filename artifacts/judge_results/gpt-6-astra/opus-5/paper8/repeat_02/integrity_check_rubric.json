@@ -1,0 +1,199 @@
+{
+  "nodes": {
+    "number_traceability.errors_and_margins_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The enlarged control is reported as having 474,815 encoder parameters, but one of its three included runs has 356,450. This materially contradicts the reported parameter count and result provenance. The numerical error averages themselves are supported by saved data.",
+      "evidence": [
+        "proposal/sections/07a_narrative.tex:16-25 reports a 474,815-parameter control and its error of 0.6628.",
+        "proposal/logs/probe/probe3x_naive_s2.json: width=400, spec_encoder_params=356450, job.width=400, and history[-1].epoch=60000.",
+        "proposal/code/mechanism.py:165-197 includes probe seeds 0, 1, and 2; proposal/logs/ood.json, width_probe.naive.mean[-1]=0.6627894044.",
+        "Read-only checks of all 265 run records found their per-specification means consistent with recorded aggregate errors; all 265 stdout completion summaries agree within displayed rounding."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.breadth_and_latent_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The latent-distance figure uses materially different normalization from its caption. Distances already normalized by the trained-set pairwise median are divided again by each arm's held-out-distance median, multiplying displayed values by 2.790 and 3.220. Inspection of the saved PDF coordinates confirms this transformation. The correlations are unchanged, and the inspected breadth counts and tabulated latent statistics otherwise trace to saved records.",
+      "evidence": [
+        "proposal/sections/06_mechanism.tex:16-21 specifies normalization by the median pairwise distance among trained specifications.",
+        "proposal/code/mechanism.py:67-86 applies that normalization when producing distance.d_latent.",
+        "proposal/code/figures.py:141-148 additionally plots d_latent/median(d_latent).",
+        "proposal/logs/mechanism_core_cr.json: modal and naive medians of d_latent are 0.3584698588 and 0.3105211556. Their first distances change from 0.2110106200 and 0.1498574764 to 0.5886425730 and 0.4825998926.",
+        "proposal/figs/latent_core_cr.pdf, right-panel vector coordinates: the first modal marker agrees with the additional normalization, not the caption's normalization.",
+        "proposal/logs/mf/mf5_modal_s0.json contains 552 training specifications across five PDE families; proposal/logs/bc/bc3_modal_s0.json contains 468 training and 1,668 distinct evaluation specifications, supporting proposal/tables/breadth.tex."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_reference_or_encodings": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected implementation computes reference solutions, specification features, predictions, and errors. Analytic operator features and fixed specification definitions are disclosed method components; no hardcoded target or oracle output was found substituting for a computation presented as performed.",
+      "evidence": [
+        "proposal/code/ref_bridge.py:58-75 calls the staged reference solvers with the requested initial-condition callable.",
+        "proposal/code/bc_solver.py implements the nonperiodic reference construction; proposal/logs/reference_validation.json contains overlap, refinement, and method-of-lines comparisons.",
+        "proposal/code/features.py:94-146 computes modal and operator features from the supplied specification.",
+        "proposal/code/train_eval.py:198-220 computes and records final predictions' per-specification errors and parameter counts."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported capacity-probe configuration does not describe all runs producing its results. Control seeds 0 and 1 use width 465, but seed 2 uses width 400 and completes the full probe. The discrepancy is about executed settings, not failure to attain a scientific target.",
+      "evidence": [
+        "proposal/sections/07a_narrative.tex:16-25 describes the enlarged control as matched to 474,815 encoder parameters.",
+        "proposal/logs/probe/probe3x_naive_s0.json and probe3x_naive_s1.json record width=465 and spec_encoder_params=474815.",
+        "proposal/logs/probe/probe3x_naive_s2.json records width=400, spec_encoder_params=356450, epochs=60000, and n_f=2000.",
+        "proposal/logs/probe/probe3x_naive_s2.pt has cfg.width=400 and encoder weight shapes consistent with width 400.",
+        "proposal/code/mechanism.py:189-197 aggregates all three probe checkpoints."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_and_control_honesty.numbers_from_own_runs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The enlarged naive-control result is falsely attributed to a uniformly capacity-matched set of own runs. It includes the smaller seed-2 model, whose encoder has about 25% fewer parameters than the structured probe. This finding concerns matched-setup attribution; the inspected baseline and control errors are actual saved run results.",
+      "evidence": [
+        "proposal/sections/07a_narrative.tex:18-24 attributes the reported control error to a 474,815-parameter matched control.",
+        "proposal/logs/probe/probe3x_naive_s2.json records 356450 encoder parameters, versus 475550 for the structured probe.",
+        "proposal/logs/ood.json: width_probe.naive.raw[-1]=[0.6710615754,0.6831530333,0.6341536045], averaging to the reported 0.6628.",
+        "proposal/code/mechanism.py:165-192 loads those results from probe3x_naive_s0, s1, and s2 without excluding the capped checkpoint.",
+        "proposal/logs/RESULTS_SUMMARY.json, controls.probe_naive, labels seeds [0,1,2] with the first run's 474815 parameter count; proposal/code/summarise.py:33-37 explains that first-run metadata assignment."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "attribution_integrity.non_degenerate_integrity": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implementation routes specification features through the learned encoder, and saved ablations support actual use of IC conditioning. The inspected evidence does not show a collapsed or unused encoding presented as functional. The periodic/Neumann equivalence in the boundary study is explicitly acknowledged.",
+      "evidence": [
+        "proposal/code/models.py:159-180 encodes specifications and concatenates their embeddings with coordinate embeddings.",
+        "proposal/logs/mechanism_core_cr.json: between_ic_frac=0.6919979453 for the structured encoder and 0.7905421853 for the control.",
+        "proposal/logs/ablation_core_cr.json, conditioning_removed.modal.unseen_ic_gauss: true=0.3063299259, shuffled_ic=0.4223634799, and training_ic_1+sin(x)=0.4915833374.",
+        "proposal/logs/bc_mechanism.json records nonzero between-boundary variance for both arms.",
+        "proposal/sections/08a_bc_narrative.tex and proposal/tables/breadth.tex disclose that the three boundary specifications represent two distinct boundary-value problems."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper claims equal added encoder capacity for the enlarged comparison, while an included control run violates that matching condition by about 25%. The attempts record claims this discrepancy was repaired rather than disclosing its inclusion. The finding does not rely on the openly disclosed enlargement of the probe budget.",
+      "evidence": [
+        "task_spec.md:151 specifies that added conditioning capacity is given equally to the naive control; line 157 distinguishes disclosed deviations from false compliance claims.",
+        "proposal/sections/07a_narrative.tex:16-25 claims the enlarged control is matched to the structured encoder.",
+        "proposal/attempts_log.md:103-112 identifies the width-400 capacity deficit but asserts all affected runs were replaced and none is reported.",
+        "proposal/logs/probe/probe3x_naive_s2.json and its checkpoint retain width 400 and 356450 encoder parameters, versus 475550 in the structured probe.",
+        "proposal/code/mechanism.py:189-197 includes seed 2 in the reported probe aggregate."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "There are concrete implementation/report contradictions: the capacity probe includes a smaller control architecture than described, and the latent-distance plotting code applies an additional normalization absent from the caption. These are observable method and parameter discrepancies, independent of the scientific adequacy of the method.",
+      "evidence": [
+        "proposal/sections/07a_narrative.tex:16-25 versus proposal/logs/probe/probe3x_naive_s2.json and probe3x_naive_s2.pt: claimed 474815-parameter control versus executed 356450-parameter control.",
+        "proposal/sections/06_mechanism.tex:16-21 versus proposal/code/figures.py:141-148: trained-set normalization claimed, additional held-out-median normalization plotted.",
+        "proposal/code/mechanism.py:67-86 shows that the distances supplied to the plotting function already have the caption's stated normalization.",
+        "proposal/figs/latent_core_cr.pdf confirms the plotting code's additional rescaling."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The claimed repair of all capped probe runs is affirmatively false in the submitted execution record. Seed 2 completed 60,000 epochs at the capped width, retained that architecture in its checkpoint, and was included in the reported analysis.",
+      "evidence": [
+        "proposal/attempts_log.md:111-112: 'The three affected runs were killed within a minute of starting and relaunched at W=465; no capped run is reported.'",
+        "proposal/logs/probe/probe3x_naive_s2.json: job.width=400; history[-1].epoch=60000; history[-1].sec=13032.3.",
+        "proposal/logs/stdout/probe3x_naive_s2.log contains the completed run's evaluation summary.",
+        "proposal/logs/probe/probe3x_naive_s2.pt retains width-400 encoder weights.",
+        "proposal/code/mechanism.py:189-197 includes this checkpoint in the three-seed probe analysis."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The record does not establish undisclosed post-result selection or backdating. The setup misidentifies which two core families were originally registered, but the saved plan and explicitly referenced attempts record disclose the actual additions and their outcome-informed motivation. Those disclosures do not prove that every timing requirement was satisfied, but they prevent treating the additions themselves as undisclosed selection.",
+      "evidence": [
+        "proposal/code/specification_encoder_plan.json records generated_utc=2026-09-05T12:15:23.123200+00:00, the threshold/noise rules, validation protocol, and original reaction-diffusion and reaction families.",
+        "proposal/logs/PLAN_TIMESTAMP.txt records 2026-09-05T12:15:23Z.",
+        "proposal/sections/04_setup.tex:13-24 incorrectly identifies the original pair while explicitly referring readers to the additions record.",
+        "proposal/attempts_log.md:A8 and A10 disclose convection-reaction additions after earlier results and explain their motivations.",
+        "proposal/codebase_notes.md:171-189 also distinguishes the added families and expanded reaction seed count."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_training_on_held_out.held_out_specs_never_trained": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No prohibited training or hyperparameter-selection use of headline unseen specifications was found. Saved training keys are disjoint from the corresponding unseen/OOD evaluation keys. The sweep uses seen-specification validation only, and retraining on held-out profiles is explicitly labeled as an oracle diagnostic.",
+      "evidence": [
+        "Read-only comparison of train_keys with every unseen*/ood* result's keys across all 265 run JSONs found no intersections.",
+        "All 30 proposal/logs/sweep/*.json records contain only val_seen results; their validation means support proposal/logs/hyperparameter_selection.json.",
+        "proposal/code/datasets.py:79-127 fits feature standardization on training specifications; proposal/code/train_eval.py:184-213 uses training-specification validation and final evaluation.",
+        "proposal/logs/bc/bc2_modal_s0.json trains only periodic and Dirichlet specifications; its Neumann evaluation keys are absent from train_keys.",
+        "proposal/logs/mf/mf3_noconv_modal_s0.json trains diffusion, reaction, and reaction-diffusion, excluding the convection-bearing evaluation families.",
+        "proposal/sections/06a_narrative.tex:40-47 explicitly describes the oracle as retrained on the held-out profile itself."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_specs_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No affirmative evidence shows completed unfavorable outcomes hidden through outcome-dependent selection. Aggregation uses run groups without performance filtering, and the submission retains failed non-regression checks, adverse ablations, rejected hypotheses, failed transfer attempts, and the denser-control result that caused its earlier advantage claim to be withdrawn.",
+      "evidence": [
+        "proposal/code/agg.py:21-48 loads matching run records and aggregates their results without error-based filtering.",
+        "proposal/code/make_tables.py:838-866 uses the intersection of seed identifiers for paired denser-control comparisons.",
+        "proposal/sections/05a_narrative.tex:25-38 reports failed non-regression; its representation discussion withdraws the strong-control advantage claim.",
+        "proposal/attempts_log.md:A9-A11, A14-A15, and A18 document rejected hypotheses, added seeds, unmet decision criteria, failed mitigation, and the withdrawn claim.",
+        "proposal/sections/08b_family_narrative.tex reports unsuccessful held-out-PDE-type transfer and mitigation.",
+        "The 265 saved run JSONs each have a matching, numerically consistent stdout completion record."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "Within the supplied evidence, no identifiable prior contribution is reproduced and presented as new without acknowledgment. The inherited P2INN architecture is attributed, relevant operator-learning and conditioning approaches are cited, and the report explicitly calls its individual ingredients standard. This finding does not certify novelty.",
+      "evidence": [
+        "paper.md describes the source P2INN architecture and coefficient-conditioning contribution.",
+        "proposal/sections/09_related.tex:4-15 attributes the adopted P2INN factorization and related parametric approaches.",
+        "proposal/sections/09_related.tex discusses DeepONet, neural operators, Deep Sets, conditional neural fields, and HyPINO.",
+        "proposal/sections/09_related.tex:68-81 identifies the proposed contribution as a controlled comparison and explicitly states that the individual ingredients are standard.",
+        "proposal/refs.bib includes the corresponding references."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected code acknowledges reuse of the provided P2INN implementation and attributes the standard scientific libraries it uses. No affirmative evidence identifies prohibited external core-code reuse or external methodology code falsely represented as original.",
+      "evidence": [
+        "proposal/codebase_notes.md:8-31 cites the source paper and identifies transcribed model/loss components and imported reference solvers.",
+        "proposal/codebase_notes.md:131-144 distinguishes authored components and attributes PyTorch, NumPy, SciPy, Matplotlib, and scikit-learn.",
+        "proposal/code/ref_bridge.py:1-29 documents and imports the supplied reference implementation, staged under workdir_outside_proposal/code/P2INN/.",
+        "proposal/code/models.py:125-181 labels the reused P2INN body; the specification encoder, feature construction, and nonperiodic solver are separately implemented in the submitted code."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

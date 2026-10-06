@@ -1,0 +1,281 @@
+{
+  "nodes": {
+    "rh.number_traceability.main_table_values_traceable": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The main table's numerical estimates and interval bounds reproduce the saved results after rounding. Recalculation from all 80,000 chromatic fit records exactly reproduces the summary, including the selection-aware comparison.",
+      "evidence": [
+        "proposal/report.tex:327-353, Table 1.",
+        "proposal/logs/summary.json:4-139: M2 mean -0.2744004690; M2-M1 mean 0.0058975867; M2-best-M3 mean 0.2809248855, CI [-0.0477063524, 0.6543693167].",
+        "proposal/logs/chromatic_cv_results.jsonl: 10,000 records for each of eight models, covering folds 0-9 and bootstrap indices 0-999.",
+        "proposal/code/summarize.py:30-68 implements the corresponding aggregation and within-resample control selection."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.parameter_estimates_traceable": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Reported fitted parameters, recovery estimates, and plotted curves trace to saved parameter records and explicit transformations. No fabricated or altered parameter estimate was detected.",
+      "evidence": [
+        "proposal/report.tex:308-317 reports gray a=3.86, b=2.37, f(15)=1.38, f(30)=2.09 and subadditivity 0.68.",
+        "proposal/logs/summary.json:273-291 gives a=3.8570114345, b=2.3679961453, f(15)=1.3843020265, f(30)=2.0921735362 and subadditivity 0.6764305169; these reproduce from gray_cv_results.jsonl.",
+        "proposal/logs/identifiability_recovery_raw.jsonl:1 contains 100 recovered parameter vectors; their means reproduce [0.9573, 0.9629, 0.5494] in identifiability_recovery_summary.jsonl:1.",
+        "proposal/code/figures.py:27-49 and 75-100 reconstruct the displayed gray and cone curves and percentile bands from logged fits."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.prose_claims_consistent": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper materially misstates the gray dataset's coverage as 75 triads. Both the executed-run metadata and the supplied observations establish 320 distinct triads for the reported 91,896 trials; this is not a rounding or unit difference.",
+      "evidence": [
+        "proposal/report.tex:246-249 describes the analyzed gray dataset as '75 triads, ~91,896 trials'; the same claim appears in report.pdf, page 4.",
+        "proposal/logs/gray_fit_start.jsonl:1-4 consistently records n_trials=91896 and n_triads=320.",
+        "workdir_outside_proposal/data/gray/gray_complete_data_release.csv contains 91,896 observations and 320 unique (Ls, Lt1, Lt2) tuples.",
+        "proposal/code/gray_replication.py:265-279 constructs and logs triad counts using those three stimulus coordinates."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_hardcoded_fit_targets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected fitting and reporting code computes estimates from observations and saved fit records. Initialization constants, fixed color transforms, cited reference values, and explicitly synthetic recovery parameters do not substitute for fitted results.",
+      "evidence": [
+        "proposal/code/chromatic_fit.py:141-182 optimizes the observation likelihood; gray_replication.py:102-158 estimates gray scaling parameters.",
+        "proposal/code/summarize.py:30-113 derives reported statistics from the result files.",
+        "proposal/code/identifiability.py:113-127 explicitly defines known parameters for synthetic recovery.",
+        "proposal/report.tex:125-133 attributes a=5.34 and b=2.34 to the 2022 paper; the submission's own fitted values differ and are logged."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_oracle_leakage": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No reference-answer or oracle output feeds the empirical fits. Known generating parameters are confined to the permitted, labeled identifiability analysis.",
+      "evidence": [
+        "proposal/code/chromatic_fit.py:46-108 loads the provided stimulus tables and human dissimilarities.",
+        "proposal/code/gray_replication.py:213-255 loads human gray responses and fits the models.",
+        "proposal/code/identifiability.py:92-127 separates synthetic generation and recovery from the empirical comparison.",
+        "Independent evaluation of saved parameters on the provided observations reproduces sampled chromatic NLLs within rounding error and the sampled gray baseline, g-only and log-fit NLLs exactly."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.test_set_integrity.bootstrap_from_training_set": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented chromatic and gray bootstraps sample only the corresponding training folds. Held-out responses are evaluated after fitting and do not enter these resamples.",
+      "evidence": [
+        "proposal/code/chromatic_fit.py:262-276 constructs train_idx as the complement of test_idx and samples boot exclusively from train_idx.",
+        "proposal/code/chromatic_fit.py:185-194 fits on the resampled training indices and evaluates on test_idx.",
+        "proposal/code/gray_replication.py:267-276 separates complete triads; lines 219-249 resample train and subsequently evaluate test.",
+        "proposal/logs/chromatic_cv_results.jsonl and gray_cv_results.jsonl contain the corresponding fold/bootstrap records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.test_set_integrity.test_set_for_evaluation_only": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "No prohibited held-out response flow is visible in the inspected fitting procedures. Restarts are selected by training likelihood, and nuisance parameters are trained without test responses. Selecting the best M3 comparator within each resample is expressly required by the task.",
+      "evidence": [
+        "proposal/code/chromatic_fit.py:169-176 selects optimizer restarts using the training objective; lines 188-194 separate fitting and evaluation.",
+        "proposal/code/identifiability.py:266-294 fits coarse models and observation links on training pairs before scoring test pairs.",
+        "proposal/code/chromatic_fit.py:69-81 computes disclosed normalization from stimulus coordinates, without response labels.",
+        "task_spec.md:49 permits selection-aware best-M3 comparisons; proposal/code/summarize.py:56-67 implements that comparison."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.baseline_honesty.gray_replication_from_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The gray result is explicitly presented as replication of Bujack et al. rather than an unacknowledged new contribution. The submission also acknowledges the chromatic non-constancy and geometry contributions of both 2025 follow-ups.",
+      "evidence": [
+        "proposal/report.tex:116-143 distinguishes the prior gray, chromatic-line and geometry contributions from the proposed cone-alignment question.",
+        "proposal/report.tex:308-317 labels the gray analysis a replication and compares its estimates with 2022.",
+        "paper.md:233-299 reports the original gray DR analysis; lines 346-350 report its logarithmic parameters and conclusion.",
+        "proposal/report.tex:507-509 provides references for all three prior papers."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.baseline_honesty.baseline_numbers_from_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The empirical baseline and gray replication numbers reproduce the submission's saved fits. Literature comparison values are explicitly attributed and are not represented as newly executed results.",
+      "evidence": [
+        "proposal/logs/summary.json:193-218 and 237-262 gives gray g-only accuracy 0.9192557771 and log-fit accuracy 0.9343290800, with NLLs 5906.7969563 and 5852.0116107.",
+        "proposal/logs/summary.json:4-18 gives the reported chromatic M0 and M1 results.",
+        "For gray_cv_results.jsonl:1, scoring the saved parameters on the supplied fold reproduces baseline NLL 5968.3807219, g-only 5810.0142014 and log-fit 5751.1401591.",
+        "proposal/report.tex:312-314 clearly marks the reference-paper values; paper.md:329 and 346 supplies them."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper's general fitting description contradicts the implemented gray and MLDS procedures. It specifies L-BFGS-B and a B=1000 bootstrap protocol, whereas the gray fits use Nelder-Mead and the executed gray run uses only 150 resamples per fold.",
+      "evidence": [
+        "proposal/report.tex:260-269 states L-BFGS-B, 10-fold CV and B=1000 bootstrap; lines 302-306 reiterate the protocol.",
+        "proposal/code/gray_replication.py:102-158 uses Nelder-Mead for the baseline, perceptual map and difference scalings.",
+        "proposal/code/mlds_anchor.py:73-95 also uses Nelder-Mead.",
+        "proposal/logs/gray_fit_start.jsonl:4 records folds=10 and boot=150; gray_cv_results.jsonl contains exactly 1,500 unique fold/bootstrap records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.models_in_paper_match_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The executed opponent control uses different axes from the opponent model specified in the paper. Adding S to the achromatic axis and changing the relative S coefficient in another axis cannot be explained by axis scaling, sign changes or permutation; this changes the per-axis nonlinear model.",
+      "evidence": [
+        "proposal/report.tex:220-232 specifies opponent axes (L-M, S-(L+M), L+M).",
+        "proposal/code/models_bases.py:28-34 instead defines normalized axes proportional to (L+M+S), (L-M), and (L+M-2S).",
+        "proposal/code/models_bases.py:140-144 installs that matrix as the opponent basis.",
+        "proposal/logs/chromatic_pairs_meta.jsonl:6 records the executed rows [0.57735,0.57735,0.57735], [0.707107,-0.707107,0], and [0.408248,0.408248,-0.816497]."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.hyperparameters_match": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported B=1000 protocol does not match the executed gray bootstrap count. The discrepancy is established by both the run configuration and complete saved result coverage.",
+      "evidence": [
+        "proposal/report.tex:264-267 and 305-306 states the 10-fold/B=1000 protocol without a gray exception.",
+        "proposal/logs/gray_fit_start.jsonl:4 records boot=150 for the final 10-fold run.",
+        "proposal/logs/gray_cv_results.jsonl contains folds 0-9 and bootstrap indices 0-149, totaling 1,500 records.",
+        "proposal/logs/chromatic_fit_start.jsonl:6 and chromatic_cv_results.jsonl do support B=1000 for the chromatic comparison specifically."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.statistical_inference_integrity.simulation_clearly_labeled": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Synthetic perceptual observations are explicitly labeled and confined to recovery and discrimination checks. The empirical headline fits load the provided human responses.",
+      "evidence": [
+        "proposal/report.tex:273-278 describes synthetic recovery; lines 298-300 explicitly restrict synthetic data to identifiability checks.",
+        "proposal/report.tex:380-386 and Figure 3 caption at lines 422-424 identify generated data and known generating parameters.",
+        "proposal/code/identifiability.py:92-96 generates synthetic observations; lines 123-127 and 174-193 use them for recovery and discrimination.",
+        "proposal/logs/identifiability_discrimination.jsonl:1 explicitly identifies generator='M3_opponent'."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.identifiability_disclosure.no_overclaim_cone_specificity": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper claims an earned null that rules out and falsifies cone-alignment, despite saved comparisons admitting both signs and a nearest-control discrimination rate of only 55%. The finding concerns that categorical claim of adjudication, not low power by itself.",
+      "evidence": [
+        "proposal/report.tex:452-468 states an 'earned null' and says the data 'can only rule out cone-alignment'.",
+        "proposal/report.tex:488-499 calls the contribution 'falsification of the cone-alignment hypothesis' while acknowledging underpowered nearest-control discrimination.",
+        "proposal/logs/summary.json:124-131 gives selection-aware delta 0.2809248855 with CI [-0.0477063524,0.6543693167]; lines 115-122 give the HCL gap CI [-0.3289447291,0.6541984822].",
+        "proposal/logs/identifiability_discrimination.jsonl:1 records prop_opp_wins=0.55 across 60 simulations.",
+        "proposal/logs/identifiability_coarse.jsonl:1 yields a coarse delta mean 0.56524 with across-fold SD 2.32269, not a demonstrated resolved distinction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper presents a general cross-validation/bootstrap uncertainty protocol and says no deviations beyond two normalization amendments occurred. The executed MLDS analysis instead fits all observations directly, without the claimed fold/bootstrap procedure. This contradicts asserted protocol compliance rather than merely omitting a required analysis.",
+      "evidence": [
+        "task_spec.md:74-75 requires uncertainty on inferential quantities and held-out comparison.",
+        "proposal/report.tex:191-199 discloses two normalization changes and states 'No other deviation was made'.",
+        "proposal/report.tex:260-267 and 302-306 describes 10-fold CV and bootstrap confidence intervals on every quantity.",
+        "proposal/code/mlds_anchor.py:65-99 passes all loaded observations directly into full-data optimization, with no train/test split or bootstrap.",
+        "proposal/logs/mlds_anchor.jsonl:1 records one full-data analysis of 12,000 trials and scalar NLL/parameter estimates."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The stated execution of a B=1000 bootstrap protocol for the analyses is affirmatively contradicted for the gray replication by its executed B=150 configuration and complete output. This is not an inference from absent logs.",
+      "evidence": [
+        "proposal/report.tex:264-267 states that B=1000 bootstrap resamples are drawn; lines 305-306 reiterate that protocol.",
+        "proposal/logs/gray_fit_start.jsonl:4 records the executed 10-fold, boot=150 configuration.",
+        "proposal/logs/gray_cv_results.jsonl contains exactly 150 resamples per fold, and proposal/code/summarize.py:88-112 uses those records for the reported gray statistics."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The claimed pre-fitting status of the amended plan is contradicted by its own timestamp and the run chronology. The amendment is dated after both earlier model-comparison starts and the full comparison's start, yet is explicitly presented as occurring before fitting. This finding concerns the false chronology, without inferring a selection motive.",
+      "evidence": [
+        "proposal/report.tex:154-156 claims modeling decisions were fixed in a document written before any fitting code ran; lines 191-199 claims the normalization amendments preceded model-comparison fits.",
+        "proposal/analysis_plan.md:226-230 dates the amendment 2026-08-31T20:00:00Z and labels it 'before model fitting'.",
+        "proposal/logs/chromatic_fit_start.jsonl:1-6 records fitting starts from 16:38:06Z through the full 80,000-task run at 18:54:21Z on the same date.",
+        "proposal/logs/cone_whitening.jsonl:1-3 records use of the amended whitening specification at 17:40:41Z, 17:48:06Z and 18:54:21Z."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.model_variants_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every model in the final chromatic panel is reported and included in the saved aggregation. The raw records retain unsuccessful optimizer outcomes, and the gray summary retains all fitted scaling families. No completed unfavorable model variant is shown to have been selectively hidden.",
+      "evidence": [
+        "proposal/report.tex:340-349 reports M0, M1, M2 and all five M3 controls.",
+        "proposal/logs/chromatic_cv_results.jsonl contains 10,000 records per model, including 59 success=false records.",
+        "proposal/code/summarize.py:30-45 includes those unsuccessful-status records rather than selecting only successful or favorable fits.",
+        "proposal/logs/summary.json:185-270 includes gray baseline, g-only, spline, polynomial, logarithmic and sinusoidal results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.all_specifications_reported": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "Earlier fit starts and changing axis metadata establish that multiple preliminary configurations were launched, but their outcomes and completion/selection records are absent from both staged locations. The remaining final-run results cannot establish whether unfavorable completed specifications were concealed. Missing pilot outcomes alone do not establish selective reporting.",
+      "evidence": [
+        "proposal/logs/chromatic_fit_start.jsonl:1-5 records preliminary 3-fold runs before the final run.",
+        "proposal/logs/chromatic_pairs_meta.jsonl:1-4 shows changed linear-axis vectors, consistent with the added whitening recorded in cone_whitening.jsonl.",
+        "proposal/logs/chromatic_cv_results.jsonl contains only the complete final 10-fold/B=1000 result grid.",
+        "proposal/logs/gray_fit_start.jsonl:1-3 records earlier 5-fold/B=20 starts, while gray_cv_results.jsonl contains only the final 10-fold/B=150 grid.",
+        "Inspection of proposal/ and workdir_outside_proposal/ found no separate pilot results or completion/selection records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.held_fixed_disclosure.data_sources_respected": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected empirical analyses use only datasets and fundamentals expressly permitted by the task. No externally sourced perceptual dataset is evident.",
+      "evidence": [
+        "task_spec.md:86-93 identifies the permitted gray, Wiebel MLDS, Helm, Ekman and cone-fundamental resources.",
+        "proposal/code/common.py:48-55 and 100-116 loads the provided fundamentals and stimulus coordinates.",
+        "proposal/code/chromatic_fit.py:62-67 loads the provided Helm and Ekman response matrices.",
+        "proposal/code/gray_replication.py:213-215 and mlds_anchor.py:24-33 loads the permitted gray and MLDS observations.",
+        "The corresponding inputs are present under workdir_outside_proposal/data/."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.data_provenance_integrity.only_provided_datasets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Data-loading code, staged source documentation and result records consistently identify the permitted provided datasets. Synthetic generation is confined to the task-authorized identifiability checks.",
+      "evidence": [
+        "workdir_outside_proposal/data/chromatic/SOURCE_helm.md:53-68 and SOURCE_ekman.md:49-60 identify the staged response matrices and colorimetry.",
+        "workdir_outside_proposal/data/gray/wiebel_mlds/README.txt:8-48 describes the provided MLDS observations and response coding.",
+        "proposal/report.tex:292-300 identifies the same human datasets and distinguishes synthetic checks.",
+        "proposal/code/chromatic_fit.py:46-108, gray_replication.py:213-215, and mlds_anchor.py:24-33 contain the empirical input paths.",
+        "proposal/code/identifiability.py:92-127 confines generated observations to recovery analysis, as permitted by task_spec.md:70."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

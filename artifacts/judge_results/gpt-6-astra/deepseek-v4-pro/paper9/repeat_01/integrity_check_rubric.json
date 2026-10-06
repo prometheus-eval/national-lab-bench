@@ -1,0 +1,205 @@
+{
+  "nodes": {
+    "number_traceability.kernel_hyperparameters_in_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The emulator-table parameters are traceable, but Figure 2 uses a parameterization contradicted by the stated final choice. The report specifies k_max=2cγ², and the attempts log says no numbers from the superseded fixed-target γ are reported. Figure 2 nevertheless uses the preliminary scan with γ=2.83821185 fixed across k_max. At c=1 and k_max=20, the stated final rule instead gives γ=3.16227766.",
+      "evidence": [
+        "proposal/report.tex:117–124 specifies the kernel and k_max=2cγ².",
+        "proposal/attempts_log.md:53–57 states γ=sqrt(k_max/2) is final and that no numbers from the superseded γ are reported.",
+        "proposal/code/kernel_derivation/char_scan.py:103–116 fixes the optimal kernel's target at 1e-3, giving γ=2.838211852783846 independently of k_max.",
+        "proposal/code/kernel_derivation/make_figs.py:43–54 reads char_scan.json directly for Figure 2; proposal/report.pdf, page 4, contains those curves."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.emulator_metrics_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported query counts materially contradict the executed selector. The report calls 2489*n_repeat the total A-oracle query count and selector degree, but 2489 is the Hamiltonian-simulation time parameter. The saved angle sequence contains 5,269 angles, and the implementation inserts 5,268 qubitization operations per interval. For the three-interval run, this is 15,804 qubitization operations, not the reported 7,467. Gate counts, ancilla counts, success probabilities, and normalized-state errors otherwise reproduce from the saved outputs.",
+      "evidence": [
+        "proposal/report.tex:191–210 labels Q_A=2489*n_repeat as total query complexity and selector QSP degree.",
+        "proposal/logs/emulator/opt_k12_nk10/run.log:90–99 distinguishes 'number of angles: 5269' from 'single time interval: 2489' and records three intervals.",
+        "proposal/logs/emulator/opt_k12_nk10/QSP_t2489p3_eps12.hdf5: angles/QSP-ham has shape (5269,); basic/par is 2489.",
+        "workdir_outside_proposal/code/QuCF-OPT-LCHS/src/QCircuit.cpp:3409–3459 inserts two qubitization operations for each of (N_angles-1)/2 iterations per interval.",
+        "proposal/code/kernel_derivation/final_analysis.py:47–68 reads actual state and gate data but assigns Q_A=2489*n_repeat."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.scaling_fits_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported coefficients p=1.385 and m=1.72 reproduce from the saved results, but the rendered baseline fit does not represent the fitted model. Its plotting code applies an extra logarithm: with x=log(1/ε), it plots a*(log x)^p instead of a*x^p. At x=9.97424, the displayed fit is approximately 2,831 queries, whereas the fitted model gives approximately 21,599 using the same reported query convention. This is a concrete curve/source contradiction, independent of whether the scaling study meets scientific requirements.",
+      "evidence": [
+        "proposal/report.tex:218–230 describes the baseline power-law fit and reports p=1.385 and the variant's affine-fit slope m=1.72.",
+        "proposal/code/kernel_derivation/make_figs.py:17–25 defines x=log(1/relerr), fits log(k_max) against log(x), then plots np.power(np.log(xf), p).",
+        "proposal/logs/emulator/results.json yields p=1.38513171 and m=1.71749328 in read-only recalculation.",
+        "proposal/fig_scaling.pdf and proposal/report.pdf, page 4, Figure 1: the rendered dashed blue curve exhibits the extra-logarithm discrepancy."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_emulator_targets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected implementation evolves the state through circuit gates and saves the resulting amplitudes and gate counts. Classical propagation is used as the comparison reference, not substituted for emulator output. The erroneous query-count factor is an actual simulation-time constant misidentified as a count; the evidence does not establish a hardcoded target or oracle-output substitution.",
+      "evidence": [
+        "workdir_outside_proposal/code/QuCF-OPT-LCHS/src/QCircuit.cpp:324–375 applies each circuit gate to the state.",
+        "workdir_outside_proposal/code/QuCF-OPT-LCHS/src/QuCF.cpp:819–827 records circuit-derived resource counts; lines 1019–1027 and 1137–1164 execute and save output states.",
+        "proposal/code/kernel_derivation/final_analysis.py:47–65 reads saved emulator amplitudes and computes the exact reference with scipy.linalg.expm.",
+        "proposal/logs/emulator/opt_k12_nk10/QSP_t2489p3_eps12.hdf5: basic/par=2489 establishes the provenance of that constant."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The main emulator runs match the final γ=sqrt(k_max/2) rule, but the supporting characterization results do not. Figure 2 is generated from a fixed-γ preliminary scan despite the report's stated radius relation and the explicit assurance that superseded-γ results were not reported. This finding concerns parameter consistency, not whether preregistration occurred on time.",
+      "evidence": [
+        "proposal/report.tex:123 states k_max=2cγ²; proposal/code/kernel_plan.md:57–58 states γ=sqrt(k_max/2).",
+        "proposal/attempts_log.md:53–57 explicitly excludes reported numbers from the superseded fixed-target γ.",
+        "proposal/code/kernel_derivation/char_scan.py:103–116 uses γ=2.838211852783846 for all opt_c1 scan radii.",
+        "proposal/code/kernel_derivation/make_figs.py:43–54 uses those saved scan results in the final characterization figure.",
+        "proposal/logs/emulator/opt_k20_nk10/dc_OUTPUT.hdf5: constants/gamma=3.162277660168, contrasting with the characterization scan at the same k_max."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_source_distinction_preserved": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission identifies the provided QuCF implementation and reused selector angles, while supplying separate logged baseline emulations for the table. The characterization figure is explicitly labeled classical. No evidence establishes that reference-paper results, provided outputs, and submission-generated baseline results were falsely attributed to one another.",
+      "evidence": [
+        "proposal/codebase_notes.md:5–20 and 39–45 identifies the reference implementation, reference inputs, and reused QSP angle file.",
+        "proposal/report.tex:173–195 describes the emulator baseline; lines 245–246 label the characterization as classical LCHS evaluation.",
+        "proposal/logs/emulator/beta_k12_nk10/run.log:90–124 records the baseline selector, 1,780,585 gates, and completed circuit execution.",
+        "paper.md:805–824 distinguishes the original paper's classical scans from its circuit emulations; those results are not presented as newly generated table rows."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The resource-accounting description materially contradicts the executed circuit: the report identifies a simulation-time parameter as the selector degree and measured query count. The characterization parameter schedule also differs from the stated final schedule. The disclosed use of direct-decomposition weights, rather than completed new QSVT weight synthesis, is not itself treated as deception.",
+      "evidence": [
+        "proposal/report.tex:191–194 and 226–229 identifies 2489*n_repeat as measured query complexity and selector degree.",
+        "proposal/code/kernel_derivation/final_analysis.py:58–68 computes that quantity from the interval count rather than the angle sequence or circuit queries.",
+        "workdir_outside_proposal/code/QuCF-OPT-LCHS/src/QCircuit.cpp:3360–3361 and 3409–3459 constructs the selector from 5,269 angles, with 5,268 qubitization insertions per interval.",
+        "proposal/report.tex:123 versus proposal/code/kernel_derivation/char_scan.py:103–116 gives the characterization parameter discrepancy.",
+        "proposal/report.tex:157–159 and proposal/code/kernel_derivation/qsvt_angle_finding.py:9–18 openly identify direct decomposition as the production weight path."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.kernel_in_code_matches_paper": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The implemented kernel's algebraic form agrees with the paper, but the kernel parameters used for the final characterization figure contradict the stated k_max=2cγ² parameterization. The figure uses γ=2.83821185 at both k_max=10 and 20, although that γ implies a radius of 16.110893. Thus the parameter component of this alignment predicate is not satisfied.",
+      "evidence": [
+        "proposal/report.tex:117–124 gives both the kernel formula and its parameter relation.",
+        "workdir_outside_proposal/code/QuCF-OPT-LCHS/src/QCircuit.cpp:1909–1937 implements the stated algebraic kernel and FCC weights.",
+        "proposal/code/kernel_derivation/char_scan.py:61–66 and 103–116 implements the same formula with a fixed target-derived γ while varying k_max.",
+        "proposal/code/kernel_derivation/make_figs.py:43–54 connects that implementation's saved results to Figure 2.",
+        "proposal/attempts_log.md:53–57 claims the fixed-target parameterization was superseded and its numbers were not reported."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed structural parity is supported: the submitted block-encoding subcircuits match the reference after removing comments and whitespace, and the selector angle file is reused unchanged. The report discloses the effective-time comparison, reduced success probability, direct-decomposition weights, and failure at the headline resolution. These shortfalls do not establish a false claim of held-fixed compliance.",
+      "evidence": [
+        "proposal/logs/emulator/opt_k12_nk10/dc.oracle:137–178 and workdir_outside_proposal/code/QuCF-OPT-LCHS/simulations/LCHS/ADE-OPT/t08/nk10_kmax40-OPT/dc.oracle: U_BE_H, U_BE_m, and U_BE have matching executable structure.",
+        "The submitted QSP_t2489p3_eps12.hdf5 matches the provided reference angle file in workdir_outside_proposal/code/QuCF-OPT-LCHS/simulations/LCHS/ADE-OPT/t08/nk7_kmax40-OPT/ byte for byte.",
+        "proposal/report.tex:157–159 and 179–182 discloses direct decomposition and comparison at t_eff.",
+        "proposal/report.tex:264–273 and 295–298 discloses lower success probability and regression at (n_x,n_k)=(6,6)."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "The main circuit executions are supported by completed logs and saved states. However, the specific claim that the characterization evaluation was validated against emulator states to at most 1e-9 lacks an inspectable comparison record. The characterization script only performs classical evaluation, and its optimal-kernel parameters differ from the recorded final emulations. The record cannot establish that this claimed validation occurred, but missing comparison evidence does not establish that it did not.",
+      "evidence": [
+        "proposal/report.tex:245–246 explicitly claims validation against the emulator to ≤1e-9 in the post-selected state.",
+        "proposal/codebase_notes.md:56–58 repeats the validation claim against reference dc_OUTPUT.hdf5.",
+        "proposal/code/kernel_derivation/char_scan.py:69–80 and 111–126 computes classical LCHS errors and saves scalar results without an emulator-state comparison.",
+        "proposal/logs/emulator/opt_k12_nk10/run.log:113–127 records completed circuit execution; its dc_OUTPUT.hdf5 contains the resulting 64 post-selected amplitudes.",
+        "Both proposal/ and workdir_outside_proposal/ were inspected, including the additional completed test at code/QuCF-OPT-LCHS/tests/LCHS-non-Hermitian-simple-OPT2/N_5.clog; it does not document the claimed characterization comparison."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "medium",
+      "reason": "Preregistration is explicitly claimed, but only the current plan is available. Its cited modification time follows some completed baseline outputs. That does not establish when an earlier plan was created or which contents were fixed before validation, and there is no dated version history establishing undisclosed post-result selection or backdating.",
+      "evidence": [
+        "proposal/report.tex:184–186 says configurations are pre-registered.",
+        "proposal/code/kernel_plan.md:1–3 says 'see file mtime' and claims creation before any validation emulation.",
+        "proposal/code/kernel_plan.md has modification time 2026-09-05T07:59:57Z; proposal/logs/emulator/beta_k40_nk6/dc_OUTPUT.hdf5 and beta_k8_nk10/dc_OUTPUT.hdf5 have modification times 07:20:12Z and 07:45:48Z respectively.",
+        "proposal/attempts_log.md:23–24 asserts the axis was chosen at plan time, but supplies no earlier dated plan version."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_configurations_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The headline failures are omitted from the main table but explicitly discussed and retained numerically in the submitted results. The classical scan and preliminary amplification runs are also retained. The evidence does not establish concealed unfavorable completed configurations presented as a complete successful sweep. Missing required rows and incomplete emulator coverage remain scientific-completeness issues.",
+      "evidence": [
+        "proposal/logs/emulator/results.json includes beta_k40_nk6 with error 0.5832458507 and opt_k40_nk6 with error 1.2308863668.",
+        "proposal/report.tex:270–273 explicitly states that the optimal kernel can regress at the headline (6,6) configuration.",
+        "proposal/attempts_log.md:44–51 discusses the quadrature-limited headline failure.",
+        "proposal/code/kernel_derivation/char_scan.json retains 252 distinct configurations, including unfavorable errors; proposal/logs/emulator/scan_opt_k8_N*/ retains seven amplification-trial outputs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.hyperparameter_choices_documented": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "Hyperparameter documentation is incomplete, particularly for amplification-round selection, and the superseded-γ statement is contradicted as assessed under parameter alignment. Nevertheless, the record does not establish concealed outcome-dependent selection satisfying this predicate. Unfavorable trials remain inspectable, amplification changes are acknowledged, and no fixed amplification-selection rule is falsely asserted.",
+      "evidence": [
+        "proposal/logs/emulator/scan_opt_k8_N0/dc_OUTPUT.hdf5 through scan_opt_k8_N15/dc_OUTPUT.hdf5 retain trials with N_AA_w in {0,3,5,8,10,12,15}.",
+        "Read-only calculations from those saved amplitudes give success probabilities ranging from 3.49224e-7 at N_AA_w=0 to 0.0864847 at N_AA_w=15.",
+        "proposal/report.tex:278–281 acknowledges changing the amplitude-amplification round count.",
+        "proposal/attempts_log.md:3–21 and 49–58 records considered kernels, rejected approaches, and parameter refinement.",
+        "proposal/code/kernel_derivation/char_scan.json preserves results for β in {0.5,0.6,0.7,0.8,0.9} and optimal-kernel c in {0.5,1}."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_kernel_replication": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission explicitly attributes the adopted f2 kernel to Low and Somma and differentiates its claimed contribution as combining that kernel with the existing FCC/QSP implementation. It does not present the published kernel as newly invented. Whether that combination establishes sufficient scientific novelty is outside this integrity predicate.",
+      "evidence": [
+        "proposal/report.tex:80–88 and 102–112 identifies the Low–Somma f2 kernel and states the implementation/characterization contribution.",
+        "proposal/report.tex:285–291 distinguishes the analytic-extension literature from the reused FCC/QSP framework.",
+        "proposal/refs.bib:22–27 cites Low and Somma, arXiv:2508.19238.",
+        "paper.md:164–168 and 895–898 identifies the prior approximate-LCHS kernel literature."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected methodology uses the supplied QuCF implementation, an attributed kernel-profile extension, and permitted scientific Python libraries. Reused circuits and angle files are disclosed. No affirmative evidence establishes prohibited or unattributed non-trivial external methodology code.",
+      "evidence": [
+        "task_spec.md:211 permits supplied QuCF/wiki code and standard scientific libraries while requiring acknowledgment of external methodology implementations.",
+        "proposal/codebase_notes.md:39–58 identifies reused emulator components, selector angles, and the newly implemented profile and analysis scripts.",
+        "workdir_outside_proposal/code/QuCF-OPT-LCHS/src/QCircuit.cpp:1909–1937 attributes the added profile to the Low–Somma f2 kernel.",
+        "proposal/code/kernel_derivation/oracle_gen.py, final_analysis.py, char_scan.py, and qsvt_angle_finding.py use NumPy, SciPy, HDF5 I/O, and local implementation code; the inspected files show no undisclosed external methodology implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

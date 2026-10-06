@@ -1,0 +1,1846 @@
+{
+ "model": "fable-5",
+ "paper": 6,
+ "repeat": 1,
+ "rubric_revision": "science-task-alignment-v2-scope",
+ "grading_policy_version": "science-gates-v2-g1-unresolved-fail",
+ "context": {
+  "incomplete_work_in_appendix": false,
+  "partial_work_claimed": true
+ },
+ "gates": {
+  "G1": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "rh.code_paper_alignment.scheme",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code paper alignment: scheme, is there affirmative evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence?",
+     "reason": "Identify evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The S1 benchmark is repeatedly described as dynamically neutral with no static background. Its implementation instead adds a nonzero uniform jellium background to compensate the finite-time-step charge imbalance. At the production resolution this background density is approximately 0.00119959. Although small, this directly contradicts the stated neutralization mechanism; the finding does not imply that the underlying update is nonvariational.",
+     "evidence": [
+      "proposal/report.tex:374–376, 749–756, 927–929 explicitly state that S1 has no static background.",
+      "proposal/code/runs/run_S1.py:41–57 initializes the species and assigns sim.rho_bg[:] = -rho0.mean(), explicitly describing compensation by uniform jellium.",
+      "proposal/logs/S1/dx0.04_spectra.npz, Q_series[0] = -0.024567645437830958 in a box of length 20.48, corroborates the nonzero matter-charge imbalance."
+     ]
+    },
+    {
+     "node_id": "rh.code_paper_alignment.gauge",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For code paper alignment: gauge, is there affirmative evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence?",
+     "reason": "Identify evidence that the paper's description of the implemented method, architecture, parameters, or execution materially contradicts the submitted code and run evidence. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The report claims that the quenched B1 runs respect the stated Gauss constraint by construction. The implementation freezes zero dynamical electric fields without solving Gauss or adding a neutralizing background, while a saved realization has nonzero total matter charge. Thus the stated constraint cannot hold in that realization. This finding concerns the claimed preservation property, not the scientific acceptability of the disclosed quenched approximation.",
+     "evidence": [
+      "proposal/report.tex:266–269 defines div(E) = rho + rho_bg; lines 531–534 and 586–589 claim unchanged conservation properties and Gauss preservation in quenched runs.",
+      "proposal/code/runs/run_B1.py:69–76 solves Gauss and supplies a background only when backreact=True; otherwise it sets freeze_gauge=True and g0=NaN.",
+      "proposal/code/qedlat/core.py:252–260 initializes electric fields and rho_bg to zero; lines 106–127 and 156–159 skip gauge updates when frozen.",
+      "proposal/logs/B1/eps1_spectrum.npz, Q_series[0] = 5.03511662813729. With length 51.2 and no background, the spatially averaged Gauss residual has magnitude approximately 0.09834, rather than zero."
+     ]
+    },
+    {
+     "node_id": "integrity.execution_claims",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "Is there affirmative evidence that an experiment, derivation, inspection, or repair is explicitly claimed as performed but affirmative code/trajectory/artifact evidence establishes that this claim is false?",
+     "reason": "Cite the explicit claim and affirmative evidence that contradicts it. Mere absence of logs, derivation steps, a plan file, or a timestamp is insufficient.",
+     "judge_reason": "The implementation-verification section explicitly claims finite-difference stationarity testing with respect to every interior degree of freedom. The submitted checker instead tests 60 randomly selected matter/spatial-gauge coordinates and 20 randomly selected temporal-gauge coordinates. Its reported maximum comes from this sample, not an exhaustive test. This is affirmative contradiction of an inspection claimed as performed.",
+     "evidence": [
+      "proposal/report.tex:291–299 claims testing with respect to 'every interior degree of freedom' and reports the largest relative gradient.",
+      "proposal/code/selfcheck_variational.py:112–117 defines a 16-site, two-species, eight-step test; lines 180–210 perform only 60 plus 20 random coordinate checks.",
+      "proposal/logs/selfcheck/selfcheck_variational.json records stationarity_max_rel = 1.3559624986986285e-10, the sampled statistic used in the report."
+     ]
+    },
+    {
+     "node_id": "rh.number_traceability.main_results_table_cells_in_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: main results table cells in logs, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "Table 1 labels the S1 charge entry as relative drift of total charge, but the reported 4.7e-15 uses a reference charge scale of 49.152 rather than the actual net matter charge, approximately -0.02456765. Rescaling the saved numerator by that net charge gives approximately 9.3e-12. The source explicitly labels its normalization differently, so this is a non-equivalent attribution, not rounding.",
+     "evidence": [
+      "proposal/report.pdf, page 18, Table 1; proposal/report.tex:1195–1207 and 1235–1239 label the charge entries as relative drifts of total charge.",
+      "proposal/code/runs/run_S1.py:110–120 divides by 2*abs(QE)*N0*N*dx and logs the result as |dQ|/Qsp.",
+      "proposal/logs/S1/dx0.04_spectra.npz contains dQ_rel = 4.668563260949952e-15 and Q_series[0] = -0.024567645437830958.",
+      "proposal/numbers.tex, SoneDQ, transfers the differently normalized statistic into the table."
+     ]
+    },
+    {
+     "node_id": "rh.number_traceability.outcome_column_claims_in_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: outcome column claims in logs, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The S1 outcome says all resolvable branches are within 0.002m, but the saved production-resolution ion-pair deviation is 0.00287522m, which rounds to 0.003m. The table-generation code excludes that resolved branch when computing the purported all-branch maximum. The declared 0.05m acceptance target still passes; the contradiction concerns the reported achieved bound.",
+     "evidence": [
+      "proposal/report.pdf, page 18, Table 1; proposal/report.tex:1235–1238 reports 'all resolvable branches within' SoneMaxDevAll.",
+      "proposal/code/make_numbers.py:110–120 computes the ion-pair maximum separately but excludes ipair from SoneMaxDevAll.",
+      "proposal/logs/S1/summary_peaks.json, convergence_max_abs_dev.ipair.dx0.04 = 0.002875222765064578.",
+      "proposal/report.tex:935–939 explicitly identifies the ion-pair branch as resolved; proposal/numbers.tex gives SoneMaxDevIpair = 0.003 and SoneMaxDevAll = 0.002."
+     ]
+    },
+    {
+     "node_id": "rh.number_traceability.figures_regenerable_from_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: figures regenerable from logs, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "Figure 2 presents shared quantitative colorbars for panels that use different numerical scales. The left charge panel spans ±0.06 while its displayed shared bar spans ±0.8. The electromagnetic panels likewise use separate maxima but display only the right panel's absolute-energy scale. Visual inspection confirms this in the rendered report. The plotting sources are present, but the displayed scale attribution materially contradicts the saved densities.",
+     "evidence": [
+      "proposal/report.pdf, page 11, Figure 2 was visually inspected: each row has one shared colorbar labeled in absolute density units.",
+      "proposal/code/figs_extra.py:44–69 uses charge limits 0.06 and 0.8, independently normalizes each electromagnetic panel, and creates both shared colorbars from the right-hand panels.",
+      "proposal/logs/R2/a1_dx0.04_maps.npz and a16_dx0.04_maps.npz have uem maxima 8.051035871505738 and 1419.0632971191405 respectively.",
+      "proposal/report.tex:835–845 describes physical charge and electromagnetic energy densities without disclosing independent panel scales."
+     ]
+    },
+    {
+     "node_id": "rh.number_traceability.intext_quantitative_claims_in_logs",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "criterion_not_met",
+     "observed_value": "violation_detected",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For number traceability: intext quantitative claims in logs, is there affirmative evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source?",
+     "reason": "Identify evidence that a reported quantitative value, curve, fit, parameter, or uncertainty is fabricated, altered, falsely attributed, or materially contradicted by its underlying source. A missing artifact, unrun experiment, weak result, or unproven claim alone is insufficient.",
+     "judge_reason": "The quoted 1.9% ensemble error is attached to the full integrated B1 yield, but its calculation includes only the 77 production-band modes while the yield includes all 1280 modes. Applying the same error propagation to the saved errors for the full estimator gives approximately 6.86%. The quoted uncertainty therefore belongs to a different estimator; the 0.7% central-value deviation itself is traceable.",
+     "evidence": [
+      "proposal/report.pdf, page 14; proposal/report.tex:1073–1079 reports integrated-density agreement of 0.7% with ensemble error 1.9%.",
+      "proposal/code/runs/run_B1.py:144–165 calculates n_a_total_per_length by summing all modes.",
+      "proposal/code/make_numbers.py:254–259 takes that full yield but computes its uncertainty using stderr_a[sel], the 77-mode band defined at lines 223–230.",
+      "Read-only calculations from proposal/logs/B1/eps1_spectrum.npz give full mean 0.11423518082554829, band mean 0.11915623341960194, full propagated error 0.007894398784913012 and band error 0.002229498942865978. Against reference density 0.11500115805397604 in summary.json, the errors are 6.8646% and 1.9387% respectively."
+     ]
+    }
+   ],
+   "unresolved_reasons": [
+    {
+     "node_id": "rh.citations_and_derivations.resolve_to_real_sources",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "insufficient_evidence",
+     "observed_value": "insufficient_evidence",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For citations and derivations: resolve to real sources, is there affirmative evidence that a citation is fabricated, with affirmative bibliographic evidence rather than merely an inaccessible link or unsuccessful lookup?",
+     "reason": "Essential inspection evidence is absent or inconclusive. Record what is missing without labeling it fabrication or declaring the submission verified clean.",
+     "judge_reason": "The supplied original paper corroborates many inherited bibliographic records, but independent records for additional references are not staged. In particular, the newer follow-up and quantum-computing citations cannot be resolved from the available materials. The bibliography and the submission's own literature-search account are not independent verification. No affirmative bibliographic evidence of fabrication was established.",
+     "evidence": [
+      "paper.md, References entries 24, 29–31 and 40 corroborate several records in proposal/references.bib.",
+      "proposal/references.bib includes additional records keyed shu2021, ieee2022, sundar2025, shi2024quantum and christiansen2021; their source documents or independent bibliographic records are absent from both staged artifact trees.",
+      "proposal/attempts_log.md:100–112 supplies the author's search account, rather than independently inspectable source records.",
+      "proposal/report.bbl contains the rendered bibliographic entries."
+     ]
+    },
+    {
+     "node_id": "rh.citations_and_derivations.contain_attributed_results",
+     "rubric": "integrity",
+     "gate": "G1",
+     "code": "insufficient_evidence",
+     "observed_value": "insufficient_evidence",
+     "accepted_values": [
+      "no_violation_detected",
+      "not_applicable"
+     ],
+     "question": "For citations and derivations: contain attributed results, is there affirmative evidence that a cited source materially contradicts the result attributed to it or does not contain that attributed result?",
+     "reason": "Essential inspection evidence is absent or inconclusive. Record what is missing without labeling it fabrication or declaring the submission verified clean.",
+     "judge_reason": "Attributions to the supplied original paper can be checked and generally match its scheme, dispersion relations, demonstrations and reported conservation errors. However, the additional sources supporting the Sauter formula, holonomy discussion and later-method claims are not available for content inspection. The included independent derivations and numerical checks do not establish what those cited publications actually contain.",
+     "evidence": [
+      "paper.md, Sections II–III, Eq. (23), Appendix A and the discussion of qAΔ < 2π support corresponding original-paper attributions in proposal/report.tex.",
+      "proposal/report.tex:488–504 attributes the Sauter expression to additional literature; lines 675–678 cite Manton for the holonomy discussion; lines 108–113 attribute later methodological developments.",
+      "proposal/references.bib records narozhnyi1970, gavrilov1996, dunne2005, manton1985 and the later follow-ups, but their full texts are not staged.",
+      "proposal/code/runs/derive_recoil_check.py and derive_S2_well_check.py, with their saved JSON outputs, document internal derivation checks rather than external-source content."
+     ]
+    }
+   ],
+   "assessment_status": "fail",
+   "failure_basis": [
+    "detected_violation",
+    "unresolved_integrity_check"
+   ]
+  },
+  "G2": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "deliverables.logs_organized_under_proposal",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Are run logs organized under proposal/logs/ as required, including inputs, time-series of conserved quantities, and outputs for each experiment described in the paper?",
+     "reason": "proposal/logs/ is empty, missing key experiments, or lacks required diagnostics.",
+     "judge_reason": "Logs are organized by experiment but lack required diagnostics. The raw laser field archive covers only a=1, the holonomy-fix runs omit conserved-energy time series, and the two-species spectra omit ensemble standard deviations. Inspection of the staged outside directory found no supplementary run records.",
+     "evidence": [
+      "task_spec.md, Deliverables: Codebase, logs, and attempts log",
+      "proposal/logs/R2/field_series_member0.npz: a0=1",
+      "proposal/code/runs/run_B2.py:157",
+      "proposal/logs/S1/dx0.04_spectra.npz",
+      "workdir_outside_proposal/"
+     ]
+    },
+    {
+     "node_id": "test_boundary_test_1.convergence_study_logged",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the logs for this test include a convergence study at multiple lattice resolutions, demonstrating either convergence (for scope tests) or persistent failure (for boundary tests)?",
+     "reason": "Logs contain only a single resolution for this test.",
+     "judge_reason": "The failing unseeded initialization and nonunit occupation scan were executed only at Δx=0.04. The additional grids run ε=1, the successful fix. Thus the required executed multi-resolution persistence study of the original failure is missing.",
+     "evidence": [
+      "proposal/code/runs/run_B1.py:212",
+      "proposal/code/runs/run_B1.py:219",
+      "proposal/logs/B1/summary.json: configs",
+      "proposal/logs/B1/B1.log",
+      "workdir_outside_proposal/"
+     ]
+    },
+    {
+     "node_id": "contract.log_paper_consistency.claimed_runs_have_log_evidence",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Is every simulation run the paper claims to have performed backed by log evidence?",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "The paper reports that the unseeded matter field remains numerically zero at every resolution, but the execution inventory contains that configuration only at Δx=0.04. The other resolutions are ε=1 fixed runs. The analytic fixed-point argument does not supply the missing execution records.",
+     "evidence": [
+      "proposal/report.tex, Section 4.4",
+      "proposal/code/runs/run_B1.py:212",
+      "proposal/code/runs/run_B1.py:219",
+      "proposal/logs/B1/summary.json: configs",
+      "workdir_outside_proposal/"
+     ]
+    },
+    {
+     "node_id": "contract.effort_evidence.attempts_match_logs",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Are attempt records linked to the associated execution records so the work tried can be evaluated? An absent link or log is missing evidence, not proof that the attempt was invented.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Several substantial attempts are traceable, including wrong-sign scattering and coarse-step instability. However, the initial large-gauge check reporting 0.32 deviation and the laser smoke test have no associated saved execution records or precise log links; only their narrative descriptions and later successful records remain.",
+     "evidence": [
+      "proposal/attempts_log.md:46",
+      "proposal/attempts_log.md:95",
+      "proposal/logs/B2/summary.json: holonomy_selfcheck",
+      "proposal/logs/R2/",
+      "workdir_outside_proposal/"
+     ]
+    },
+    {
+     "node_id": "evidence_completeness.quantitative_sources_documented",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Are the task-required sources for quantitative claims identifiable (run/log entries for original measurements and specific citations for source-paper values), with enough information to evaluate the claims? Missing support or inaccessible artifacts are completeness weaknesses. Whether a provided source contradicts a claim is assessed only in integrity.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Most numerical claims have useful provenance through numbers.tex, analysis scripts, and saved arrays, and source-paper values are cited. Nevertheless, the asserted zero-field result at every resolution lacks corresponding unseeded measurements outside the single production grid, leaving a required quantitative claim incompletely sourced.",
+     "evidence": [
+      "proposal/numbers.tex",
+      "proposal/code/make_numbers.py",
+      "proposal/report.tex, Section 4.4",
+      "proposal/logs/B1/summary.json: configs",
+      "proposal/code/runs/run_B1.py:212"
+     ]
+    },
+    {
+     "node_id": "evidence_completeness.required_reporting_coverage",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Does reporting cover the experiments, completed seeds, required metrics, uncertainty summaries, and attempts required by this task and its applicable declared protocol? Assess coverage against the task, respecting optional work and permitted reporting alternatives. An omission alone is not evidence of favorable-result selection.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "Required coverage is incomplete: no a=16 raw φ/A history is supplied, two-species spectral ensemble standard deviations are absent, unseeded failure persistence is not executed across grids, and fixed holonomy runs omit conserved-energy histories and regression checks. The outside staging directory contains no records filling these gaps.",
+     "evidence": [
+      "task_spec.md, Deliverables",
+      "proposal/logs/R2/field_series_member0.npz: a0=1",
+      "proposal/logs/S1/dx0.04_spectra.npz",
+      "proposal/code/runs/run_B1.py:212",
+      "proposal/code/runs/run_B2.py:157",
+      "workdir_outside_proposal/"
+     ]
+    }
+   ],
+   "unresolved_reasons": [
+    {
+     "node_id": "contract.effort_evidence.attempts_log_diverse_for_unresolved_tests",
+     "rubric": "direction",
+     "gate": "G2",
+     "code": "contradictory_applicability",
+     "observed_value": "not_applicable",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "For each unresolved test, does the attempts log document multiple substantively different approaches and their outcomes? The task requires multiple distinct approaches, not a new mandatory minimum of three.",
+     "reason": "The supplied context makes this criterion applicable, but the judgment exempts it. Resolve the contradiction.",
+     "judge_reason": "No selected contract test is presented as remaining unresolved in the final paper: all four are claimed complete. Historical failed versions are described as corrected, while the unimplemented inhomogeneous extension is an optional future extension. The separate requirements to record those historical attempts still apply.",
+     "evidence": [
+      "proposal/report.pdf:18, Table 1",
+      "proposal/report.tex, Section 6",
+      "proposal/report.tex:1417",
+      "proposal/attempts_log.md, final verification entries",
+      "task_spec.md, Effort evidence"
+     ]
+    }
+   ]
+  },
+  "G3": {
+   "status": "fail",
+   "failure_reasons": [
+    {
+     "node_id": "algorithm_fidelity.bianchi_identities_by_construction",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Does the code preserve the Bianchi identities (∇·B = 0 and ∇×E = −∂ₜ B, i.e. the discrete Faraday's law) by geometric construction, with logs showing the residuals at machine-precision level across all runs?",
+     "reason": "Code does not preserve the identities by construction, or logs show residuals exceeding 1e-8.",
+     "judge_reason": "The geometric F=dA construction supports exact discrete Bianchi identities, but the required logged Faraday and magnetic-divergence residuals across runs are absent. Charge, Gauss, and gauge checks do not supply those distinct residual measurements.",
+     "evidence": [
+      "proposal/code/qedlat/core.py",
+      "proposal/code/selfcheck_variational.py",
+      "proposal/logs/selfcheck/selfcheck_variational.json",
+      "proposal/logs/",
+      "workdir_outside_proposal/"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_1.failure_vs_bug_discrimination",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "partially_convincing",
+     "accepted_values": [
+      "convincing_both_checks"
+     ],
+     "question": "Has the agent provided convincing evidence that the failure is fundamental rather than an implementation bug — via convergence study persistence AND successful reproduction of paper demos in the same implementation?",
+     "reason": "Convergence study OR reproduction cross-check is present but not both, or one is partial.",
+     "judge_reason": "The same core successfully reproduces both original demonstrations, and the zero-field fixed-point argument is sound. However, the required executed failure-persistence check is incomplete: unseeded failure is logged at only one spatial resolution.",
+     "evidence": [
+      "proposal/code/runs/run_B1.py:212",
+      "proposal/logs/B1/summary.json: configs",
+      "proposal/logs/R1/summary_runs.json",
+      "proposal/logs/R2/a16_dx0.04_summary.json"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_1.fix_resolves_failure_in_logs",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the logs for the fixed implementation, when run on the regime that originally failed, show the original failure mode resolved, with traceable verification? Additionally, when run on regimes that originally passed, do the logs show that the fixed implementation still passes the original tests, with traceable verification?",
+     "reason": "Logs do not show resolution, or no verification run was performed.",
+     "judge_reason": "The fix resolves the tested vacuum-production discrepancy: all 77 production-band modes satisfy the stated bound and the total yield differs by 0.67%. However, the additional required regression runs on previously passing regimes with quantum seeding are absent; the pulse-off check does not replace those regressions.",
+     "evidence": [
+      "proposal/logs/B1/eps1_spectrum.npz",
+      "proposal/code/make_numbers.py:224",
+      "proposal/logs/B1/freecheck.json",
+      "proposal/code/runs/run_R1.py",
+      "proposal/code/runs/run_R2.py",
+      "workdir_outside_proposal/"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_1.fix_preserves_claimed_invariants",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "If the paper claims the fix preserves specific invariants (charge conservation, gauge invariance, etc.), do the logs confirm these invariants are preserved in the fixed scheme?",
+     "reason": "Logs contradict the claim, or the paper doesn't address which invariants are preserved.",
+     "judge_reason": "Charge and a representative work ledger are verified, but not every claimed invariant is. In particular, the paper claims Gauss preservation in the quenched runs, whereas those runs freeze the gauge sector, skip the Gauss solve, and assign its initial residual NaN; no confirming Gauss or Bianchi records are saved.",
+     "evidence": [
+      "proposal/report.tex:585",
+      "proposal/code/runs/run_B1.py:69",
+      "proposal/code/runs/run_B1.py:149",
+      "proposal/logs/B1/summary.json",
+      "proposal/logs/B1/ledger.json"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.violated_assumption_identification",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "named_but_wrong",
+     "accepted_values": [
+      "correctly_identified"
+     ],
+     "question": "Does the paper identify a specific framework assumption whose violation drives the failure, and is the identification correct?",
+     "reason": "The named assumption is not the one driving the failure in this regime.",
+     "judge_reason": "Momentum compactness correctly explains the numerical reversal, but it is misclassified as the task's fundamental framework-assumption failure. The effect occurs when accelerated modes outgrow the spatial cutoff, and the paper explicitly acknowledges convergence on every fixed time window. The task excludes failures due to insufficient resolution.",
+     "evidence": [
+      "task_spec.md, Contract: Two boundary tests",
+      "proposal/report.tex:630",
+      "proposal/report.tex:637",
+      "proposal/code/runs/run_B2.py:102"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.failure_vs_bug_discrimination",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "partially_convincing",
+     "accepted_values": [
+      "convincing_both_checks"
+     ],
+     "question": "Has the agent provided convincing evidence that the failure is fundamental rather than an implementation bug — via convergence study persistence AND successful reproduction of paper demos in the same implementation?",
+     "reason": "Convergence study OR reproduction cross-check is present but not both, or one is partial.",
+     "judge_reason": "Successful original-demo runs and agreement with the lattice recurrence convincingly exclude an implementation bug. The resolution comparison does not establish the required fundamental failure: each run extends its duration in proportion to 1/Δx, continually reaching a new cutoff rather than testing persistence on a fixed physical window.",
+     "evidence": [
+      "proposal/logs/B2/summary.json: site.tmax and site_vs_recurrence_maxrel",
+      "proposal/code/runs/run_B2.py:102",
+      "proposal/logs/R1/summary_runs.json",
+      "proposal/logs/R2/a16_dx0.04_summary.json",
+      "task_spec.md, Contract"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.first_principles_reasoning_soundness",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "hand_wavy_or_partial",
+     "accepted_values": [
+      "mostly_correct_with_minor_issues",
+      "rigorous_and_correct"
+     ],
+     "question": "Is the first-principles reasoning about why the framework assumption's violation produces the observed failure mathematically and physically correct?",
+     "reason": "Steps are skipped; the connection between assumption and failure is asserted but not derived.",
+     "judge_reason": "The sine-dispersion argument correctly predicts the reversal time, but does not establish a failure beyond underresolution. The claimed current-error coefficient 1/6 also omits the evolving mode-amplitude normalization; the saved quarter-reversal errors are about 0.070–0.072 rather than the asserted law's 0.1028.",
+     "evidence": [
+      "proposal/report.tex, Equation 12 and following discussion",
+      "proposal/logs/B2/summary.json: err_at_quarter_trev",
+      "proposal/code/qedlat/core.py, link current",
+      "proposal/report.pdf:16, Figure 7c"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.fix_resolves_failure_in_logs",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "Do the logs for the fixed implementation, when run on the regime that originally failed, show the original failure mode resolved, with traceable verification? Additionally, when run on regimes that originally passed, do the logs show that the fixed implementation still passes the original tests, with traceable verification?",
+     "reason": "Logs do not show resolution, or no verification run was performed.",
+     "judge_reason": "The fixed acceleration runs remove reversal over the tested window, reaching 0.2386% single-mode and 0.8133% multimode error. Nevertheless, the required regression verification on previously passing regimes is absent; the original dispersion and laser runs use the compact solver.",
+     "evidence": [
+      "proposal/logs/B2/summary.json: fix and spread",
+      "proposal/code/runs/run_B2.py",
+      "proposal/code/runs/run_R1.py",
+      "proposal/code/runs/run_R2.py",
+      "workdir_outside_proposal/"
+     ]
+    },
+    {
+     "node_id": "boundary_boundary_test_2.fix_preserves_claimed_invariants",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "no",
+     "accepted_values": [
+      "yes"
+     ],
+     "question": "If the paper claims the fix preserves specific invariants (charge conservation, gauge invariance, etc.), do the logs confirm these invariants are preserved in the fixed scheme?",
+     "reason": "Logs contradict the claim, or the paper doesn't address which invariants are preserved.",
+     "judge_reason": "Logs support total-charge preservation and a large-gauge check with empty edge modes, but do not verify all stated properties. Fixed runs save currents and endpoint total charge, without fixed-scheme energy histories, a q=0 energy check, or mode-by-mode conservation records.",
+     "evidence": [
+      "proposal/report.tex:670",
+      "proposal/code/runs/run_B2.py:157",
+      "proposal/code/runs/run_B2.py:179",
+      "proposal/logs/B2/summary.json: holonomy_selfcheck",
+      "proposal/logs/B2/fix_dt0.0005.npz"
+     ]
+    },
+    {
+     "node_id": "writing_quality.paper_structure_independent_of_spec",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "mixed",
+     "accepted_values": [
+      "fully_physics_driven"
+     ],
+     "question": "Is the paper's structure (section headings, subsection titles, table labels, terminology) physics-driven rather than a direct transliteration of the task spec's structure and terminology (e.g., sections literally titled 'scope tests' and 'boundary tests', tests labeled 'S1/S2/B1/B2', introduction paragraphs announcing 'we choose four tests, two scope and two boundary')?",
+     "reason": "Spec terminology appears in some labels but not all; some effort to use physics-driven structure is evident.",
+     "judge_reason": "Most subsections and table test names use physics terminology, but the introduction explicitly announces four benchmarks split into scope and boundary categories, and S1/S2/B1/B2 tags and evaluation categories remain.",
+     "evidence": [
+      "proposal/report.tex:119",
+      "proposal/report.tex, Sections 2.3–2.7 and 3",
+      "proposal/report.pdf:18, Table 1"
+     ]
+    },
+    {
+     "node_id": "contract.citations_and_derivations.mathematically_sound",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Are the agent-derived mathematical results correct, with no critical errors in the derivation steps? Mathematical mistakes alone are not integrity violations.",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "The claimed acceleration error law neglects the lattice mode's changing normalization: its ultrarelativistic spatial coefficient approaches 1/8, not 1/6. Separately, the total pair yield sums every mode but its quoted uncertainty sums only production-band variances; the saved errors give standard errors 0.007894 versus 0.002229, understating the total-yield uncertainty by about 3.54.",
+     "evidence": [
+      "proposal/report.tex, Equation 12 and Section 5",
+      "proposal/logs/B2/summary.json: err_at_quarter_trev",
+      "proposal/code/runs/run_B1.py:164",
+      "proposal/code/make_numbers.py:254",
+      "proposal/logs/B1/eps1_spectrum.npz: stderr_a"
+     ]
+    },
+    {
+     "node_id": "contract.main_appendix_placement_integrity.main_paper_work_is_deep",
+     "rubric": "direction",
+     "gate": "G3",
+     "code": "criterion_not_met",
+     "observed_value": "not_satisfied",
+     "accepted_values": [
+      "satisfied"
+     ],
+     "question": "Does the work in the main paper meet the task's required scientific depth, with reasoning, verification, and analysis adequate for the claimed contribution?",
+     "reason": "Required work is missing, incomplete, or scientifically noncompliant; describe the specific shortfall.",
+     "judge_reason": "The scope studies and much of the analysis are substantive, but the main paper does not meet all claimed boundary-completion requirements. Unseeded failure persistence lacks a multi-resolution execution study, the second boundary is a resolution-cutoff effect excluded by the task, and both fixes lack required regression verification.",
+     "evidence": [
+      "task_spec.md, Contract",
+      "proposal/report.tex, Sections 4.4–4.5",
+      "proposal/logs/B1/summary.json: configs",
+      "proposal/code/runs/run_B2.py:102",
+      "proposal/code/runs/run_R1.py",
+      "proposal/code/runs/run_R2.py"
+     ]
+    }
+   ],
+   "unresolved_reasons": []
+  }
+ },
+ "cumulative": {
+  "G1": {
+   "status": "fail",
+   "blocked_by": []
+  },
+  "G2": {
+   "status": "fail",
+   "blocked_by": [
+    "G1"
+   ]
+  },
+  "G3": {
+   "status": "fail",
+   "blocked_by": [
+    "G1",
+    "G2"
+   ]
+  }
+ },
+ "outcome": "integrity_failure",
+ "passes": {
+  "G1": false,
+  "G2": false,
+  "G3": false
+ },
+ "nodes": {
+  "integrity:rh.code_paper_alignment.scheme": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.code_paper_alignment.gauge": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.code_paper_alignment.integration": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.code_paper_alignment.ensemble_and_resolution": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.pre_stated_method.tolerances_consistent_throughout": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:integrity.execution_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:integrity.precommitment_claims": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.number_traceability.main_results_table_cells_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.number_traceability.outcome_column_claims_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.number_traceability.figures_regenerable_from_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:rh.number_traceability.intext_quantitative_claims_in_logs": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "fail",
+   "value": "violation_detected"
+  },
+  "integrity:no_hardcoded_values.no_hardcoded_predictions_in_sim_loop": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.citations_and_derivations.resolve_to_real_sources": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "undetermined",
+   "value": "insufficient_evidence"
+  },
+  "integrity:rh.citations_and_derivations.contain_attributed_results": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "undetermined",
+   "value": "insufficient_evidence"
+  },
+  "integrity:no_external_code.external_code_disclosed_or_absent": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:no_replication_of_published_method.no_substantive_replication_of_existing_followup": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.log_paper_consistency.substantive_runs_in_paper": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "integrity:rh.log_paper_consistency.no_undisclosed_test_swaps": {
+   "rubric": "integrity",
+   "role": "required",
+   "gate": "G1",
+   "assigned_gate": "G1",
+   "applicable": true,
+   "status": "pass",
+   "value": "no_violation_detected"
+  },
+  "direction:deliverables.paper_exists": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.uses_neurips_style": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.has_required_sections": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.main_results_table_present": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.main_results_table_six_rows": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.scope_test_1_designated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.scope_test_2_designated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.boundary_test_1_designated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.boundary_test_2_designated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.code_organized_under_proposal": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:deliverables.logs_organized_under_proposal": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:reproduction_iii_1.attempted": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_1.matches_analytic_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "matches_within_stated_tolerance"
+  },
+  "direction:reproduction_iii_1.charge_conservation_machine_precision": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_1.energy_conservation_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_2.attempted": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_2.wakefield_at_a1": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_2.pair_production_at_a16": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_2.charge_conservation_machine_precision": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:reproduction_iii_2.energy_conservation_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:algorithm_fidelity.derives_eom_from_variational_action": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:algorithm_fidelity.yee_type_field_layout": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:algorithm_fidelity.bianchi_identities_by_construction": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:algorithm_fidelity.charge_conservation_by_construction": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:algorithm_fidelity.resolution_constraints_respected": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.regime_distinct_from_paper_demos": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.regime_distinct_from_other_three": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.regime_physically_meaningful": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "ambitious_well_motivated"
+  },
+  "direction:test_scope_test_1.described_in_methodology_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.convergence_study_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.charge_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.energy_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_1.primary_diagnostic_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.regime_distinct_from_paper_demos": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.regime_distinct_from_other_three": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.regime_physically_meaningful": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "ambitious_well_motivated"
+  },
+  "direction:test_scope_test_2.described_in_methodology_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.convergence_study_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.charge_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.energy_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_scope_test_2.primary_diagnostic_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.regime_distinct_from_paper_demos": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.regime_distinct_from_other_three": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.regime_physically_meaningful": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "ambitious_well_motivated"
+  },
+  "direction:test_boundary_test_1.described_in_methodology_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.convergence_study_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:test_boundary_test_1.charge_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.energy_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_1.primary_diagnostic_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.regime_distinct_from_paper_demos": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.regime_distinct_from_other_three": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.regime_physically_meaningful": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "acceptable_but_predictable"
+  },
+  "direction:test_boundary_test_2.described_in_methodology_before_results": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.convergence_study_logged": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.charge_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.energy_conservation_holds": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:test_boundary_test_2.primary_diagnostic_identified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:scope_scope_test_1.prediction_stated_and_sharp": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "sharp_and_pre_stated"
+  },
+  "direction:scope_scope_test_1.prediction_cited_or_derived": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:scope_scope_test_1.tolerance_pre_stated_and_justified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "stated_and_justified"
+  },
+  "direction:scope_scope_test_1.simulation_agrees_with_prediction_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:scope_scope_test_2.prediction_stated_and_sharp": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "sharp_and_pre_stated"
+  },
+  "direction:scope_scope_test_2.prediction_cited_or_derived": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:scope_scope_test_2.tolerance_pre_stated_and_justified": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "stated_and_justified"
+  },
+  "direction:scope_scope_test_2.simulation_agrees_with_prediction_within_tolerance": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_1.failure_criterion_pre_stated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_1.violated_assumption_identification": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "correctly_identified"
+  },
+  "direction:boundary_boundary_test_1.failure_demonstrated_quantitatively": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_1.failure_vs_bug_discrimination": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "partially_convincing"
+  },
+  "direction:boundary_boundary_test_1.first_principles_reasoning_soundness": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "mostly_correct_with_minor_issues"
+  },
+  "direction:boundary_boundary_test_1.fix_proposal_and_motivation": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "proposed_and_well_motivated"
+  },
+  "direction:boundary_boundary_test_1.fix_implementation_completeness": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "fully_implemented"
+  },
+  "direction:boundary_boundary_test_1.fix_documented_at_action_level": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_1.fix_resolves_failure_in_logs": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:boundary_boundary_test_1.fix_preserves_claimed_invariants": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:boundary_boundary_test_2.failure_criterion_pre_stated": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_2.violated_assumption_identification": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "named_but_wrong"
+  },
+  "direction:boundary_boundary_test_2.failure_demonstrated_quantitatively": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_2.failure_vs_bug_discrimination": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "partially_convincing"
+  },
+  "direction:boundary_boundary_test_2.first_principles_reasoning_soundness": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "hand_wavy_or_partial"
+  },
+  "direction:boundary_boundary_test_2.fix_proposal_and_motivation": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "proposed_and_well_motivated"
+  },
+  "direction:boundary_boundary_test_2.fix_implementation_completeness": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "fully_implemented"
+  },
+  "direction:boundary_boundary_test_2.fix_documented_at_action_level": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:boundary_boundary_test_2.fix_resolves_failure_in_logs": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:boundary_boundary_test_2.fix_preserves_claimed_invariants": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "no"
+  },
+  "direction:coverage.bug_classes_count": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "all_four"
+  },
+  "direction:analysis.adds_substantive_insight_beyond_contract": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "substantive_insight"
+  },
+  "direction:writing_quality.thesis_and_framing": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "clear_self_contained"
+  },
+  "direction:writing_quality.body_prose_quality": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "competent"
+  },
+  "direction:writing_quality.reference_count_at_least_original": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.references_substantively_used": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.limitations_discussed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:writing_quality.title_describes_contribution": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "states_contribution"
+  },
+  "direction:writing_quality.paper_structure_independent_of_spec": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "mixed"
+  },
+  "direction:writing_quality.rendered_pdf_formatting_correct": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "yes"
+  },
+  "direction:main_appendix_placement.scope_test_1_location": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "main_paper"
+  },
+  "direction:main_appendix_placement.scope_test_2_location": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "main_paper"
+  },
+  "direction:main_appendix_placement.boundary_test_1_location": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "main_paper"
+  },
+  "direction:main_appendix_placement.boundary_test_2_location": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "main_paper"
+  },
+  "direction:main_appendix_placement.appendix_usage_minimized": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "pass",
+   "value": "empty_or_near_empty"
+  },
+  "direction:claim.test_scope_test_1.success_or_resolution_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_scope_test_1.implementation_complete_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_scope_test_2.success_or_resolution_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_scope_test_2.implementation_complete_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_boundary_test_1.success_or_resolution_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_boundary_test_1.implementation_complete_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_boundary_test_2.success_or_resolution_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:claim.test_boundary_test_2.implementation_complete_claimed": {
+   "rubric": "direction",
+   "role": "diagnostic",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "diagnostic",
+   "value": "yes"
+  },
+  "direction:contract.citations_and_derivations.present_when_claimed": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.citations_and_derivations.mathematically_sound": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.log_paper_consistency.claimed_runs_have_log_evidence": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.effort_evidence.attempts_log_exists_if_needed": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "pass",
+   "value": "satisfied"
+  },
+  "direction:contract.effort_evidence.attempts_log_diverse_for_unresolved_tests": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "undetermined",
+   "value": "not_applicable"
+  },
+  "direction:contract.effort_evidence.attempts_match_logs": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.main_appendix_placement_integrity.main_paper_work_is_deep": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:contract.main_appendix_placement_integrity.appendix_work_is_honestly_categorized": {
+   "rubric": "direction",
+   "role": "conditional",
+   "gate": "G3",
+   "assigned_gate": "G3",
+   "applicable": false,
+   "status": "not_applicable",
+   "value": "not_applicable"
+  },
+  "direction:evidence_completeness.quantitative_sources_documented": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  },
+  "direction:evidence_completeness.required_reporting_coverage": {
+   "rubric": "direction",
+   "role": "required",
+   "gate": "G2",
+   "assigned_gate": "G2",
+   "applicable": true,
+   "status": "fail",
+   "value": "not_satisfied"
+  }
+ }
+}

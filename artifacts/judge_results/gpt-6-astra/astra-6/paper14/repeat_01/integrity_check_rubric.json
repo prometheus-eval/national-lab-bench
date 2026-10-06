@@ -1,0 +1,217 @@
+{
+  "nodes": {
+    "number_traceability.observables_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Reported observables and errors agree with the saved trajectories and reference fields after the stated calibration, fitting, units, and rounding. Independent read-only recalculation reproduced all 19 nonlinear comparisons and the linear frequency and propagation results to floating-point precision.",
+      "evidence": [
+        "proposal/sections/main.tex:88–104 defines the differential phase and all-sample OLS fit; proposal/code/run_nonlinear.py:29–49 implements it.",
+        "proposal/logs/main_N12_e0.4_r0.15_comparison.json:16–21 reports R_spin=0.11824005095673125, R_PDE=0.12000000000000065, and relative_error=0.01466624202724491, matching Table 1 after rounding.",
+        "Recalculation from the statevectors referenced by sweep_summary.json, additional_summary.json, and numerical_checks.json differed from logged rates by at most 5.28e-16; recalculated linear frequencies differed by at most 7.78e-16.",
+        "proposal/logs/number_traceability.json and proposal/logs/results_macros.tex preserve the numerical transformations used in the manuscript."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.epsilon_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported coupling values match the committed grid, individual run metadata, sweep summaries, and Hamiltonian calls. Zero-coupling controls are explicitly distinguished from finite-coupling runs.",
+      "evidence": [
+        "proposal/code/method_plan.json:20–32 specifies primary epsilon=[0.05,0.1,0.2,0.4], stress epsilon=[0.8,1.6], and tolerance=0.15.",
+        "proposal/logs/main_table.tex:5–11 reports zero and every declared finite coupling.",
+        "proposal/code/run_nonlinear.py:6–8,29–31,55–57 passes each declared epsilon to SpinChain and separately runs the unextended zero-coupling control.",
+        "proposal/logs/sweep_summary.json results and their referenced coherent/tangent run records contain the same six finite coupling values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_observables": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implementation calculates observables from evolving statevectors and integrates the PDE reference. No hardcoded result substitutes for these computations. The analytic frozen-hopping expression and identically zero differential baseline are explicitly identified as such.",
+      "evidence": [
+        "proposal/code/spin.py:52–79 evolves full vectors and computes densities, coherences, norms, and sector weights.",
+        "proposal/code/pde_reference.py:6–22 integrates the NLSE; lines 34–38 use its analytic uniform solution only as a solver check.",
+        "proposal/code/refine_linear.py:11–13 evaluates exact frequencies from the open-chain formula at runtime.",
+        "proposal/code/build_artifacts.py:119–124 and proposal/logs/baseline_observable.json disclose that the zero-coupling differential observable divides the measured calibration by itself.",
+        "proposal/sections/main.tex:153–177 labels the frozen-hopping result an explanatory limit, consistent with proposal/code/mechanism.py."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.pde_reference_independent_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reference fields have a separate computational source with fixed equation coefficients. Neither the source nor saved records show copying or fitting to emulation outputs. Read-only calculations from the saved PDE arrays reproduce the reported reference quantities.",
+      "evidence": [
+        "proposal/code/pde_reference.py:6–43 computes fields from epsilon, density, grid, and initial conditions without reading quantum trajectories.",
+        "proposal/logs/pde_reference.json records completion at 2026-10-03T18:14:45.823059+00:00; the earliest saved statevector record is 2026-10-03T18:16:06.838809+00:00.",
+        "The saved pde_*.npz fields reproduce the uniform analytic-check maximum of 2.0352332958634996e-14 and the refinement difference of approximately 1.1737393370807086e-11.",
+        "proposal/code/run_nonlinear.py:35–42 loads the already saved PDE fields before calculating residuals."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The paper's numerical settings and observable definition match the producing code and run records. The later linear-step refinement is explicitly disclosed rather than represented as part of the original protocol.",
+      "evidence": [
+        "proposal/sections/main.tex:78–104 specifies N=12, Delta=8, rho=0.15, sites 5 and 7, T=1, output spacing 0.01, Suzuki step 0.005, and a 128-point PDE grid.",
+        "proposal/code/method_plan.json:38–61 and proposal/logs/main_N12_e0.4_r0.15_comparison.json:5–15,46–91 contain matching settings.",
+        "proposal/code/spin.py:81–97 implements the stated preparations and OLS estimator.",
+        "proposal/sections/main.tex:138–142 and proposal/code/linear_refinement_plan.json disclose the added 0.05 and 0.025 Ramsey steps while retaining original 0.8-step results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.pde_independent_of_emulation": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No prohibited information flow from emulation outputs into the PDE prediction is present. Sharing configuration and fitting utilities does not introduce back-fitting: the PDE evolution takes only prescribed physical and numerical inputs.",
+      "evidence": [
+        "proposal/code/method_plan.json:8–19 fixes the PDE and differential observable, and line 119 prohibits fitting coefficients or selecting the interval from results.",
+        "proposal/code/pde_reference.py:2 imports configuration and utilities from spin.py, but lines 6–43 do not access spin results.",
+        "proposal/code/run_nonlinear.py:7 requires saved PDE references; lines 35–49 read them and subsequently form comparisons.",
+        "proposal/sections/main.tex:42–58 derives the coefficient and identifies the numerical PDE reference; the RHS coefficient -2*epsilon agrees with the implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.noiseless_simulation_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The linear baselines trace to the submission's own full-vector calculations and separately implemented logical reference. The paper distinguishes these from unavailable native-gate compilation and digitized published curves, and retains the coarse-step discrepancies.",
+      "evidence": [
+        "proposal/code/run_linear.py:17–65 generates full-vector Ramsey and propagation runs alongside the independent nine-dimensional logical reference.",
+        "proposal/sections/main.tex:138–142 explicitly reports coarse-step errors of 9.90% and 17.68%, subsequent refinement, and the limits of its published-figure comparison.",
+        "proposal/sections/appendix.tex:69–79 and proposal/logs/spectra_table.tex report both coarse and refined spectra.",
+        "Read-only inspection found exact equality in all nine saved extended-at-zero versus H0 trajectory pairs; recalculated propagation centers of mass matched the logs within 8.89e-16."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.h0_contrast_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The finite-coupling contrast uses saved unextended-H0 coherent and dilute-control trajectories. Its nonzero raw response and reuse across sweep points are disclosed, and the differential result follows from those measured traces.",
+      "evidence": [
+        "proposal/code/run_nonlinear.py:29–33 executes or loads the unextended control and calculates its phase separately.",
+        "proposal/logs/main_N12_e0.4_r0.15_comparison.json:20–21 records raw_density_shift=0.10887985955994058 and H0_density_shift=-0.009360191396790667, whose difference is 0.11824005095673125.",
+        "The baseline records at proposal/logs/main_N12_e0.4_r0.15_comparison.json:222–396 point to saved 101-by-4096 unextended trajectories; recalculation reproduces the baseline rate.",
+        "proposal/sections/main.tex:102,125–129 explains shared controls and the substantive H0 subtraction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented Hamiltonian, vacuum subtraction, full-dimensional evolution, calibrations, readout, fitting, and PDE integration agree with the manuscript. The approximate spin-to-field closure is not falsely presented as the statevector evolution law.",
+      "evidence": [
+        "proposal/sections/main.tex:14–32 and proposal/code/spin.py:18–46 implement literal H0 plus -epsilon/4 times distance-two ZZ bonds, with only scalar vacuum energy removed.",
+        "proposal/sections/appendix.tex:84–103 describes the same Suzuki product, complete binary-index evolution, and Fourier PDE splitting implemented in spin.py:47–79 and pde_reference.py:6–22.",
+        "proposal/sections/main.tex:88–104 matches calibrated_signal and compare in proposal/code/spin.py:95–97 and proposal/code/run_nonlinear.py:29–49.",
+        "Actual NPZ headers confirm 88 full-vector trajectories with dimensions 512, 1024, 2048, or 4096, matching the corresponding run metadata."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No claimed held-fixed compliance is materially contradicted by the implementation. H0 and the ZZ graph are preserved, lattice sizes remain 9–12, and steps are at most 0.8. Smaller steps, sign conventions, reference reconstruction choices, and later refinement are disclosed.",
+      "evidence": [
+        "task_spec.md:71–79 permits smaller justified time steps and defines the held-fixed conditions.",
+        "proposal/sections/main.tex:14–24 states the literal Pauli convention and unchanged H0; proposal/code/spin.py:18–46 implements it.",
+        "proposal/sections/main.tex:104,138–142 explains the smaller nonlinear step, subsequent Ramsey refinement, and Gaussian reconstruction.",
+        "proposal/logs/derivation.json:12–14 records exact zero-coupling reduction and a 1.3877787807814457e-17 independent Pauli-construction residual.",
+        "proposal/sections/appendix.tex:44–51 explicitly explains number conservation instead of claiming intersector population transfer."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The claimed simulations, saved trajectories, symbolic checks, compilation, and rendering have inspectable supporting artifacts, with no affirmative contradiction establishing a false execution claim. This assessment does not independently certify historical human inspection or external literature-search actions.",
+      "evidence": [
+        "proposal/attempts_log.md:12–23 describes completed runs, diagnostic repairs, refinement, and final artifact inspection.",
+        "Independent inspection found 88 actual statevector arrays; recalculated norms agree with saved norms within 5.56e-16, and the maximum trajectory norm error is approximately 4.127e-13.",
+        "proposal/code/derive.py:9–39 and proposal/logs/derivation.txt contain symbolic expressions, matrices, and saved verification results.",
+        "proposal/logs/latex_pass4.txt:184 records a 12-page PDF; its actual SHA256 matches proposal/logs/pdf_audit.json and visual_review.json.",
+        "The staged rendered contact sheets for pages 1–12 and full-resolution page 4 were inspected; they contain the reported tables, figures, and disclosed failures."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The available dated records are consistent with the explicit precommitment claim, and the original plan hash matches every trajectory record. The outcome-informed linear refinement is openly identified as a later addition. No dated artifact establishes undisclosed post-result selection or backdating.",
+      "evidence": [
+        "proposal/sections/main.tex:86 claims the model, couplings, readout, interval, and tolerance were fixed before validation.",
+        "proposal/code/method_plan.json records 2026-10-03T18:10:45.909837+00:00, before derivation.json at 18:14:32.999780, pde_reference.json at 18:14:45.823059, and the earliest trajectory at 18:16:06.838809.",
+        "The calculated method-plan SHA256 is dece833b55fe528762520d980d6b5be549d29bdc9bbea85a491388c54c367d8d, matching method_plan.sha256 and all 88 trajectory records.",
+        "proposal/code/linear_refinement_plan.json is dated 18:24:12.207007, before its first saved refined run at 18:24:12.745332; proposal/sections/main.tex:140 and attempts_log.md:15 disclose why it was added."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_points_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every declared coupling appears in the main table and sweep figure, including the unfavorable strongest coupling. Additional completed density, size, time-step, long-time, and spatial checks are reported. No concealed outcome-dependent exclusion was identified.",
+      "evidence": [
+        "proposal/code/method_plan.json:20–32 declares four primary and two stress couplings; proposal/logs/main_table.tex:5–11 and rendered/page_04.png display all of them.",
+        "The epsilon=1.6 result is reported as a 22.37% failure, consistent with sweep_summary.json results[5].relative_error=0.22367179754147695.",
+        "proposal/logs/robustness_table.tex reports all nine additional comparisons, including the 71.74% long-time failure.",
+        "proposal/logs/spectra_table.tex retains coarse-step estimates; proposal/logs/convergence_table.tex reports every completed step comparison.",
+        "proposal/logs/spatial_phase.json and the appendix spatial figure retain both endpoint errors, approximately 52.50% and 54.98%."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.zz_structures_documented": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The attempts record identifies alternative structures as analytical considerations without numerical runs. The submitted solver and completed results consistently use the committed distance-two graph, and no evidence identifies hidden completed results from another structure.",
+      "evidence": [
+        "proposal/attempts_log.md:5–7 documents nearest-neighbor ZZ and collective all-to-all ZZ as rejected before simulations, then commits distance-two ZZ.",
+        "proposal/code/method_plan.json:4–6 fixes K_ij=-epsilon/4 for j-i=2 on both parity sublattices.",
+        "proposal/code/spin.py:28–31 implements only that extension; proposal/code/run_nonlinear.py uses it throughout the sweep and additional checks.",
+        "proposal/sections/main.tex:18–24 states the same graph is used at every coupling and system size; staged run records reveal no contradictory alternative-model result set."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submission explicitly acknowledges the prior linear spin model, plasma-envelope reduction, and standard spin-to-boson/classical-closure ideas. Its claimed additional contribution is differentiated. The supplied record does not identify an unacknowledged prior contribution reproduced as new.",
+      "evidence": [
+        "paper.md:41–57 and Appendix A provide the original spin-wave construction; proposal/sections/main.tex:5,14–22 attributes that backbone to Sundar et al.",
+        "proposal/sections/main.tex:36–50 cites Akhiezer–Polovin and Siminos et al. for the plasma response and envelope equation.",
+        "proposal/sections/main.tex:73 explicitly calls the closure established and related to Holstein–Primakoff, rather than a new exact bosonization.",
+        "proposal/sections/main.tex:195–199 differentiates the claimed interaction/calibration study and acknowledges Jordan–Wigner and tensor-network approaches; proposal/references.bib supplies the corresponding citations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The scientific implementation uses local code and disclosed standard scientific libraries. No identifiable prohibited or unattributed external methodology implementation appears in the inspected submission. Formatting utilities and the supplied style are separately disclosed.",
+      "evidence": [
+        "task_spec.md:185 permits authored methodology code and standard scientific-library use.",
+        "proposal/codebase_notes.md:5–14 describes authorship and the NumPy, SciPy, SymPy, Matplotlib, and rendering-library roles.",
+        "proposal/code/spin.py, pde_reference.py, run_linear.py, and derive.py contain the local simulator, PDE solver, reference construction, and symbolic calculations; their imports match the disclosed library usage.",
+        "workdir_outside_proposal/code/ and workdir_outside_proposal/data/ were inspected and are empty.",
+        "The copied proposal/neurips.sty is disclosed and byte-identical to workdir_outside_proposal/neurips.sty; all inspected code hashes match proposal/logs/source_manifest.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

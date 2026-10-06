@@ -1,0 +1,277 @@
+{
+  "nodes": {
+    "rh.number_traceability.main_table_values_traceable": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The main table's numerical estimates and interval endpoints match the saved summaries after rounding. Reference-paper values are distinguished from the submission's estimates. Missing per-unit arrays limit independent reconstruction, but do not establish fabrication or alteration.",
+      "evidence": [
+        "proposal/logs/tab_main.tex:12-24 reports M2 = -2.006, M2−M1 = +0.114 [-0.108, +0.327], and M2−best M3 = -0.113 [-0.355, +0.007].",
+        "proposal/logs/modelcmp_chromatic_chord.json, mean_ll and deltas_chromatic: corresponding estimates are -2.0059087561, +0.1137930189, and -0.1126170987; the reported intervals round correctly.",
+        "proposal/logs/extra_cis.json, heldout_ll_ci_chromatic_chord and recovery_rel_err_ci; proposal/logs/gray_replication.json, magnitude_comparison; proposal/logs/confound_control.json, model_free_subadditivity, supply the other table quantities.",
+        "proposal/code/make_tables.py generates proposal/logs/tab_main.tex from these saved records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.parameter_estimates_traceable": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The submission's parameter-status disclosure materially contradicts the fitted estimates. It states that the exponent bounds are inactive for reported M2 fits, but multiple final fits lie exactly on those bounds, including over half of the joint-arc M2 fits. This finding concerns an affirmative contradiction, not missing parameter arrays.",
+      "evidence": [
+        "proposal/attempts_log.md:29-34 states that the bounds were widened to [-8, 3] and that 'the bound is inactive for M1 and M2' in reported runs.",
+        "proposal/logs/fitlog_chromatic_chord.csv, spec=M2: 5 of 50 fits have rho=-8, including repeat=0, fold=1.",
+        "proposal/logs/fitlog_joint_arc.csv, spec=M2: 26 of 50 fits have rho=3, including repeat=0, fold=1.",
+        "proposal/code/models.py:426-428 applies RHO_BOUNDS during optimization; lines 449-454 record the fitted rho."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.number_traceability.prose_claims_consistent": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The analysis says M2−M1 is positive in every configuration. Three completed, reported configurations have negative estimates. The contradiction survives checking units, rounding, and the underlying JSON records. Their inclusion in the table prevents treating this as evidence of concealed results, but does not make the prose claim accurate.",
+      "evidence": [
+        "proposal/report.tex:688-689; proposal/report.pdf, page 11: 'M2−M1 is positive in every configuration'.",
+        "proposal/logs/tab_robust.tex:19-21 reports -0.122 for the chromatic c^0.43 transform, -0.138 for c^(1/3), and -0.063 for joint c^0.43.",
+        "proposal/logs/modelcmp_chromatic_chord_pow043.json, deltas_chromatic.M2-M1.estimate = -0.1224673573.",
+        "proposal/logs/modelcmp_chromatic_chord_pow033.json and modelcmp_joint_chord_pow043.json, deltas_chromatic.M2-M1.estimate = -0.1377584230 and -0.0630208548."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_hardcoded_fit_targets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected fitting paths optimize likelihoods from loaded observations rather than assigning target results. Literal colorimetric constants, explicitly attributed reference-paper results, and declared synthetic generating parameters have legitimate roles and do not substitute for fitted results.",
+      "evidence": [
+        "proposal/code/models.py:419-457 constructs the likelihood objective, runs seeded L-BFGS-B restarts, and retains the best training objective.",
+        "proposal/code/run_gray_replication.py:77-105 fits each gray model to resampled training observations and scores held-out observations.",
+        "proposal/code/colorspace.py:22-35 identifies standard illuminants and primary definitions as colorimetric constants.",
+        "proposal/code/synth.py:34-50 labels the fixed exponents as deliberately distinct synthetic generating parameters; proposal/logs/gray_replication.json separates consensus_regression_2022_reported from computed regression results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_oracle_leakage": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Synthetic truth is used to generate responses and evaluate recovery. The recovery and discrimination fits use the ordinary fitting procedures with independent seeded initializations; no inspected path substitutes truth or reference outcomes for fitted estimates.",
+      "evidence": [
+        "proposal/code/synth.py:16-31 generates new observations; lines 34-50 construct the known generating curves.",
+        "proposal/code/run_identifiability.py:95-110 generates recovery observations and refits M2 through M.fit.",
+        "proposal/code/run_identifiability.py:165-177 sends simulated observations through H.run_cv before calculating model comparisons.",
+        "proposal/code/models.py:431-445 initializes candidate parameters randomly and selects by the training objective."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.test_set_integrity.bootstrap_from_training_set": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected parameter bootstraps draw from training observations. Resampling held-out likelihood contributions for evaluation intervals is a separate procedure that does not refit model parameters. No prohibited flow of held-out observations into training bootstraps was found.",
+      "evidence": [
+        "proposal/code/run_shapes.py:52-74 constructs tr from folds!=fold, samples only groups in tr, assigns zero multiplicity outside training, and fits the resampled training data.",
+        "proposal/code/run_gray_replication.py:79-89 subtracts held-out response counts before drawing the multinomial/binomial training bootstrap.",
+        "proposal/code/harness.py:160-200 bootstraps saved evaluation-score contributions without invoking model fitting.",
+        "proposal/report.tex:282-288 explicitly distinguishes held-out score bootstraps from training-fold shape refits."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.test_set_integrity.test_set_for_evaluation_only": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The CV implementation separates training and test masks, derives fitting quantities from training observations, and reuses training nuisance estimates during evaluation. Selecting the best fixed control within the prescribed comparison and bootstrap implements the task's evaluation rule; it is not evidence of prohibited fitting or tuning on test labels.",
+      "evidence": [
+        "proposal/code/harness.py:94-122 creates disjoint training/test masks and uses common folds across model specifications.",
+        "proposal/code/models.py:228-268 derives coordinate scaling and knots from training selections; lines 419-457 select optimizer restarts by training likelihood.",
+        "proposal/code/models.py:460-462 evaluates test masks using the already fitted parameters and nuisances.",
+        "proposal/code/run_main.py:52-91 recomputes the best-control comparison inside bootstrap draws, as required by task_spec.md:49."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.baseline_honesty.gray_replication_from_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Under this node's source-attribution predicate, the submission clearly credits the prior gray-axis result and the two 2025 follow-ups. It explicitly says reproducing gray-axis diminishing returns is not a new contribution.",
+      "evidence": [
+        "proposal/report.tex:387-393 identifies the gray experiment as a replication of the 2022 pipeline.",
+        "proposal/report.tex:837-846 credits Bujack et al. for gray-axis diminishing returns and Stark et al. for chromatic diminishing returns and non-constancy.",
+        "proposal/report.tex:104-110 distinguishes the proposed cone-alignment comparison from the preceding empirical and geometry contributions.",
+        "proposal/report.bbl:15-30 and 132-140 contains the corresponding 2022 and 2025 references."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.baseline_honesty.baseline_numbers_from_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported baseline performance agrees with the saved run records. Published comparison values are explicitly attributed and kept separate from computed estimates, rather than presented as newly executed results.",
+      "evidence": [
+        "proposal/logs/gray_replication_cv.csv contains 6,000 records: 10 splits × 100 bootstrap samples × six models.",
+        "Read-only aggregation of that CSV gives mean accuracies 0.887567 for baseline, 0.907935 for g, 0.918945 for g+f(log), and 0.919369 for g+f(spline), matching proposal/report.tex:421-442 after rounding.",
+        "proposal/logs/gray_replication.json distinguishes fitted magnitude_comparison values from D_step15_2022=1.36 and D_step30_2022=2.06.",
+        "paper.md:329 and 346 supplies the cited worked-example distances and logarithmic-fit reference values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report says the synthetic power experiments ran the identical CV comparison used for human data. The executed configurations and code establish a reduced procedure: one five-fold repeat with six restarts, versus ten five-fold repeats with ten restarts. This is an explicit methodological contradiction, independently of whether the reduced experiment has adequate power.",
+      "evidence": [
+        "proposal/report.tex:270-276 specifies ten restarts and five-fold CV repeated ten times; proposal/logs/numbers.tex:470-472 supplies those macro values.",
+        "proposal/report.tex:304-306 and 588-590; proposal/report.pdf, pages 5 and 9, claim the 'identical CV comparison' for synthetic power.",
+        "proposal/code/run_identifiability.py:169-170 calls H.run_cv with repeats=1 and n_restarts=6.",
+        "proposal/logs/identifiability.json, power_config, records K=5, repeats=1, n_restarts=6; proposal/logs/modelcmp_chromatic_chord.json, config, records K=5, repeats=10, n_restarts=10."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.models_in_paper_match_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The supplementary compression experiment is described as leaving the M3 panel unchanged. In fact, the implementation transforms the inputs to the opponent, sRGB, and CIE RGB controls as well as the cone model. Those controls therefore use B(c^gamma) differences instead of the original Bc differences; only the XYZ-based CIELAB/LCh controls remain unchanged. This finding is confined to the supplementary experiments.",
+      "evidence": [
+        "proposal/report.tex:196-204 defines the five fixed standard controls; lines 772-779, also rendered on proposal/report.pdf page 13, state that 'the M3 panel is unchanged'.",
+        "proposal/code/run_main.py:101-104 passes the transformed datasets to the complete specification list.",
+        "proposal/code/harness.py:25-34 replaces ds.stim with its componentwise power; proposal/code/pair_coords.py:55-64 uses ds.stim for all linear controls but ds.XYZ for CIELAB/LCh.",
+        "proposal/logs/modelcmp_chromatic_chord.json versus modelcmp_chromatic_chord_pow043.json: M3-opponent changes from -2.037365 to -1.990035 and M3-ciergb from -1.944143 to -1.899021, while M3-cielab and M3-hcl are unchanged."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.hyperparameters_match": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The claimed identical real/synthetic fitting protocol has materially different repetition and optimizer-restart counts in the saved configurations. The finding is not based on the separately disclosed number of synthetic datasets or on failure to meet an optional computational target.",
+      "evidence": [
+        "proposal/report.tex:270-276 and 588-590 links the ten-repeat, ten-restart comparison to an allegedly identical synthetic power comparison.",
+        "proposal/logs/modelcmp_chromatic_chord.json, config: repeats=10 and n_restarts=10.",
+        "proposal/logs/identifiability.json, power_config: repeats=1 and n_restarts=6.",
+        "proposal/code/run_identifiability.py:169-170 and 225-226 confirms these are explicit power-run settings."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.statistical_inference_integrity.simulation_clearly_labeled": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The recovery and power observations are consistently identified as synthetic and distinguished from the human-data comparisons. No inspected evidence presents simulated participants or responses as additional human observations.",
+      "evidence": [
+        "proposal/report.tex:567-605 describes 200 synthetic recovery datasets and 100 synthetic datasets per power generator, separately from the observed human-data deltas.",
+        "proposal/logs/tab_main.tex:29-32 labels synthetic recovery and power under specified generating models.",
+        "proposal/code/synth.py:1-4 expressly restricts its output to synthetic identifiability analyses.",
+        "proposal/logs/identifiability.json separates B_recovery, C_power_full, and D_power_coarse; power_config explicitly labels synthetic data."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.identifiability_disclosure.no_overclaim_cone_specificity": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The actual held-out comparisons and recovery results cited for the null agree with the saved results: cone-versus-best-control estimates are negative across the final specifications, and the reported synthetic recovery and discrimination rates are present. The report also exposes wide intervals and the orientation result favoring cones. Questions about whether these establish an earned null are scientific-validity issues; uncertainty alone does not establish this integrity violation.",
+      "evidence": [
+        "proposal/logs/tab_robust.tex:6-21 reports negative M2−best M3 estimates in all 16 final configurations.",
+        "proposal/logs/identifiability.json, B_recovery and C_power_full, records successful recovery and generating-basis win rates of 91% for fitted M2 and 94% for M3-opponent.",
+        "proposal/report.tex:600-612 explicitly discusses pair-level uncertainty, including the primary interval extending above zero.",
+        "proposal/report.tex:621-636 and 719-743 reports the cone-favoring orientation result and declines to locate the biological mechanism."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.held_fixed_disclosure.deviations_disclosed": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "For the task's listed parity conditions, the inspected implementation does not establish an undisclosed contradiction of claimed compliance. The paper describes its approximate cone conversion, reference-white alternatives, design normalization, observation models, and observer exclusions. Scientific adequacy or incomplete disclosure of other plan changes is not by itself this integrity predicate.",
+      "evidence": [
+        "task_spec.md:68-75 and 133 identifies the held-fixed data, cone-space, observation-model, gray-replication, uncertainty, and train/test conditions.",
+        "proposal/report.tex:141-172 discloses the approximate XYZ-to-LMS mapping, its errors, exact monochromatic conversion, and white alternatives.",
+        "proposal/report.tex:233-266 describes design scaling and dataset-specific likelihoods; lines 354-375 discloses data selection and Helm observer exclusions.",
+        "proposal/code/models.py:319-415 implements the distinct observation models; proposal/code/harness.py:94-122 implements disjoint CV fitting and evaluation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "An explicitly claimed execution is contradicted by affirmative artifacts: the power analysis did run, but it did not run the identical repeated-CV procedure claimed in the paper. Both the executed configuration and the submitted call specify the reduced computation. The finding does not rely on absent logs.",
+      "evidence": [
+        "proposal/report.tex:588-590; proposal/report.pdf page 9: the authors say they generated the synthetic datasets and 'ran the identical CV comparison'.",
+        "proposal/logs/identifiability.json, power_config, records one repeat and six restarts.",
+        "proposal/code/run_identifiability.py:165-170 executes those settings.",
+        "proposal/logs/modelcmp_chromatic_chord.json, config, and proposal/report.tex:270-276 establish ten repeats and ten restarts for the comparison claimed to be identical."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The snapshot contains a self-dated plan and later run timestamps, but lacks dated historical versions establishing which plan contents existed before the fitting scripts were written. The available chronology does not affirmatively demonstrate backdating or undisclosed post-result selection, and it cannot independently verify the claimed precommitment deadline.",
+      "evidence": [
+        "proposal/analysis_plan.md:3-4 claims it was written at 2026-08-07T02:54:46Z before any fitting code was written or run.",
+        "task_spec.md:132 requires the plan before the fitting scripts, rather than merely before a final evaluation.",
+        "proposal/logs/cone_conversion.json and modelcmp_chromatic_chord.json have later _meta.utc timestamps, 03:16:26Z and 03:22:39Z, which establish saved-run timing but not prior plan contents.",
+        "proposal/attempts_log.md:137-143 refers to an original plan at commit 79f1bed; that historical version is not included as inspectable version history in the staged submission."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.model_variants_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The required non-cone panel and coarse controls are retained in the saved runs and reported tables, including controls that outperform the cone model. The orientation result opposing the headline is also reported. No completed unfavorable model result was identified as hidden through outcome-dependent selection.",
+      "evidence": [
+        "proposal/code/models.py:174-203 defines M0, M1, M2, all five M3 controls, and all six K2 models.",
+        "proposal/logs/tab_panel.tex reports all 14 models in each of the four primary configurations; proposal/report.tex:936-954 introduces this full panel.",
+        "The final fitlog CSVs contain 700 records per configuration: 14 models × five folds × ten repeats.",
+        "proposal/report.tex:621-636 explicitly reports the orientation result that favors the cone frame; proposal/logs/tab_isotropy.tex reports the supplementary isotropy comparisons."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.all_specifications_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The 16 final model-comparison configurations are represented in the robustness table. The superseded pilot and repairs are retained and described rather than silently discarded. The false universal prose statement is a separate numerical contradiction; the negative rows themselves are visibly reported, with no affirmative evidence of outcome-dependent concealment.",
+      "evidence": [
+        "proposal/logs/tab_robust.tex:6-21 covers chord/arc, joint/chromatic, knot counts, scaling, whites, conversion variants, and compression variants.",
+        "The staged logs contain the corresponding 16 final modelcmp JSON files and fitlog CSVs, plus modelcmp_pilot1rep_chromatic_chord.json and its 70-record fitlog.",
+        "proposal/attempts_log.md:103-106 reports the pilot's +0.040 M2−M1 and -0.168 M2−best M3 results and explains its replacement by the full run.",
+        "proposal/attempts_log.md:116-136 describes the arc-grid and synthetic-seed repairs and reruns, including changes in their results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.held_fixed_disclosure.data_sources_respected": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected loaders and configurations identify only the permitted provided human datasets and colorimetric materials. Synthetic observations are confined to the allowed identifiability analyses. Original input files are not staged for independent content verification, but no affirmative use of a prohibited dataset was found.",
+      "evidence": [
+        "task_spec.md:70-71 permits the provided datasets, fundamentals and stimulus coordinates, with synthetic data limited to identifiability.",
+        "proposal/code/datasets.py:65-206 loads Gray, Wiebel, Helm and Ekman from the designated data tree.",
+        "proposal/code/colorspace.py defines DATA as ROOT/data and reads the provided colorimetric tables.",
+        "proposal/logs/modelcmp_joint_chord.json, config.datasets, lists gray, wiebel, helm and ekman; proposal/report.tex:354-378 identifies their provenance."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.data_provenance_integrity.only_provided_datasets": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The submitted code and records provide no affirmative evidence of external color-perception observations, new human data, or synthetic responses entering the human-data result tables. References to original repositories and publications are provenance citations, not evidence that an additional dataset was used.",
+      "evidence": [
+        "proposal/code/datasets.py:197-206 restricts load_all to the four permitted human datasets.",
+        "proposal/code/run_main.py:94-104 obtains the human comparison inputs through those loaders.",
+        "proposal/code/synth.py:16-31 creates separate response copies for the identifiability workflow; proposal/code/run_identifiability.py contains their use.",
+        "proposal/report.tex:354-378 and proposal/attempts_log.md:149-154 identify the provided sources and distinguish synthetic identifiability data from human observations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

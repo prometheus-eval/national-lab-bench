@@ -1,0 +1,174 @@
+{
+  "nodes": {
+    "number_traceability.metrics_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected numerical results agree with saved run records after rounding. Recalculated seed means and sample standard deviations agree to floating-point precision. No affirmative numerical fabrication, alteration, or false attribution was detected.",
+      "evidence": [
+        "proposal/sections/tab_main.tex:12-14 matches logs/10_mgsf_fullscale.json: RMSE 1.9110707067, CRPS 1.0588431332, coverage 0.947, wall_clock_h 4.4283242804 and peak_memory_gb 57.5319709778.",
+        "proposal/logs/30_baseline_full_svgp_rbfard_M2048.json, runs and aggregate: all six reported metric aggregates reproduce from the three seed records.",
+        "proposal/logs/45_calibration_significance.json, paired_bootstrap, supports the intervals and nonsignificant point-accuracy differences reported in sections/results.tex:72-81.",
+        "proposal/sections/results.tex:176-179 reports the saved MNIST Brier mean and standard deviation, 0.0809919189 and 0.0038470428; the reference 0.018 ± 0.002 is correctly attributed to paper.md:195-199."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_predictions": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submitted prediction and scoring paths compute outputs from fitted models and observations. Hardcoded reference scores and motif patterns serve explicitly identified reference or feature-definition purposes; they do not substitute for model predictions or computed metrics.",
+      "evidence": [
+        "proposal/code/motif_gp.py:375-407 constructs cross-covariance, computes posterior means and solves for posterior variances.",
+        "proposal/code/run_baselines.py:97-134 and 223-249 trains the variational model, predicts, reverses response standardization and computes per-seed metrics.",
+        "proposal/code/metrics.py:34-95 calculates RMSE, CRPS, NLPD and coverage from supplied observations and predictions.",
+        "proposal/code/run_mnist_repro.py:351-352 computes Brier scores; lines 379-386 separately identify 0.018 and 0.002 as published reference values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "kernel_adaptation_genuineness.claim_matches_implementation": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The stated far-field kernel uses raw occurrence-sum features with one amplitude per family. The implemented full-scale kernel divides each motif feature by its own training RMS. These unequal within-family factors change the covariance and cannot be absorbed into the shared family amplitude.",
+      "evidence": [
+        "proposal/sections/methodology.tex:73-88 explicitly defines phi as the unnormalized occurrence sum and beta as a family amplitude; sections/setup.tex:45-46 specifies R0=1.",
+        "proposal/code/motif_gp.py:74-84 divides Phi by per-column RMS; lines 178-188 apply the same normalization to evaluation features; lines 339-346 use those features with family-shared beta.",
+        "Read-only recount of proposal/data/seq_train.txt, using the full model_config.json motif/family assignments: family-0 motifs CGCGCG and CACCCC have squared-count sums 8,504 and 29,583 over 500,000 rows. Their normalization therefore multiplies covariance contributions by 58.7959 and 16.9016, respectively.",
+        "proposal/logs/10_mgsf_fullscale.json identifies the full_k6_10_far1024_near128_G12_r1_n500000 model. logs/40_structure_analysis.json records family-0 far mass 324731.19574534363, matching the normalized-feature trace 500000 × 96 × beta_0²; code/analyze_structure.py:100-114 computes this from the saved model features."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "method_plan_integrity.paper_matches_method_plan": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "No executed post-result change to the specified domain, kernel, split, metric or hypothesis is established as falsely presented as precommitted. The plan and report state the same central design, and refinements and omitted comparisons are disclosed. The feature-normalization contradiction does not establish when that implementation choice arose.",
+      "evidence": [
+        "proposal/method_plan.md:12-179 specifies the promoter task, 500,000/5,000 split, seed 20260809, sparse-plus-factored construction, inadequacy hypotheses and predictive metrics.",
+        "proposal/logs/10_mgsf_fullscale.json, args and model_config, records k0=6, k1=10, far vocabulary 1024, near vocabulary 128, 12 families and R0=1.",
+        "proposal/sections/appendix.tex:108-133 discloses the positional-basis/vocabulary refinements, undelivered VNNGP comparison, expanded radius sweep and corrective reruns.",
+        "proposal/logs/06_far_field_sweep.log:1-27 retains the completed 24-configuration sweep, including R0=5, before the appended reduced rerun."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The promoter baseline quantities trace to executed reference-run records. Published MNIST scores are explicitly separated from the submission's unsuccessful reproduction. No fabricated baseline quantity or false attribution was detected.",
+      "evidence": [
+        "proposal/sections/tab_main.tex:13 and logs/20_paper_full_wendland_onehot_sweep.json, best: radius 48, RMSE 2.3588668531, CRPS 1.3276819846 and coverage 0.9542.",
+        "proposal/sections/tab_main.tex:14 and logs/30_baseline_full_svgp_rbfard_M2048.json: three completed seeds yield RMSE 1.9131043026 ± 0.0008919600 and CRPS 1.0602948738 ± 0.0006651007.",
+        "proposal/logs/20_paper_full_wendland_onehot_sweep.log:22-37 records the corrected six-radius run used in the table.",
+        "paper.md:195-199 contains the cited MNIST scores; proposal/sections/results.tex:172-179 expressly distinguishes them from the submission's own results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The mathematical description materially contradicts the implemented feature weighting. With family-shared amplitudes, per-motif RMS normalization changes relative covariance contributions within each family. This is a different kernel specification, rather than an equivalent computation or merely missing implementation detail.",
+      "evidence": [
+        "proposal/sections/methodology.tex:73-88 specifies raw occurrence sums and family-level beta; proposal/code/motif_gp.py:78-84 instead normalizes every feature column independently.",
+        "proposal/code/motif_gp.py:239-242 and 339-346 loads the normalized feature matrix and uses it directly in the covariance operator; lines 389-403 use it in prediction.",
+        "The full model_config.json assigns CGCGCG and CACCCC to family 0. Recounting saved training sequences gives RMS values 0.1304147231 and 0.2432406216, producing approximately a 3.48-fold difference in relative kernel weighting that a single family amplitude cannot remove.",
+        "proposal/logs/40_structure_analysis.json, far_mass_per_family, corroborates the normalized features used by the full-scale model."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "An explicit repair claim is only partially implemented: the attempts record says both named CG solvers now issue nonconvergence warnings, but jacobi_pcg still discards the convergence status without warning. This finding concerns that claimed repair, not whether the main experiments occurred.",
+      "evidence": [
+        "proposal/attempts_log.md:286-294 names KOperator.solve and jacobi_pcg, identifies silent truncation, and states that their caps are now 20,000 'with an explicit warning'.",
+        "proposal/code/linalg_ops.py:82-102 receives scipy CG's info result but never checks it; it returns the solution and iteration counts regardless.",
+        "proposal/code/linalg_ops.py:139-143 likewise returns the jacobi_pcg result without a convergence check or warning.",
+        "proposal/code/kop.py:147-165 does implement the claimed warning for KOperator.solve, confirming that the contradiction is specific to the other named solver."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The record does not establish undisclosed post-result selection or backdating. The blanket assertion that every baseline choice preceded the main run conflicts with later pilot tuning, but the attempts record openly documents the baseline repair and subsequent selection during the full-scale phase. The later sweep JSON timestamp also cannot establish backdating because an earlier completed sweep remains in its log.",
+      "evidence": [
+        "proposal/sections/setup.tex:34-38 claims every design choice, including baseline architecture and optimizer settings, was fixed before the full-scale run.",
+        "proposal/logs/10_mgsf_fullscale.json starts at 2026-08-09T01:26:07Z; logs/30_baseline_tune_svgp_rbf_ard_M2048_lr0.02.json records pilot tuning at 05:10:14–05:17:32Z.",
+        "proposal/attempts_log.md:161-174 explicitly places the baseline initialization repair and post-fix pilot-CRPS selection under items added during the full-scale phase.",
+        "proposal/logs/06_far_field_sweep.log:1-27 contains the earlier complete 24-configuration sweep; lines 28-46 contain the later rerun.",
+        "proposal/sections/appendix.tex:111-126 identifies the core precommitted choices and disclosed refinements; no dated version establishing concealed replacement of those choices is supplied."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.test_not_used_in_training": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The MNIST gp2Scale reproduction transfers fitted hyperparameters across newly randomized train/test splits. Consequently, labels belonging to later seeds' held-out observations influence their MCMC initialization through the preceding fit. The saved feature arrays and parameter trajectories establish this information flow; reporting the reproduction as unsuccessful does not remove the leakage.",
+      "evidence": [
+        "proposal/code/run_mnist_repro.py:251-257 repartitions all 70,000 observations into 60,000 training and 10,000 test observations for each seed.",
+        "proposal/code/run_mnist_repro.py:282-308 initializes each subsequent gp2Scale fit from h_prev and assigns the preceding fit's MAP parameters to h_prev.",
+        "proposal/logs/05_mnist_reproduction_kw_kd.json: seed 1's first hyperparameter trajectory entry exactly equals seed 0's MAP [0.8750123983559595, 45.0, 0.19201201983880678]; seed 2 similarly starts from seed 1's MAP.",
+        "Read-only row comparison of proposal/features/mnist_te_0.f32 and mnist_te_1.f32, using 784 float32 values per image, finds only 1,489 shared images. Thus at least 8,511 seed-1 test images belonged to seed-0 training. The corresponding seed-1/seed-2 comparison establishes at least 8,563 seed-2 test images in seed-1 training."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_genuine_best_effort": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No affirmative evidence of deliberate baseline weakening was found. The record shows a pilot configuration search, a repair that substantially improved the baseline, selection by pilot CRPS, and full-scale training using the same motif features. The undertrained VNNGP attempt is expressly excluded as an unfair comparison.",
+      "evidence": [
+        "proposal/sections/tab_baseline_tuning.tex:9-15 reports seven configurations, including unsuccessful prior-like fits and the selected RBF-ARD configuration with CRPS 1.0714.",
+        "proposal/attempts_log.md:163-174 documents repairing length-scale initialization rather than retaining the inferior CRPS 1.3298 result.",
+        "proposal/logs/30_baseline_full_svgp_rbfard_M2048.json records 500,000 training observations, 2,048 inducing points, 20 epochs and seeds 0, 1 and 2.",
+        "proposal/attempts_log.md, E6, and sections/appendix.tex:120-123 disclose VNNGP undertraining and its exclusion from the fair baseline comparison."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All three completed SVGP seeds and all three final MNIST reproduction seeds are retained, and their reported summaries recompute correctly. Failed configurations, corrective reruns and unfavorable ablation results are disclosed. No outcome-dependent concealment of completed results was established.",
+      "evidence": [
+        "proposal/logs/30_baseline_full_svgp_rbfard_M2048.json, runs and aggregate, contains seeds 0, 1 and 2 and their complete metric distributions.",
+        "proposal/logs/05_mnist_reproduction_kw_kd.json, brier_values: [0.0788104975, 0.0787313928, 0.0854338665], yielding the reported mean 0.0809919189 and sample SD 0.0038470428.",
+        "proposal/sections/tab_ablation.tex and sections/results.tex:134-167 retain the pilot result where the far-field-only fit outperforms the full kernel.",
+        "proposal/attempts_log.md, E6-E9, explains excluded undertraining and bug-affected runs; logs/20_paper_full_wendland_onehot_sweep.log retains both the original and corrected sweeps."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_metrics_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The comparison reports the required predictive metrics and retains unfavorable findings, including the Wendland baseline's better ACE and the absence of statistically distinguishable point-accuracy gains over SVGP. Supplied records contain the coverage distributions and additional metrics. No concealed outcome-dependent metric or bin selection was established.",
+      "evidence": [
+        "proposal/sections/tab_all_metrics.tex:9-13 reports RMSE, CRPS, NLPD, coverage, ACE and Pearson correlation for all three primary methods.",
+        "proposal/sections/appendix.tex:24-34 explicitly reports Wendland's better ACE, 0.0214 versus 0.0230.",
+        "proposal/sections/results.tex:72-81 reports bootstrap intervals spanning zero for RMSE, CRPS and NLPD; logs/45_calibration_significance.json contains those results.",
+        "The primary run JSON records retain all 19 coverage levels. proposal/sections/tab_strata.tex includes strata of 1,054, 709 and 3,237 observations, accounting for all 5,000 test observations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_followup.not_a_known_followup_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The supplied materials do not identify a prior contribution whose domain, kernel construction and analysis were substantively reproduced without acknowledgement. The submission attributes the gp2Scale lineage and convolution-kernel foundation. This is a finding limited to the supplied evidence, not an independent certification of novelty across the literature.",
+      "evidence": [
+        "proposal/sections/introduction.tex:31-38 acknowledges Noack's 2023 work and gp2Scale as the underlying sparse exact-GP methodology.",
+        "proposal/sections/methodology.tex:90-97 explicitly attributes the R-convolution construction to Haussler.",
+        "proposal/logs/00_research_notes.md, sections 2.1-2.2, identifies related compact-support and biological-sequence GP work and discusses distinctions.",
+        "paper.md, sections 5.1-5.5, concerns synthetic, topography, housing, MNIST and temperature applications rather than the submitted promoter construction."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

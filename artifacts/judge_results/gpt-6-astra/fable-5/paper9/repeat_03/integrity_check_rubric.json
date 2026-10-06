@@ -1,0 +1,202 @@
+{
+  "nodes": {
+    "number_traceability.kernel_hyperparameters_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The reported normalization of the spectral-interpolation kernel contradicts its saved weights. The paper gives an ℓ¹ norm of 1.7 for the (n_k,k_max)=(5,4) diagnostic, whereas both the design vector and executed configuration have norm 2.169214188420648. This difference materially understates the normalization cost and cannot be explained by rounding.",
+      "evidence": [
+        "proposal/report.tex:376-384 reports spectral-interpolation norms of 1.25–1.7; lines 710-714 specifically associate α=1.7 with the reported (5,4) diagnostic.",
+        "proposal/runs_sweep/diag_SI_nk5_km4/meta.json:2-11 records n_k=5, k_max=4, t=0.8 and l1=2.169214188420648.",
+        "Read-only calculation of sum(abs(w)) from proposal/runs_sweep/diag_SI_nk5_km4/weights.npz and the matching vector in proposal/logs/design/weights_selected.npz gives 2.169214188420648.",
+        "proposal/logs/results.csv:35 records the same norm and diagnostic result."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.emulator_metrics_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The 41 collected rows reproduce the saved emulator metrics, but the report materially exaggerates a derived query reduction. Its t=0.4 comparison claims the optimized kernel uses one third of the baseline queries. The cited runs use 11,040 and 16,560 queries respectively, so the actual fraction is two thirds.",
+      "evidence": [
+        "proposal/report.pdf, page 7, Time transfer; proposal/report.tex:575-578 states 2.7× greater accuracy 'at a third of the queries'.",
+        "proposal/logs/results.csv:36 and 42 record Q_A=16,560 for t04_beta07_km12_nk6 and Q_A=11,040 for t04_NOK_km8_nk6.",
+        "proposal/tex_gen/macros.tex:43-44 and proposal/tex_gen/main_table.tex:37-38 contain those same query counts.",
+        "The corresponding dc_OUTPUT.hdf5 files record qsp_selector/nt=3 and 2; the saved 2,761-angle selector gives 5,520 queries per repetition. Thus 11,040/16,560=2/3."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.scaling_fits_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper's uncertainty summary materially contradicts the saved fits. It describes the free-exponent estimates as having individual uncertainties of 0.6–0.8, although the baseline emulator fit has standard error 5.0424. The reported marginal slopes are traceable after converting query counts to truncation range; the finding concerns the understated exponent uncertainty.",
+      "evidence": [
+        "proposal/report.pdf, page 7, Precision scaling; proposal/report.tex:517-525 reports exponent estimates with 'individual uncertainties of 0.6–0.8'.",
+        "proposal/logs/fits.json:2-5 records beta0.7_frontier gamma=2.4726053544943123 and gamma_stderr=5.042373838692668.",
+        "proposal/logs/fits.json:68-71 records NOK_frontier gamma=1.3355164908932633 and gamma_stderr=0.765787198431501.",
+        "proposal/code/analyze.py:41-45 computes these standard errors from fit covariance; proposal/tex_gen/macros.tex:15-18 preserves the rounded emulator uncertainties 5.04 and 0.77."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_emulator_targets": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected pipeline constructs weights and circuits, executes QuCF, and derives reported metrics from saved output amplitudes and circuit metadata. Exact evolution is computed separately at runtime. The fixed selector-angle count is supported by the actual angle files and circuit structure; it does not substitute fabricated query counts for execution.",
+      "evidence": [
+        "proposal/code/run_sweep.py:150-169 launches QuCF; lines 173-199 read emulator outputs and calculate errors, probabilities and queries.",
+        "proposal/code/lchs_lib.py:117-150 constructs the ADE initial condition and computes its exact propagator through the circulant eigenbasis.",
+        "workdir_outside_proposal/code/QuCF-OPT-LCHS/src/QuCF.cpp:1016-1029 evolves the circuit and retrieves its output state.",
+        "All 41 collected sweep rows matched read-only calculations from their dc_OUTPUT.hdf5 files; all inspected selector tables contain 2,761 angles.",
+        "proposal/report.tex:376-387 explicitly identifies exact-spectrum interpolation as a diagnostic; its reported results still have executed circuit outputs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The quoted executable settings match the runs producing the results: baseline β=0.7, headline truncation ranges 10 and 4, f₂ parameters γ=4 and c=0.26, and the stated ADE and QSVT settings. The inaccurate diagnostic norm is a derived numerical claim, assessed separately, rather than evidence that a different selected hyperparameter was executed.",
+      "evidence": [
+        "proposal/report.tex:348-363 specifies σ_c=0.05, ρ_cap=3000 and the 16-gon LP construction; proposal/code/design_scan.py:30-44 and proposal/code/kernel_design_lp.py:25-73 implement them.",
+        "proposal/report.tex:436-452 and 483-504 specify the benchmark, β and headline configurations.",
+        "proposal/runs_sweep/head_f2_km6_nk6/meta.json:3-16 records k_max=6, n_k=6, t=0.8, γ=4.0 and c=0.26.",
+        "The 41 saved run configurations agree with their output constants and repetition counts. The selector's stored parameter 1244.500819985 is consistent with the paper's rounded 1244.5."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.baseline_source_distinction_preserved": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The submission distinguishes the authors' supplied reference output, its reproduction, and newly generated baseline runs. The claimed bit-identical reference reproduction is supported by the saved amplitudes and gate count. The small normalization change used in newly generated decks is explicitly disclosed.",
+      "evidence": [
+        "proposal/report.tex:443-449 identifies the supplied-output reproduction at (n_k,k_max)=(7,20), with 2,692,135 gates.",
+        "The output amplitudes in proposal/runs/repro_nk7_kmax20/dc_OUTPUT.hdf5 exactly equal those in workdir_outside_proposal/code/QuCF-OPT-LCHS/simulations/LCHS/ADE-OPT/t08/nk7_kmax20-OPT/dc_OUTPUT.hdf5; both record 2,692,135 gates.",
+        "proposal/report.tex:465-470 discloses the normalization adjustment and its application to both generated baseline and variant decks.",
+        "proposal/codebase_notes.md:64-78 identifies reused emulator code, selector angles and input templates; proposal/logs/results.csv identifies the new baseline runs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented circuit architecture, weight-construction paths and error computation agree with the methodology. The paper explicitly says that scaling sweeps use table-based weights and defines its normalized, phase-aligned error. Their adequacy for the task's scientific requirements is separate from this alignment finding.",
+      "evidence": [
+        "proposal/report.tex:241-258 defines query accounting, full-circuit gate counts, success probability and normalized error; proposal/code/run_sweep.py:181-199 implements those calculations.",
+        "proposal/report.tex:398-431 distinguishes table-based weights from QSVT verification and explicitly identifies the sweep's table-based path.",
+        "proposal/code/make_qsvt_full.py:160-205 constructs the block encodings, initialization, amplification and selector described in the report.",
+        "The QSVT headline outputs record 22 ancillae, compared with 18 for the corresponding table-based runs, matching proposal/report.tex:589-599."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.kernel_in_code_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The mathematical kernel definitions match the implementations and saved weight vectors. The primary optimized kernel uses the declared window-and-envelope LP; the exact-spectrum least-squares construction is separately implemented and labeled as a diagnostic.",
+      "evidence": [
+        "proposal/report.tex:104-108 and 297-304 match the β and f₂ densities in proposal/code/lchs_lib.py:36-48.",
+        "proposal/report.tex:341-363 matches the Hermitian pairing, weighted residual constraints and norm approximation in proposal/code/kernel_design_lp.py:25-78 and proposal/code/design_scan.py:30-44.",
+        "proposal/code/run_sweep.py:38-50 separates the window-based NOK design from spectrum-based SI weights.",
+        "All available shared NOK, f₂ and SI vectors in proposal/logs/design/weights_selected.npz exactly match their corresponding saved sweep vectors; encoded rotation tables reconstruct those weights within numerical precision."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report explicitly claims that no substituted-kernel run falls below the reference success probability of approximately 0.215. Completed primary-kernel runs at the same t=0.8 have probabilities near 0.206, contradicting that blanket compliance claim. Other implementation deviations are disclosed; the finding concerns this affirmative floor assertion.",
+      "evidence": [
+        "proposal/report.pdf, page 6; proposal/report.tex:497-499 states that 'no run of the substituted kernel falls below' the reference's converged p≈0.215.",
+        "proposal/logs/results.csv:20 records nk6_NOK_km8 with p=0.20577226722690212; line 23 records char_NOK_nk5_km2 with p=0.20660786653728974. Both use t=0.8.",
+        "Read-only sums of squared output amplitudes in the corresponding proposal/runs_sweep/*/dc_OUTPUT.hdf5 files reproduce those probabilities.",
+        "task_spec.md:103 defines success-probability parity; proposal/report.tex:460-477 separately discloses selector composition and normalization changes."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed completed sweep, reference reproduction, standalone weight verification and repaired full-QSVT runs have inspectable execution artifacts. The three additional deep configurations are explicitly described as unrun and have decks without emulator outputs. No affirmative evidence establishes a false claim that these experiments or repairs were performed.",
+      "evidence": [
+        "proposal/attempts_log.md:35-46 claims 41 completed sweep configurations; all 41 have output states and completed execution logs under proposal/runs_sweep/.",
+        "proposal/attempts_log.md:173-178 identifies the three deep_* decks as unrun; neither staged sweep directory contains their emulator outputs.",
+        "Saved standalone weight outputs reproduce the target amplitudes with maximum discrepancies 4.2998e-14 for β and 1.8569e-13 for NOK, consistent with proposal/report.tex:420-423.",
+        "proposal/code/make_qsvt_full.py:219-220 implements the conjugate inverse-side correction described in proposal/attempts_log.md:215-223; both corrected full-QSVT runs have completed outputs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The paper claims that all hyperparameters and the sweep were fixed before validation and that no hyperparameter was revised afterward. Its own attempt history records a later t=0.4 NOK change from k_max=4 to 8 after evaluating the initial configuration. Although the attempts log acknowledges this change, the paper discloses only the separate t=1.6 baseline correction and retains the blanket precommitment claim. The task specifically requires post-validation refinements to be disclosed in the paper.",
+      "evidence": [
+        "proposal/report.tex:453-458 claims the grid and all hyperparameters were fixed before validation; lines 470-476 deny revisions and disclose only the t=1.6 baseline correction.",
+        "proposal/attempts_log.md:180-191 states that the original t=0.4 NOK k_max=4 configuration was a guess, later replaced in the best-result comparison by the scan-selected k_max=8 configuration.",
+        "proposal/runs_sweep/t04_NOK_km4_nk6/dc_OUTPUT.hdf5 records basic/date-of-simulation='08-17-2026 02:17:37'; the k_max=8 counterpart records '08-17-2026 02:34:36'.",
+        "proposal/logs/results.csv:37 and 42 retain the original and revised configurations, with errors 0.01007893 and 0.00518252.",
+        "task_spec.md:183 permits post-validation hyperparameter refinement only with explicit disclosure in the paper."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_sweep_configurations_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every completed sweep directory is represented in the collected results, including unfavorable optimized-kernel points and baseline resonances. The plotted best-result summaries use an inspectable selection rule, while the underlying results remain available. Unrun deep configurations and excluded buggy attempts are documented.",
+      "evidence": [
+        "Both proposal/runs_sweep/ and workdir_outside_proposal/runs_sweep/ contain the same 41 completed configurations and three unrun deep_* decks; corresponding files are byte-identical.",
+        "proposal/logs/results.csv:19-20 retains the unfavorable n_k=6 NOK results; lines 38-42 retain guessed, corrected and resonant time-transfer configurations.",
+        "proposal/code/analyze.py:91-105 defines the query frontier; lines 219-237 select each family's best recorded error for the characterization plot.",
+        "proposal/attempts_log.md:173-178 and 193-224 explains unrun decks and the exclusion of corrupted or incorrect QSVT attempts."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.hyperparameter_choices_documented": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The saved design landscapes, run metadata and attempts record expose the tested parameter choices and unfavorable outcomes. Changes to configurations and fit models are documented in the submission. The inaccurate paper-level timing claim is assessed separately; the record does not establish concealed unfavorable hyperparameter results.",
+      "evidence": [
+        "proposal/code/design_scan.py:59-67 specifies f₂ parameter selection; lines 70-121 specify the landscape grid and resource-selection rule.",
+        "proposal/logs/design/design_table.json contains β, Cauchy, f₂ and NOK landscapes, selected f₂ parameters and target selections.",
+        "proposal/attempts_log.md:75-118 documents rejected kernel approaches; lines 159-191 document truncation, fit-model and time-transfer changes.",
+        "proposal/logs/fits.json retains shifted-power, additive-offset and pure-power fit results, including the poorly constrained baseline exponent."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_kernel_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The identifiable inherited contributions are explicitly attributed. The report credits the β kernels, analytic-extension kernels, implementation framework and symmetric-QSP method, while distinguishing its claimed finite-grid norm-constrained optimization. The available evidence does not establish substantive reproduction of an identifiable unacknowledged prior contribution.",
+      "evidence": [
+        "paper.md:92-113 attributes the exact kernels; lines 164-168 discusses the prior analytic-extension kernels.",
+        "proposal/report.tex:103-113 credits An–Childs–Lin and the approximate-kernel literature; lines 291-304 explicitly attribute f₂ to Low and Somma.",
+        "proposal/report.tex:740-757 distinguishes the proposed finite-grid optimization from cited universal rational-kernel optimization and credits the QSP phase-finding literature.",
+        "proposal/code/lchs_lib.py:17-24 identifies the sources of the implemented kernel families."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected methodology code uses the supplied QuCF implementation and permitted scientific libraries. Reused decks, selector angles and methodological references are acknowledged. No inspected artifact establishes prohibited external methodology-code reuse or unacknowledged copying.",
+      "evidence": [
+        "task_spec.md:211 defines permitted code sources.",
+        "proposal/codebase_notes.md:64-108 identifies reused QuCF components and the newly implemented kernel, deck and phase-generation code; lines 111-117 identifies external components not used.",
+        "proposal/code/qsvt_angles.py:144-195 implements the cited symmetric-QSP solve using NumPy and SciPy.",
+        "workdir_outside_proposal/code/QuCF-OPT-LCHS/src/QCircuit.cpp:1987-2019 contains the documented weight-file extension.",
+        "proposal/code/make_run.py:30-35 and 83-110 explicitly source the deck template and selector-angle tables from the supplied implementation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

@@ -1,0 +1,197 @@
+{
+  "nodes": {
+    "rh.number_traceability.all_quantities_trace": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Table 2 materially misidentifies its uncertainty values as standard errors. They are population standard deviations across three audit minibatches, copied without conversion. This is a false attribution of the reported uncertainty; the main RMSE aggregates and paired-test values otherwise reproduce from the saved evaluations.",
+      "evidence": [
+        "proposal/report.tex:504–506 and proposal/report.pdf, p. 7, Table 2: uncertainties are labeled 'mean±s.e. over audit minibatches'.",
+        "proposal/code/audit.py:135–144 returns np.mean(vals), np.std(vals); proposal/code/make_var_table.py:44–46 copies both values directly.",
+        "proposal/logs/audit_imp2x.json:143–190: NMS minibatch ratios are 2.281378238, 1.155194145, and 1.782042859. Their mean is 1.739538414, population SD is 0.460744053, and sample-based SE is 0.325795244; proposal/tables/table_var.tex:7 reports 1.74±0.46 as an SE."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_oracle_targets_in_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No inspected evidence establishes that hardcoded targets replaced the reported computations. The synthetic-results generator is explicitly identified as a pipeline test harness, and the final records differ from its generated schemas and values. Reported evaluations have corresponding execution outputs, and saved molecular errors reproduce their RMSEs after unit conversion.",
+      "evidence": [
+        "proposal/code/gen_synthetic.py:1–3 and proposal/code/README.md:39–40 identify the synthetic generator as testing infrastructure outside the reported results.",
+        "proposal/code/evaluate.py:43–77 computes errors from checkpoint predictions and applies the Hartree-to-kcal/mol conversion.",
+        "proposal/logs/eval_phl_s1.json through eval_phl_s3.json and eval_imp3x_s1.json through eval_imp3x_s3.json: recomputed RMSEs from saved molecular errors agree within 2.8e-8.",
+        "proposal/code/make_numbers.py:20–26 explicitly labels its numerical reference constants as published Figure 3(a) values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.paper_as_reported_traceable_to_citations": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The published runtime is verifiable, and the submission supplies specific citations for the reference RMSEs. However, their source is Figure 3(a), whose image and original PDF are absent from the permitted evidence. The supplied markdown contains the figure reference but not its absolute RMSE values. Consequently, the quoted RMSEs cannot be independently assessed for material misquotation.",
+      "evidence": [
+        "proposal/logs/paper_reference.md:15–28 and 44–54 attributes the nine randomized-PHL RMSEs to Figure 3(a).",
+        "paper.md:208–210 references images/image3.jpg without transcribing its numerical bars; paper.pdf and images/image3.jpg are absent from the evaluation inputs and staged submission.",
+        "paper.md:314 confirms the cited 13.3-second PHL epoch time and 326.5-second full-Hessian time.",
+        "proposal/tables/table_main.tex:7 contains the reference RMSE row being assessed."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.reimplemented_traceable_to_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reimplemented PHL row reproduces from all five saved baseline evaluations, with matching execution outputs and training records. No fabricated, altered, or falsely attributed baseline result was detected.",
+      "evidence": [
+        "proposal/logs/eval_phl_s1.json through eval_phl_s5.json, datasets: aggregation gives Test energy 4.451943±0.242469 and NMS Hessian 35.666722±1.535425, matching proposal/tables/table_main.tex:8 after rounding.",
+        "proposal/runs/main/pp_eval_phl_s1.out through pp_eval_phl_s5.out: printed E/F/H evaluations agree with the corresponding JSON values to output precision.",
+        "proposal/runs/main/phl_s1_log.json through phl_s5_log.json: each records 500 epochs and 35,000 steps with 400 probes; mean total_wall/500 is 4.201200 seconds, matching the reported 4.2."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.baseline_distinction_honored": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Published reference values and the submission's own baseline results are explicitly separated. Paired accuracy comparisons use the logged reimplementation, and no conflation or false labeling of the two sources was detected.",
+      "evidence": [
+        "proposal/report.tex:406–418 defines the published external anchor separately from the five-seed reimplementation.",
+        "proposal/tables/table_main.tex:7–8 labels separate 'paper as reported' and 'reimplemented, 5 seeds' rows.",
+        "proposal/report.tex:449–456 says the published values are cited, not rerun.",
+        "proposal/code/analyze.py:35–54 loads matching method and reimplemented-baseline seed evaluations for paired tests."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.under_convergence_disclosure.gap_disclosed_appropriately": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report explicitly acknowledges the reduced schedule, scheduler substitution, and reproduction gap rather than representing the reimplementation as agreement with fully converged published PHL. The strength of its transfer argument is a scientific issue under this rubric.",
+      "evidence": [
+        "proposal/report.tex:406–418 discloses 500 epochs, cosine scheduling, and Test energy 4.45 versus the quoted published 4.09.",
+        "proposal/report.tex:622–630 discusses transfer and expressly declines to claim the full-convergence result without running it.",
+        "proposal/attempts_log.md:97–107 documents the scheduler change; lines 125–129 state that full paper-convergence runs were not performed.",
+        "proposal/tables/table_main.tex:7–8 exposes the separate reference and reimplementation results across all nine cells."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.pre_stated_method.consistent_tolerances": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The stated variance decision rule requires mean plus one SE to be at most 2, whereas the reduction-classification code checks only the mean. The report specifically calls its Table 2 NMS result a pass even though that audit fails the stated rule: using the correctly computed sample SE gives 2.0653. A separate curve audit does not reconcile the Table 2-based claim or disclose a changed decision rule. The accepted paired-t-test accuracy route was applied consistently.",
+      "evidence": [
+        "proposal/report.tex:434–436 states the mean+one-SE≤2 rule; lines 470–474 and 607–609 claim that the displayed audit passes on all three datasets.",
+        "proposal/code/make_var_table.py:21–31 and proposal/code/make_numbers.py:219–230 classify reductions using proxy_mean≤2 without an uncertainty term.",
+        "proposal/logs/audit_imp2x.json, datasets.nms.per_batch: mean 1.739538414 plus sample SE 0.325795244 equals 2.065333658.",
+        "proposal/code/analyze.py:52–63 and proposal/logs/table_imp2x_vs_phl.json consistently implement and report the paired difference-test route."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The core inverse-probability estimator and online scoring match the described implementation, but the reported audit methodology materially contradicts the code: standard deviations are presented as standard errors, and the advertised uncertainty-aware classification is implemented as a mean-only comparison. These are observable discrepancies in the reported computation.",
+      "evidence": [
+        "proposal/report.tex:434–436 and 504–506 describe uncertainty-aware classification and mean±SE reporting.",
+        "proposal/code/audit.py:135–144 calculates population SD; proposal/code/make_var_table.py:44–46 prints it directly.",
+        "proposal/code/make_var_table.py:21–31 uses only proxy_mean for the gate.",
+        "proposal/code/train.py:130–160 implements the described square-root EMA scores, selected-molecule HVPs, inverse-probability weighting, and EMA updates."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.hyperparameters_match": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report specifies 32 replicates for periodic gradient-variance audits, but all four intermediate checkpoint audits use 24. The final audits use 32, so this is a specific undisclosed difference in the intermediate audit configuration. The principal training hyperparameters otherwise match the recorded runs.",
+      "evidence": [
+        "proposal/report.tex:427–430 specifies R=32 for audits at periodic checkpoints.",
+        "proposal/code/postprocess.py:60–65 dispatches epoch-100/200/300/400 audits with --R 24.",
+        "proposal/logs/audit_imp3x_ep100.json, audit_imp3x_ep200.json, audit_imp3x_ep300.json, and audit_imp3x_ep400.json each record R=24 at line 6.",
+        "proposal/runs/main/*_log.json, config records: batch_size=400, epochs=500, cosine scheduling, and CIS alpha=beta=0.3 agree with the reported training setup."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_bias_trade.no_offline_pretraining_amortization": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No concealed Hessian-supervised pretraining or amortized initialization was detected. Main runs initialize fresh models and empty score histories, and their training probe counts cover the curvature computations used for updates.",
+      "evidence": [
+        "proposal/code/phl_core.py:51–77 constructs seeded models with Kaiming initialization and zero biases.",
+        "proposal/code/train.py:59–75 initializes the model and an all-NaN EMA; it does not load pretrained parameters or scores.",
+        "proposal/code/train.py:124–166 computes curvature supervision during updates and records its selected-molecule probe count.",
+        "proposal/runs/main/phl_s1_log.json and imp2x_s1_log.json have matching initial validation metrics and complete 35,000-step probe-count arrays."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_bias_trade.no_smuggled_hessian_information": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Training scores are refreshed from already counted selected-molecule probes. Stored reference Hessians are used in the task-permitted manner. Auxiliary probes and exact-Hessian computations are explicitly disclosed as audit procedures, and no concealed flow from them into training updates was detected.",
+      "evidence": [
+        "task_spec.md:174 permits forming reference HVPs from the supplied stored Hessians.",
+        "proposal/code/train.py:131–160 chooses molecules from past EMA scores, computes their HVPs, and updates scores from those same probes.",
+        "proposal/report.tex:430–434 explicitly discloses auxiliary-probe scoring and exact-loss oracle allocations on held-out audit data.",
+        "proposal/code/audit.py:29–40 and 104–129 implement these audit-only computations; the training driver does not consume their outputs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.consistent_reduction_reporting.consistent_baseline_used": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The probe-saving calculations consistently use the reimplemented baseline's 400 molecules and 400 probes per step. CIS uses the same batch size and schedule, with actual counts of 200, 133, 100, or 80. No denominator or accounting-convention substitution was detected; labeling 400/133 as approximately 3× is justified rounding.",
+      "evidence": [
+        "proposal/report.tex:420–424 and proposal/tables/table_main.tex:8–13 specify the common baseline and probe budgets.",
+        "proposal/runs/main/phl_s1_log.json through phl_s5_log.json: batch_size=400 and every recorded step uses 400 probes.",
+        "proposal/runs/main/imp2x_s*_log.json through imp5x_s*_log.json: all use batch_size=400 and 35,000 steps; per-step counts equal their stated budgets.",
+        "proposal/code/curve.py:47–50 computes reduction as batch_size/P."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The explicit claim that periodic variance audits used 32 replicates is contradicted by both dispatch arguments and saved results showing 24 at the four intermediate checkpoints. The finding concerns the claimed extent of those executed audits.",
+      "evidence": [
+        "proposal/report.tex:427–430: periodic audits are described as using R=32 probe/subsample replicates.",
+        "proposal/code/postprocess.py:61–65 supplies --R 24 for the four intermediate audits.",
+        "proposal/logs/audit_imp3x_ep100.json through audit_imp3x_ep400.json, R fields: all equal 24.",
+        "proposal/runs/main/pp_audit_imp3x_ep100.out through pp_audit_imp3x_ep400.out contain the corresponding completed audit outputs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The specific claim is that alpha and beta were fixed before the seed sweep. Configurations and saved artifact chronology are consistent with that deadline, and no dated evidence establishes an undisclosed post-result change or backdating. File modification times provide limited provenance rather than an independently authenticated preregistration.",
+      "evidence": [
+        "proposal/report.tex:724–727 and proposal/attempts_log.md:33–46 state that alpha=beta=0.3 were fixed before the sweep.",
+        "proposal/code/spec_main.json specifies alpha=beta=0.3 throughout; its saved modification time is 2026-07-25 20:19:01 UTC.",
+        "proposal/runs/main/phl_s1_ep0.pt and imp2x_s1_ep0.pt have saved modification times of 2026-07-25 20:37:35 UTC, after that configuration file.",
+        "All main CIS training-log config records retain alpha=beta=0.3, including the additional seeds in proposal/code/spec_extra.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All 34 completed main training runs have evaluations represented in the reported method aggregates: five seeds for PHL and each CIS budget, and three for each ablation. The smaller ablation ensembles are disclosed. No omitted unfavorable completed seed or outcome-dependent exclusion was established, and larger-budget-reduction variance failures are reported.",
+      "evidence": [
+        "proposal/code/spec_main.json contains 30 jobs; proposal/code/spec_extra.json adds the remaining four CIS seeds.",
+        "proposal/logs/eval_*.json contains all corresponding evaluations; independent aggregation reproduces the table means, standard deviations, and saved paired-test results.",
+        "proposal/report.tex:449–451 explicitly identifies the three-seed uniform, one-column, and E-F rows; proposal/tables/table_main.tex:8–16 includes every main method configuration.",
+        "proposal/report.tex:479–489 and 595–609 reports resolved accuracy differences and variance failures beyond 2×; the variance figure retains the nonmonotonic IRC/NMS intermediate measurements."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

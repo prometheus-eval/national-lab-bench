@@ -1,0 +1,200 @@
+{
+  "nodes": {
+    "rh.number_traceability.all_quantities_trace": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The headline RMSEs and paired tests reproduce from saved errors, but the preliminary measurement sample sizes are materially overstated. The report describes 500 training and 400 validation molecules at the listed checkpoints, including epoch 50; the underlying epoch-50 records contain 300 and 200, respectively.",
+      "evidence": [
+        "proposal/report.tex:514-518; proposal/report.pdf, p. 7, §5.1: claims 500 training molecules and 400 from each other composition at epochs 50/200/400/450/750.",
+        "proposal/logs/varprobe/s9101_ep50_ratios.json:390 and :780: n_molecules is 300 for train and 200 for val.",
+        "proposal/logs/varprobe/s9101_ep50_train_permol.npz and s9101_ep50_val_permol.npz: probe_ell shapes are (300, 4) and (200, 4), confirming the smaller executed samples."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_hardcoded_values.no_oracle_targets_in_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No hardcoded result substitutes for training or evaluation. The hardcoded PAPER dictionary supplies explicitly cited reference values. Model derivatives and diagnostic oracle gradients are computed, and measured results are aggregated from run artifacts.",
+      "evidence": [
+        "proposal/code/gen_tables.py:27-32: PAPER is explicitly identified as reference-paper Figure 3(a)/Figure 4 values.",
+        "proposal/code/train.py:137-155, 217-226 and 310-325: computed dense/thinned HVP losses and exact diagnostic oracle gradients.",
+        "proposal/code/evaluate.py:25-51: computes energy, force and full-Hessian squared errors and converts their means to RMSEs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.paper_as_reported_traceable_to_citations": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The published baseline values match the cited original figures. They are presented as reference results, not submission-generated measurements.",
+      "evidence": [
+        "proposal/report.tex:567-589 and proposal/logs/paper_reference.md:9-31: identify Figure 3(a) as the source of all nine published RMSEs.",
+        "workdir_outside_proposal/images/image3.jpg, visually inspected: PHL E/F/H values are Test 4.09/5.80/13.38, IRC 6.91/7.39/15.08 and NMS 13.54/12.92/29.71.",
+        "workdir_outside_proposal/images/image5.jpg, visually inspected: PHL runtime is 13.34 s, matching proposal/logs/paper_reference.md:41-46 and the main table.",
+        "paper.md:501-512: five-model ensembles, batch size 400 and A6000 timing protocol support the accompanying reference descriptions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.reimplemented_traceable_to_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reimplemented baseline's reported accuracy and timing values trace to its five completed runs. Independent calculations from the saved per-molecule errors reproduce all nine baseline means and standard deviations.",
+      "evidence": [
+        "proposal/logs/runs/phl_s1001 through phl_s1005: each metrics.jsonl contains epochs 0-799, and each summary.json records 22,455,200 probes over 800 epochs.",
+        "The five runs' eval/{test,irc,nms}_permol.npz files reproduce their rmse_best.json values using the common Hartree conversion factor 627.5094738898777.",
+        "Recalculated Test energy is 4.248290 ± 0.083891 and NMS Hessian is 35.689253 ± 0.768526, matching proposal/report.tex:589 after rounding.",
+        "proposal/code/gen_tables.py:78-83 and the baseline metrics reproduce the reported approximately 2.21 s epoch timing."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.two_baseline_integrity.baseline_distinction_honored": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Published and reimplemented PHL results are clearly distinguished. The report identifies their different provenance and hardware and uses the reimplementation for paired comparisons.",
+      "evidence": [
+        "proposal/report.tex:469-476: explicitly distinguishes published reference values from the submission's five-seed reimplementation.",
+        "proposal/report.tex:588-590 and proposal/tables/table_main.tex:13-15: separately labeled published, reimplemented and RAPT rows.",
+        "proposal/report.tex:570-571: distinguishes reference A6000 timing from measured H200 timing.",
+        "proposal/code/gen_tables.py:60-65 and 208-209: accuracy comparisons use measured RAPT and PHL run values."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.under_convergence_disclosure.gap_disclosed_appropriately": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The known NMS Hessian reproduction gap is explicitly disclosed rather than represented as agreement. The report discusses transfer beyond its fixed training budget. Whether this discussion meets every scientific placement or adequacy requirement is separate from this integrity predicate.",
+      "evidence": [
+        "proposal/report.tex:600-609: identifies the exception as 35.7 ± 0.8 versus published 29.71, approximately 20% higher.",
+        "proposal/report.tex:877-891: discusses convergence-stage transfer and acknowledges uncertainty about later learning-rate reductions.",
+        "proposal/report.tex:478-490: discloses the fixed 800-epoch schedule and disabled learning-rate-floor early stopping.",
+        "proposal/logs/aggregated/main_results.json, phl.nms_H.mean: 35.68925330190188, consistent with the disclosed gap."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.pre_stated_method.consistent_tolerances": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The paired-test threshold and variance cap are applied as described. The outcome-informed change to the stage-based variance gate is explicitly disclosed, so it is not a silent switch. Its scientific acceptability or preregistration adequacy is not established by this finding.",
+      "evidence": [
+        "proposal/report.tex:435-441 and :706-729: consistently use two-sided paired tests with p > 0.05 required on every accuracy cell.",
+        "Independent calculations reproduce RAPT p-values 0.166024-0.575058 and RAPT-A Hessian failures p = 0.008229 and 0.039488.",
+        "proposal/report.tex:424-432 and proposal/attempts_log.md:134-147: disclose that floor-phase/final-checkpoint gating was adopted after observing early audit results.",
+        "proposal/report.tex:683-688 and :824-837: report the borderline training interval and transient variance-cap exceedances."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.methodology_matches_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The implemented training estimator matches the stated equations, but the paper's description of the executed preliminary measurement protocol contradicts its outputs: the epoch-50 samples were 300 training and 200 validation molecules, not the stated 500 and 400.",
+      "evidence": [
+        "proposal/report.tex:514-518; rendered report.pdf p. 7: describes the larger sample sizes across the listed checkpoints.",
+        "proposal/logs/varprobe/s9101_ep50_ratios.json:390,780 and the corresponding per-molecule NPZ arrays establish the executed smaller samples.",
+        "proposal/code/variance_probe.py:36-47, 188-227: sample limits determine the measurements, and the actual count is saved as n_molecules.",
+        "proposal/code/train.py:158-226 and :278-285 otherwise implement the stated cached priorities, Bernoulli selection, inverse-probability compensation and own-run cache updates."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.code_paper_alignment.hyperparameters_match": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The training hyperparameters match, but the broader predicate also covers reported execution parameters. The stated preliminary sampling parameters, 500 training and 400 validation molecules at epoch 50, are contradicted by actual counts of 300 and 200. This finding concerns those measurement parameters, not an undisclosed change to the RAPT training schedule.",
+      "evidence": [
+        "proposal/report.tex:514-518 versus proposal/logs/varprobe/s9101_ep50_ratios.json:390,780.",
+        "proposal/code/variance_probe.py:192-195 and :210-226: training/validation sample limits are explicit measurement configuration parameters.",
+        "proposal/report.tex:493-506 and all rapt_s1001-1005/config.json files agree on warm=20, rho0=0.7, rhomin=0.45, thalf=70, priority exponent 0.5, size exponent -0.9, pi_min=0.02 and EMA beta=0.5.",
+        "proposal/code/phl_common.py:92-103 and run configurations support the reported optimizer, scheduler and loss weights."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_bias_trade.no_offline_pretraining_amortization": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No concealed pretrained weights or Hessian-supervised initialization were found. Main runs initialize fresh models and empty caches. Preliminary dense runs are disclosed as design-selection work rather than silently imported model training.",
+      "evidence": [
+        "proposal/code/train.py:513-518: builds the model from the run seed and creates a new MolCache; no preliminary checkpoint is loaded.",
+        "proposal/code/phl_common.py:74-89: seeded parameter initialization.",
+        "proposal/code/train.py:89-94: caches initialize to zero.",
+        "proposal/logs/hyperparam_selection.md:3-8 and proposal/logs/runs/README.md:15-23: identify preliminary seeds 9101/9102 separately from main seeds 1001-1005."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.no_bias_trade.no_smuggled_hessian_information": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "There is affirmative prohibited test-label information flow: Test/IRC/NMS Hessian measurements were used in candidate allocation and budget selection, although the experimental comparison describes these datasets as held out. Separate preliminary model seeds do not hold out the evaluation labels. Under the assessment policy, disclosure of this selection process does not excuse actual prohibited test-label leakage.",
+      "evidence": [
+        "task_spec.md:99 prohibits reducing the probe count through test-set selection; rubric.json:483 states that disclosure does not excuse actual prohibited test-label leakage.",
+        "proposal/logs/hyperparam_selection.md:10-45,48-68,74-83: 'Measurements driving the freeze' compare candidate priorities and budgets using Test/IRC/NMS results and establish the frozen allocation configuration.",
+        "proposal/code/variance_probe.py:60-91,210-227: computes exact Hessian-label losses and parameter gradients on the selected evaluation compositions.",
+        "All 400 IDs in each s9101_ep200_{test,irc,nms}_permol.npz design sample also occur in the corresponding final evaluation NPZ files.",
+        "proposal/report.tex:460-463 describes IRC/NMS as fully held out, while :514-518 identifies their use in the preliminary frontier measurements."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.consistent_reduction_reporting.consistent_baseline_used": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reduction ratios consistently compare matched runs and use the same accounting convention. The displayed 400 and 188.1 counts are nominal-B=400 normalizations; accounting for the smaller last batch yields the same 2.126-fold ratio.",
+      "evidence": [
+        "proposal/report.tex:396-398,443-445 defines the reported count as B times total probes divided by total molecule visits.",
+        "proposal/code/gen_tables.py:68-75 applies 400 × total_probes/total_mols to both methods.",
+        "All main runs contain 56,800 steps and 22,455,200 molecule visits; each epoch ends with a 69-molecule batch.",
+        "Saved records give actual mean counts 395.338028 for PHL and 185.946620 for RAPT. Their ratio equals 1/0.470348427 = 2.126083, which rounds to 2.13."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report explicitly claims a preliminary measurement protocol whose executed sample counts are contradicted by saved outputs. This is affirmative evidence of an inaccurate execution claim, rather than an inference from missing experiments. The principal training and evaluation runs themselves have substantial supporting records.",
+      "evidence": [
+        "proposal/report.tex:514-518; report.pdf p. 7: claims measurements on 500 training and 400 validation molecules at the enumerated checkpoints.",
+        "proposal/logs/varprobe/s9101_ep50_ratios.json:390,780 and corresponding NPZ arrays establish only 300 training and 200 validation measurements at epoch 50.",
+        "The five PHL, five RAPT and five RAPT-A runs each have 800 metric records and 56,800 step records; step totals reconcile with every epoch and summary.",
+        "proposal/logs/runs/*/eval/rmse_best.json and per-molecule NPZ files substantiate the reported final accuracy calculations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The dated artifact sequence contradicts the claim that the entire listed frontier analysis preceded every paired run: epoch-750 measurements were produced after paired runs had started and after the baseline runs finished. This supports a finding of backdated analysis provenance, not a claim that the RAPT constants were secretly retuned. The separately disclosed mid-run variance-gate change is not the basis of this finding.",
+      "evidence": [
+        "proposal/report.tex:514-518 states 'Before any paired run' and includes epoch 750 in the measurement sequence.",
+        "Preserved UTC modification times: phl_s1001/config.json and rapt_s1001/config.json are 2026-08-14 11:21:56; prelim_phl_s9101/ckpt/ep750.pt is 11:22:08.",
+        "The epoch-750 per-molecule measurement files are dated 12:35:55-12:50:02 UTC; s9101_ep750_ratios.json and ep750.out are dated 12:50:02. The five baseline summary files were completed by 12:16:41.",
+        "proposal/logs/hyperparam_selection.md:72-83, dated 11:21:46 UTC, documents pre-launch confirmation through epoch 450, not epoch 750.",
+        "proposal/code/variance_probe.py:204-236 establishes the checkpoint-to-measurement-to-summary dependency."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "rh.selective_reporting.all_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No completed unfavorable seed or configuration was found to be secretly excluded from the represented comparison. All five main seeds contribute to the reported statistics, including unfavorable outcomes. Reduced ablation counts and the timing-only subset are disclosed.",
+      "evidence": [
+        "proposal/logs/aggregated/main_results.json, per_seed arrays, and individual evaluation files contain all matched seeds 1001-1005; independent aggregation reproduces the main results.",
+        "proposal/report.tex:731-747 acknowledges that all nine RAPT mean differences are unfavorable; :859-875 reports RAPT-A's variance failures and significant Hessian regressions.",
+        "proposal/attempts_log.md:149-160 discloses reducing each ablation to seeds 1001-1002; completed ablation directories match that count.",
+        "proposal/report.tex:574-577 and proposal/logs/runs/README.md:25-46 disclose timing exclusions and the interrupted/relaunched early run.",
+        "Rendered report.pdf p. 11, Figure 4, displays later above-cap audit points; the underlying audit records retain these outcomes."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

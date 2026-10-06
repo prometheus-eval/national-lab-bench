@@ -1,0 +1,332 @@
+{
+  "nodes": {
+    "code_methodology_match.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The stated numerical settings agree with the headline configurations and fit records: nugget 1e-8, range-normalized variogram fitting, six guide experts, three folds, 32 trees, ten-observation refreshes, 256 Sobol candidates, and 512 integration points. No material hyperparameter contradiction was identified.",
+      "evidence": [
+        "proposal/sections/methodology.tex:3-13,70-100 specifies the variogram and guide settings.",
+        "proposal/logs/main/diffusion_carr_s00/manifest.json:88-106 records the executed configuration and source hashes; all 50 headline CARR manifests use the same configuration.",
+        "Independent inspection of all 2,950 headline CARR fit records in proposal/logs/main/*_carr_*/fits.jsonl confirmed the stated expert library, fitting settings, refresh schedule, and minimum-score scale selection."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.acquisition_optimizer_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report describes finite-candidate maximization through gpCAM, and the headline code and manifests use that optimizer. Continuous differential evolution is correctly identified as a separate exploratory diagnostic.",
+      "evidence": [
+        "proposal/sections/setup.tex:14-15 describes Sobol, face, corner, and midpoint candidates followed by selection of one maximizer.",
+        "proposal/code/acquisitions.py:147-167 implements the candidate and integration-point recipes; proposal/code/run_experiments.py:135-148 calls gpCAM ask on the candidate list.",
+        "proposal/vendor/gpcam/surrogate_model.py:56-78,199-201 negates custom scores and sorts them, implementing maximization.",
+        "proposal/logs/optimizer_check/suite.json separately records optimizer='de', seeds 0 and 1, and maximum budget 200."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.surrogate_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The implemented predictor matches the report's exponential-kernel ordinary-Kriging equations, including the unknown-mean correction and fitted process scale. The auxiliary guide affects acquisition rather than replacing the reported predictor.",
+      "evidence": [
+        "proposal/sections/methodology.tex:3-22 defines the kernel, variogram fit, ordinary mean, covariance correction, and predictive distribution.",
+        "proposal/code/kriging.py:19-92 subclasses gpCAM GPOptimizer, reuses fvGP's inverse, and implements the described corrections.",
+        "proposal/code/run_experiments.py:109-125 constructs OrdinaryGP for every method and scores that predictor before constructing or refreshing the acquisition guide.",
+        "proposal/logs/math_validation.json records maximum mean and variance discrepancies of 5.7592819402429996e-15 and 3.1953606427492787e-14 against the independent equations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.proposed_acquisition_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "CARR's signed bias, spatially scaled error covariance, Kriging influence, and folded-normal loss reduction correspond to the implemented calculation. The logged guide fits and acquisition diagnostics agree with this description.",
+      "evidence": [
+        "proposal/sections/methodology.tex:24-68 defines the working error law and CARR score.",
+        "proposal/code/acquisitions.py:169-184,211-228 implements the pre-update loss, transported bias, post-update variance, and integrated loss difference.",
+        "proposal/logs/main/diffusion_carr_s00/trajectory.jsonl, n_before=10, records 512 representers, score_max=0.33583573497775554, and score_min=-0.022215195935620394.",
+        "The objectives independently recomputed from saved headline out-of-fold predictions and weights agreed with logged simplex objectives within 3.94e-14."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.smart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "SMART quantities are supported by 50 saved trajectories and 210 checkpoint records covering all functions, budgets, and ten seeds. Their aggregates and saved predictive distributions reproduce the reported numbers.",
+      "evidence": [
+        "proposal/logs/main/baseline_suite.json and baseline_suite_complete.json document the baseline batch.",
+        "proposal/logs/main/*_smart_s*/metrics.json contains the 210 SMART checkpoint records and corresponding prediction_n*.npz files.",
+        "At diffusion budget 1000, independent aggregation gives SMART MAE 4.593399741077542 ± 0.35948087748066543, matching proposal/sections/main_table.tex:32 after rounding.",
+        "Independent rescoring of all final saved predictions reproduced MAE, RMSE, CRPS, MAPE, and coverage to numerical precision."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.gsmart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The gSMART results trace to saved runs of the explicitly disclosed candidate-normalized gradient variant. The submission does not falsely identify that configuration as a literal fixed-coefficient reproduction.",
+      "evidence": [
+        "proposal/sections/setup.tex:17-26 states the normalized coefficient and explicitly distinguishes it from the original manually chosen coefficient.",
+        "proposal/logs/main/*_gsmart_s*/metrics.json supplies 210 checkpoint records from 50 trajectories.",
+        "proposal/logs/main/diffusion_gsmart_s00/trajectory.jsonl records coefficient_rule='reciprocal_candidate_max_gradient_squared'.",
+        "The ten-seed diffusion MAE at 1000 is 4.023825015817064 ± 0.19692067864175997, matching proposal/sections/main_table.tex:32."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.no_paper_numbers_cited_as_baselines": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The numerical baseline tables derive from the submission's saved predictions and metrics. The original paper is cited for methods and qualitative behavior, and the unresolved difference in baseline ranking is explicitly acknowledged.",
+      "evidence": [
+        "proposal/sections/reproduction_limits.tex:3 says the authors retain their results rather than substituting values from the original publication.",
+        "proposal/code/summarize.py:28-73 collects completed local runs and generates the main table.",
+        "All 105 mean-and-standard-deviation cells in proposal/sections/main_table.tex match independently aggregated local metric records.",
+        "paper.md:238-265,319-341 provides the original error definitions and qualitative comparisons."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_claims_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported speedups match the declared calculation. Diffusion reaches the stronger adaptive baseline's maximum-budget mean error at 100 observations, giving the stated 10× observed-budget ratio. The report correctly states that the four 2D functions do not demonstrate a twofold saving.",
+      "evidence": [
+        "proposal/sections/results.tex:22-30 limits the diffusion claim to the implemented baselines and acknowledges the stronger random comparator.",
+        "proposal/sections/speedup_table.tex:5-9 reports first crossings of 500, 500, 500, 500, and 100 against reference budgets 500, 500, 500, 500, and 1000.",
+        "Independent aggregation of proposal/logs/main/*/metrics.json gives diffusion's target as 4.023825015817064 and CARR's first qualifying checkpoint as 100.",
+        "proposal/logs/diagnostics.json, speedup records, agrees with the recomputed separation counts 2/4, 2/4, 3/4, 3/4, and 5/5."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.consistent_direction_acknowledged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report describes each function's curve direction, including early regressions, delayed crossovers, persistent improvements, and competitive grid or random baselines. It also reports the unfavorable CRPS and diffusion MAPE patterns rather than concealing them as ties.",
+      "evidence": [
+        "proposal/sections/results.tex:10-23 individually characterizes all five convergence curves.",
+        "proposal/sections/main_table.tex:8-32 confirms early CARR regressions on the discontinuous functions and consistent lower CARR means against SMART/gSMART on oscillations and diffusion.",
+        "proposal/sections/results.tex:37-41 reports worse final CRPS on four functions and diffusion MAPE of 796.7%, versus SMART's 214.1%.",
+        "proposal/sections/analysis.tex:9-13 acknowledges controls that outperform CARR, including zero bias on Piecewise I and disagreement on oscillations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_reference_consistent": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every efficiency ratio uses the lower SMART/gSMART mean at that function's maximum tested budget. No favorable intermediate reference budget or interpolated crossing is substituted.",
+      "evidence": [
+        "proposal/sections/results.tex:25-27 declares the reference convention and disclaims interpolation.",
+        "proposal/code/summarize.py:150-164 implements the same maximum-budget target and first tested crossing for every function.",
+        "proposal/sections/speedup_table.tex:2-9 uses N=500 for all 2D functions and N=1000 for diffusion.",
+        "Independent recomputation from raw metrics reproduces all five targets and ratios."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.identical_hyperparameters_in_headline_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "All headline CARR runs use the same fitting procedure and v3 guide configuration. Differences in learned weights and spatial-scale settings are data-fitted outcomes, not evidence of concealed per-function tuning.",
+      "evidence": [
+        "proposal/sections/methodology.tex:70-100 specifies one cross-validation, simplex-fitting, and scale-selection procedure.",
+        "All 50 proposal/logs/main/*_carr_*/manifest.json files use guide_variant='v3' and the same selection_procedure.",
+        "All 2,950 headline fit records use the same six experts, three folds, 32 trees, and ridge setting.",
+        "Independent inspection confirmed that every logged selected scale pair minimizes its saved candidate scores."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.per_function_tuning_clearly_labeled": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No hand-tuned per-function variant was found masquerading as the headline procedure. Development versions and acquisition ablations are identified separately, including the global-scale v2 variant.",
+      "evidence": [
+        "proposal/sections/setup.tex:28-31 distinguishes ablations and exploratory development from the final comparison.",
+        "proposal/attempts_log.md:A09-A12 explains v2, v3, and the separately executed global-scale ablation.",
+        "proposal/logs/homogeneous/suite.json records guide_variant='v2'; headline CARR manifests consistently record v3.",
+        "proposal/sections/ablation_table.tex:4-11 labels Zero bias, Unsigned bias, Global scale, Disagreement, ISR, IVR, and EIGF separately."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "initial_design_pairing.paired_initial_design_logged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The claimed pairing is supported by the actual initial coordinates and responses, not merely matching seed labels. Within each function and seed, every method, including budget-specific grid runs, starts with identical ten-point data.",
+      "evidence": [
+        "proposal/sections/setup.tex:6 states the pairing claim.",
+        "proposal/code/run_experiments.py:81-99 initializes and logs the common design.",
+        "Independent comparison of manifests and observations.npz across all 760 final trajectories found no initial-coordinate or response mismatch in the 50 function-seed groups.",
+        "proposal/logs/main/diffusion_carr_s00/manifest.json:7-71 records the initial points, values, and hash shared with its same-seed baselines."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The serial timing benchmark falsely claims that all selected points were verified against saved histories. Its random branch generates and discards a fresh point under a different RNG rule without comparing it to the saved decision; only SMART, gSMART, and CARR execute the stated comparison. This is a narrow false verification claim, not evidence that the main sweep or numerical results were fabricated.",
+      "evidence": [
+        "proposal/attempts_log.md:191-195 claims replay for all five methods and says selected locations were checked against corresponding histories.",
+        "proposal/logs/compute_cost.json, protocol field: 'serial replay of saved trajectories; all selected points verified'.",
+        "proposal/code/benchmark_cost.py:24-32 restricts the distance assertion to SMART/gSMART/CARR; the random branch instead calls default_rng(seed+n).random((1,2)) without checking or retaining the point.",
+        "proposal/code/run_experiments.py:103,131-132 uses a persistent RNG initialized with 30000+seed for the original random trajectory, unlike the timing branch.",
+        "proposal/logs/compute_cost_stdout.log records completion of the timing script for all five methods."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No undisclosed post-result selection or backdating contradicting a precommitment claim was identified. The report expressly discloses benchmark-informed development and reuse of exploratory seeds. Its narrower claim that offline candidate scores precede candidate-label evaluation is supported by the code.",
+      "evidence": [
+        "proposal/sections/setup.tex:30-31 explicitly states that development used seeds 0 and 1 on all five functions and that the final sweep is not a blind holdout.",
+        "proposal/attempts_log.md:A05-A10 documents the outcome-informed development choices.",
+        "proposal/logs/pilot_local/suite_complete.json ends at 2026-10-03T16:01:18.334735+00:00; proposal/logs/main/suite.json starts the final CARR batch at 16:03:33.625453+00:00.",
+        "proposal/code/audit_counterfactual.py:27-37 computes all acquisition scores before evaluating the fresh candidates' responses, as claimed in proposal/sections/analysis.tex:31."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.intext_quantitative_claims_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported numerical results and derived percentages agree with their saved sources after accounting for rounding and units. Independent rescoring of all 2,520 final predictive distributions reproduced the metrics; inspected regional, ablation, audit, and timing quantities also agree.",
+      "evidence": [
+        "proposal/logs/paper_claims.json and paper_macros.tex identify the numerical prose sources.",
+        "Raw metrics yield final error reductions of 22.3404%, 27.9566%, 44.7402%, 31.4253%, and 68.3148%, matching proposal/sections/results.tex:8.",
+        "proposal/logs/diagnostics.json, regional records, reproduces the boundary errors quoted in proposal/sections/analysis.tex:25, including 12.351150909855972 versus 16.941027822974174 for Piecewise I.",
+        "proposal/logs/compute_cost.json contains 500 timing records; their recomputed means match the reported CARR 75.8 ms, SMART 6.7 ms, and gSMART 10.9 ms.",
+        "Independent rescoring of prediction_n*.npz files produced maximum discrepancies of approximately 1.42e-14 for RMSE/CRPS and 3.64e-11 for percentage MAPE, with identical coverage."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.main_table_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every main-table entry matches the mean and sample standard deviation of its ten saved seed results. All 21 function-budget rows and five method columns were checked, with no rounding discrepancy.",
+      "evidence": [
+        "proposal/sections/main_table.tex:8-32 contains 105 result cells.",
+        "proposal/logs/main/*/metrics.json provides all 1,050 contributing checkpoint records, with exactly seeds 0 through 9 in every group.",
+        "Independent aggregation reproduced all 105 displayed mean ± standard-deviation pairs.",
+        "For example, Piecewise I CARR at 500 aggregates to 1.5829061578334565 ± 0.0541104946419339, displayed as 1.583 ± 0.054."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.figure_numbers_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected rendered figures agree with their saved plotting inputs and declared transformations. Convergence and calibration use ten-seed aggregates; ablation bars divide both means and standard deviations by the CARR mean; location plots and counterfactual scatter use saved observations and audit arrays.",
+      "evidence": [
+        "proposal/code/summarize.py:92-148,242-278 specifies the convergence, calibration, location, ablation, and audit plotting transformations.",
+        "proposal/code/paper_artifacts.py:99-145 supplies the complete calibration panels and diffusion projection.",
+        "Inspected saved renders proposal/figures/qa/page_07.png, page_08.png, page_10.png, page_11.png, page_12.png, page_19.png, and page_21.png show the reported series and controls.",
+        "proposal/logs/aggregates.json, main/*/observations.npz, and counterfactual/*.npz provide the corresponding figure data; aggregate metrics were independently checked against raw records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.no_hardcoded_ground_truth_values": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Benchmark equations and physical constants are implemented as callable functions. No hardcoded result table or oracle lookup substitutes for acquisition-time computation. The stored observations and predictions are consistent with those equations and the reported scoring procedure.",
+      "evidence": [
+        "proposal/code/benchmarks.py:21-45 implements the analytic functions, including the published piecewise branches and Cheng viscosity relation.",
+        "paper.md:224-231,288-303,321-325 supplies the corresponding benchmark definitions.",
+        "proposal/code/run_experiments.py:151-165 evaluates the selected new location and then appends its response.",
+        "Independent recalculation of saved observation responses differed by at most 5.69e-13; rescoring all 2,520 saved predictive distributions reproduced the reported metrics."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_aggregated": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every final result group contains exactly seeds 0 through 9, and the aggregates use all of them. No favorable seed subset or completed unfavorable seed omitted from aggregation was identified.",
+      "evidence": [
+        "proposal/code/summarize.py:28-54 collects every completed run in the four final suites and computes sample standard deviations.",
+        "Independent inspection found 1,050 headline and 1,470 control checkpoint records, forming 252 groups with exactly ten distinct prescribed seeds each.",
+        "All aggregate means, standard deviations, and coverage curves in proposal/logs/aggregates.json match independent calculations from the underlying metric records.",
+        "proposal/sections/setup.tex:31 discloses inclusion of exploratory seeds 0 and 1 alongside the eight additional seeds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.no_silent_omissions": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Completed final runs are included in the machine-readable results, and the paper openly reports unfavorable outcomes. Earlier configurations are preserved and labeled as development. Maximum-budget emphasis for controls is declared rather than presented as the entire recorded trajectory.",
+      "evidence": [
+        "proposal/logs/main, ablations, homogeneous, and classical contain 410, 150, 50, and 150 completed trajectories respectively; their 2,520 checkpoint records all enter the final aggregates.",
+        "proposal/attempts_log.md:A05-A10 documents retained exploratory suites, including the poor fixed-coefficient gSMART result of 80.0892226340077 ± 39.50233966025525 on Piecewise II at 200.",
+        "proposal/sections/results.tex:29-41 discloses baseline reproduction limits, CRPS regressions, and diffusion MAPE regression.",
+        "proposal/sections/analysis.tex:9-13 reports ablations that beat CARR; proposal/sections/ablation_table.tex:2 states that full trajectories and predictive metrics are supplied electronically.",
+        "Both staged locations were inspected; workdir_outside_proposal/data is empty and the outside code directories contain the supplied dependencies rather than an additional omitted result suite."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.dense_grid_independent_of_acquisition": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected implementation keeps dense-grid coordinates and labels in scoring and retrospective diagnostics. Online acquisition uses independently generated, unlabeled integration points and observed-data fits. No prohibited grid-label flow into acquisition or training was found, and actual saved training points are disjoint from the evaluation grid.",
+      "evidence": [
+        "proposal/code/benchmarks.py:51-57 defines the shifted 10,000-point and 64,000-point evaluation grids.",
+        "proposal/code/run_experiments.py:47-71 confines dense-grid labels to metric computation; acquisition construction at lines 123-145 receives observed x/y and separate representers.",
+        "proposal/code/acquisitions.py:45-106 fits from observed responses; lines 165-167 generate unlabeled Sobol representers.",
+        "Independent coordinate calculations across all final saved designs found minimum training-to-evaluation distance 2.581087417243013e-05.",
+        "proposal/sections/setup.tex:31 discloses benchmark-informed development without claiming an unseen-function holdout."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "sequential_acquisition.sequential_acquisition_logged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The code selects each new point using the current observed history before requesting its response. Saved step records corroborate that sequence. Additional counterfactual labels are obtained in a separate offline analysis after the headline trajectories are complete.",
+      "evidence": [
+        "proposal/code/run_experiments.py:109-165 fits the current history, selects one location, evaluates it, and appends that observation.",
+        "Independent inspection of 374,900 final-suite acquisition records found consecutive n_before/n_after indices, matching saved coordinates and responses, ordered timestamps, and no guide fit using a later observation count.",
+        "proposal/logs/main/suite_complete.json ends the CARR sweep at 2026-10-03T16:07:21.531277+00:00; counterfactual records are dated 16:08:58.824260 through 16:09:01.378360.",
+        "proposal/code/audit_counterfactual.py:23-37 slices histories to 200 observations and computes scores before its 3,200 total extra candidate-response evaluations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected code uses the supplied gpCAM package, disclosed dependencies, and attributed standard scientific libraries. No non-trivial external methodology implementation used without disclosure was identified.",
+      "evidence": [
+        "proposal/codebase_notes.md:5-31,51-55,81-104 documents gpCAM/fvGP/HGDL reuse, standard-library roles, and literature-derived equations.",
+        "Independent byte comparisons found all eight reused gpCAM Python source files identical to workdir_outside_proposal/code/gpCAM/gpcam.",
+        "proposal/code/kriging.py:9,34-51 directly imports and subclasses gpCAM rather than silently replacing its backend.",
+        "proposal/code/acquisitions.py:3-13 imports NumPy, SciPy, and scikit-learn components; their roles and sources are described in the methodology and references."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.originality.no_substantive_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "No identifiable prior contribution in the staged evidence was found reproduced and presented without acknowledgment. The report attributes ordinary Kriging, integrated design, stacking, residual-based sampling, and model trees, while locating its claimed contribution in their signed error-transport construction. This finding does not establish exhaustive novelty against literature unavailable in the staged record.",
+      "evidence": [
+        "paper.md:137-156 defines the original variance and gradient-weighted acquisitions; proposal/sections/methodology.tex:24-68 specifies the distinct signed counterfactual absolute-loss construction.",
+        "proposal/sections/introduction.tex:8 explicitly places the work within established active learning and integrated design.",
+        "proposal/sections/methodology.tex:102-105 discusses MEPE, SFCVT, EIGF, LOLA–Voronoi, TEAD, GUESS/GALE, stacking, and misspecification, identifying which components are not new.",
+        "proposal/references.bib includes the named antecedents and both cited Noack 2020 follow-ups; proposal/codebase_notes.md:81-91 documents the stated literature and implementation provenance."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

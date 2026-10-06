@@ -1,0 +1,187 @@
+{
+  "nodes": {
+    "number_traceability.errors_and_margins_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Figure 9 falsely attributes a Gaussian-width interval to the training distribution. Its shaded 'trained region' is σ∈[0.78,1.58], and the text calls the error at σ=1.5 an inside-training-band result. The evaluated models were trained exclusively on single-mode sinusoids. The error values themselves trace to saved results, but their claimed relationship to the training distribution is materially contradicted.",
+      "evidence": [
+        "proposal/report.pdf, p.16, Figure 9: rendered shading is described as 'the trained region'; proposal/sections/07_ood.tex:7–12.",
+        "proposal/sections/07a_narrative.tex:3–7 describes σ=1.5 as inside the trained band.",
+        "proposal/code/mechanism.py:160–162 assigns width_train_range=[0.78,1.58]; proposal/code/figures.py:179–180 plots that interval.",
+        "proposal/logs/core/core_rd_modal_s0.json through core_rd_modal_s4.json, train_keys, contain only the twelve sinusoidal profiles; proposal/code/specification_encoder_plan.md:53–58 places all Gaussian profiles in the held-out family."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "number_traceability.breadth_and_latent_values_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The latent-distance plot uses a materially different numerical normalization from the one reported. Saved distances already use the median pairwise training-set distance, but plotting divides them again by the median held-out query distance. For Figure 8, this multiplies the reported horizontal coordinates by approximately 2.790 for the structured encoder and 3.220 for the control. The Spearman coefficients remain unchanged by this rescaling; the violation concerns the plotted distance units.",
+      "evidence": [
+        "proposal/report.pdf, p.16, Figure 8; proposal/sections/06_mechanism.tex:16–21 and 06a_narrative.tex:25–28 specify normalization by the median pairwise distance among trained specifications.",
+        "proposal/code/mechanism.py:67–85 computes and saves distances using that training-set denominator.",
+        "proposal/code/figures.py:142–144 additionally plots dl/median(dl).",
+        "proposal/logs/mechanism_core_cr.json, distance.modal.d_latent and distance.naive.d_latent: medians are 0.3584698588 and 0.3105211556. Their reciprocals give the additional plotted factors."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_hardcoded_values.no_hardcoded_reference_or_encodings": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected prediction and reference paths perform the declared computations. Modal coefficients and analytic PDE-symbol features are computed from the supplied specification and passed through learned networks. No hardcoded prediction, reference target, or oracle output was found substituting for the reported network computation.",
+      "evidence": [
+        "proposal/code/features.py:62–146 computes Fourier/DST/DCT features, modal attenuation, phase, and global descriptors.",
+        "proposal/code/models.py:90–99 and 162–181 implement learned encoding and decoder prediction.",
+        "proposal/code/train_eval.py:198–213 evaluates model outputs and records per-specification errors.",
+        "proposal/code/ref_bridge.py and bc_solver.py implement the attributed reference-solution paths; proposal/tables/oracle.tex:3 explicitly identifies separately retrained oracle results."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "pre_stated_method.settings_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The ablation captions claim identical seeds across arms, but the cited aggregates use different seed sets. In the reaction table, the structured encoder uses 15 seeds, unweighted pooling uses 3, and the denser control uses 10. These pools produce substantially different reported means and uncertainties, so the matched-seed description is material. Disclosure of the reaction seed extension does not make the table's unconditional parity claim accurate.",
+      "evidence": [
+        "proposal/tables/ablation_core_reaction.tex:3, rendered as Table 13 on report.pdf p.26, states 'Every arm is trained with the identical decoder, loss, budget and seeds.'",
+        "proposal/logs/core/core_reaction_modal_s0.json through s14.json: Gaussian mean±sample SD recomputes to 0.4080373±0.2179807.",
+        "proposal/logs/abl/abl_core_reaction_modal_sum_s0.json through s2.json: 0.3068081±0.0181268; abl_core_reaction_naive_M64_s0.json through s9.json: 0.3603558±0.1460733.",
+        "proposal/code/mechanism.py:129–142 aggregates every available run for these prefixes, producing the values in ablation_core_reaction.tex:10–15."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_and_control_honesty.numbers_from_own_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The baseline and naive-control quantities trace to the submission's own runs. The primary baseline, naive, and structured comparisons share the per-run training configuration and seed sets within each family. The paper distinguishes the fixed-IC baseline's own-IC accuracy from its error against other profiles, and explicitly compares the denser control on common seeds. No fabricated or substituted baseline/control quantity was established.",
+      "evidence": [
+        "proposal/logs/RESULTS_SUMMARY.json, core_comparison, agrees with underlying baseline and naive run records; the primary arms use five seeds, or fifteen for reaction.",
+        "proposal/tables/main_results.tex:10–19 distinguishes the convection–reaction baseline's queried Gaussian error 0.5529 from its own-trained-IC error 0.0699; both trace to baseline run results.",
+        "proposal/code/experiments.py:119–123 and proposal/code/models.py:29–51 define the fixed-IC baseline and raw-input control.",
+        "proposal/sections/05a_narrative.tex:89–103 and attempts_log.md:A18 explicitly report the denser-control comparison on ten common seeds."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "attribution_integrity.non_degenerate_integrity": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Implementation and ablation evidence support actual use of specification conditioning. The latent varies with the initial condition, and replacing the profile substantially changes predictions. The submission also discloses the periodic/Neumann physical degeneracy and the failed explanation of their latent placement. Failure to demonstrate superiority of the structured encoder does not establish unused or collapsed conditioning.",
+      "evidence": [
+        "proposal/code/models.py:90–99 and 159–181 route the specification encoding into the decoder.",
+        "proposal/tables/ablation_core_cr.tex:18–21 and logs/ablation_core_cr.json: seen error increases from 0.0702 to 0.3951 under shuffling; Gaussian error increases from 0.3063 to 0.4224.",
+        "proposal/tables/mechanism_core_cr.tex:9 and logs/mechanism_core_cr.json, variance: IC-attributable latent variance is 69.2% for the structured encoder and 79.1% for the control.",
+        "proposal/attempts_log.md:A17 and A19 disclose boundary equivalence and the unsupported latent-placement explanation."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "held_fixed_disclosure.deviations_disclosed": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The paper makes an affirmative held-fixed seed claim that its aggregates contradict. Table 2 says seeds are identical across all rows, although the coefficient-only all-IC control uses three seeds while the primary arms use five or fifteen. The ablation tables repeat the same false parity claim. The inspected decoder, coordinate encoder, concatenation, and coefficient-only modvec interface do match the reference; this finding is specifically about claimed seed parity.",
+      "evidence": [
+        "task_spec.md:94 and 151 identify seeds among the held-fixed comparison conditions.",
+        "proposal/tables/main_results.tex:3, rendered on report.pdf p.8, states that seeds are 'identical across all rows.'",
+        "proposal/logs/RESULTS_SUMMARY.json, core_comparison: coeffall seed lists are [0,1,2], while core_cr/core_rd primary arms use [0,1,2,3,4] and core_reaction primary arms use [0,...,14]; underlying run JSONs confirm these lists.",
+        "proposal/tables/ablation_core_cr.tex:3 and ablation_core_reaction.tex:3 repeat identical-seed claims; proposal/code/models.py:140–181 preserves the reference architectural interfaces."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_paper_alignment.methodology_describes_code": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The described diagnostic methodology materially differs from the submitted implementation. The OOD analysis calls a Gaussian-width interval trained despite sinusoid-only training, and the latent-distance figure applies an additional held-out-dependent normalization absent from its stated method. These change the interpretation of training-domain support and numerical latent distance.",
+      "evidence": [
+        "proposal/sections/07a_narrative.tex:3–7 versus proposal/code/experiments.py:31–41 and core_rd run train_keys: Gaussian profiles are held out, not trained within a width band.",
+        "proposal/code/mechanism.py:160–162 supplies the unsupported Gaussian training interval used by figures.py:179–180.",
+        "proposal/sections/06a_narrative.tex:25–28 describes training-pairwise normalization, whereas proposal/code/figures.py:142–144 further divides the saved distances by their held-out median.",
+        "proposal/report.pdf, p.16, Figures 8 and 9, retains both descriptions in the rendered submission."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The saved records support execution of the reported training studies, solver validations, conditioning-removal analyses, and seed-handling repair. The identified seed-pool and plot-definition contradictions establish inaccurate settings or result descriptions, but the inspected evidence does not establish that a separately claimed experiment, inspection, or repair never occurred.",
+      "evidence": [
+        "proposal/logs contains 265 completed run JSONs across sweep, core, abl, oracle, bc, mf, probe, and scarce; their final history epochs match the saved budgets.",
+        "proposal/logs/reference_validation.json and ood_reference_validation.json contain the reported solver-comparison and convergence records.",
+        "proposal/attempts_log.md:A5 describes the RNG repair; proposal/code/train_eval.py:129–141 reapplies the run seed immediately before model initialization, and retained seed results differ.",
+        "proposal/logs/stdout, ablation_core_cr.json, bc_mechanism.json, and family_summary.json provide execution/result evidence for the corresponding reported studies."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The setup incorrectly identifies convection–reaction, rather than pure reaction, as part of the original registered core. However, the submitted attempts log and codebase notes explicitly disclose convection–reaction as a post-result addition, and both originally registered families remain reported. The later rank test and seed extensions are also disclosed. The evidence therefore does not establish the predicate's required undisclosed post-result selection or backdating.",
+      "evidence": [
+        "proposal/code/specification_encoder_plan.md:3, 10–23 and 40–49 records the dated plan, threshold, selection protocol, and original reaction–diffusion/reaction families.",
+        "proposal/sections/04_setup.tex:19–24 contains the incorrect identification of the registered families.",
+        "proposal/attempts_log.md:A8 and codebase_notes.md:171–189 explicitly disclose the added convection–reaction families and reaction seed extension.",
+        "proposal/attempts_log.md:A14 and sections/05a_narrative.tex:115–122 distinguish the later rank test from the unchanged preregistered noise criterion."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_training_on_held_out.held_out_specs_never_trained": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The inspected headline models' training keys do not overlap their designated unseen-specification keys. Training and feature standardization use training specifications, and the hyperparameter sweep records contain only seen-specification validation results. Retraining on held-out profiles occurs in explicitly labeled oracle diagnostics, not as claimed zero-shot success.",
+      "evidence": [
+        "proposal/code/train_eval.py:129–159 and 163–213 separates training tensors, evaluation tensors, optimization, and final evaluation.",
+        "Read-only comparisons of train_keys with unseen result keys in the saved run JSONs found no intersections.",
+        "All 30 proposal/logs/sweep/*.json records contain val_seen only; proposal/logs/hyperparameter_selection.json documents selection from that validation split.",
+        "proposal/tables/oracle.tex:3 and sections/06a_narrative.tex:40–47 explicitly identify models retrained on otherwise-held-out profiles.",
+        "proposal/logs/bc and mf training keys support the stated held-out Neumann and convection-bearing transfer configurations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_specs_seeds_reported": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No completed unfavorable result was identified as secretly excluded through outcome-dependent selection. The retained aggregates include unstable seeds, negative transfer results, failed hypotheses, and the denser control that removes the apparent advantage. Discarded early runs are disclosed as invalid because of RNG or capacity-matching defects; the record does not establish unfavorable-outcome filtering.",
+      "evidence": [
+        "proposal/logs/RESULTS_SUMMARY.json accounts for all 265 retained runs; recomputation of its aggregate blocks agrees with the source run records.",
+        "proposal/attempts_log.md:A11, A14, A15 and A18 reports seed collapses, failure of the registered noise criterion, both negative PDE-transfer attempts, and withdrawal of the representation advantage.",
+        "proposal/sections/05a_narrative.tex:25–39 and 105–135 reports failed non-regression and both refuted mechanism hypotheses.",
+        "proposal/attempts_log.md:A5 and A12 discloses the discarded RNG-defective sweep and incorrectly capacity-matched control runs."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_replication_of_published_method.not_a_known_method_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected submission acknowledges the identifiable prior ingredients and reference architecture. Its stated contribution is their specification-encoder combination and controlled comparison, rather than invention of modal expansions, Deep Sets, or physics-informed operator learning. The supplied evidence does not establish substantive reproduction of an identifiable unacknowledged contribution.",
+      "evidence": [
+        "proposal/sections/09_related.tex:4–49 acknowledges P²INN, DeepONet, neural operators, conditional neural fields, and Deep Sets.",
+        "proposal/sections/09_related.tex:51–81 discusses HyPINO and explicitly calls the individual ingredients standard.",
+        "proposal/refs.bib supplies the corresponding references, including Cho et al., Wang et al., and Zaheer et al.",
+        "paper.md and proposal/code/models.py:3–16 identify the reused P²INN components and the added specification encoder."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.external_code_attributed": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reused P²INN implementation is explicitly attributed, and the standard scientific libraries used by the added methodology are disclosed. Inspection found no identifiable non-trivial external encoder, representation, or solver implementation presented without attribution or contrary to the reuse rules.",
+      "evidence": [
+        "task_spec.md:165 permits attributed reference reuse and attributed standard scientific libraries.",
+        "proposal/code/models.py:3–16 attributes the transcribed body to Cho et al.; comparison with workdir_outside_proposal/code/P2INN/model.py supports that provenance.",
+        "proposal/codebase_notes.md:18–31 maps the reference files to their uses; lines 131–144 identifies added code and attributes PyTorch, NumPy, SciPy, Matplotlib, and scikit-learn.",
+        "proposal/code/ref_bridge.py, features.py, bc_solver.py, and analysis.py expose the corresponding reference and library calls."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}

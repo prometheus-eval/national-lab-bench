@@ -1,0 +1,315 @@
+{
+  "nodes": {
+    "code_methodology_match.hyperparameters_match_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The headline results use RWV_s050_p2 consistently, matching the reported β=0.5 and γ=2. The submitted fitting code uses the disclosed marginal-likelihood procedure and nominal jitter. No contradictory executed hyperparameter value was found.",
+      "evidence": [
+        "proposal/report.tex:250-265,325-360; proposal/logs/numbers.tex:1-2.",
+        "proposal/code/runner.py:79-80 maps RWV_s050_p2 to w_scale=0.5 and w_power=2; proposal/code/surrogate.py:27-39,74-83 specifies jitter and fitting.",
+        "All headline RWV table cells reproduce from proposal/logs/runs/*__RWV_s050_p2__seed0.json through seed9.json; hps_hist records the fitted surrogate parameters."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.acquisition_optimizer_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The report describes a common differential-evolution optimizer, and the submitted execution path calls that optimizer for SMART, gSMART and RWV with identical settings. Direct SciPy invocation is disclosed in the code and codebase notes.",
+      "evidence": [
+        "proposal/report.tex:362-366; proposal/codebase_notes.md:36-41.",
+        "proposal/code/runner.py:169-173 calls the shared maximizer.",
+        "proposal/code/acquisitions.py:131-144 uses differential_evolution with maxiter=60, popsize=15, tol=0.001, Sobol initialization and polishing."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.surrogate_matches_paper": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The disclosed exponential-kernel GP equations, normalization, likelihood fitting and diffusion log transform correspond to the implementation. Differences from the reference paper's ordinary-Kriging formulation and least-squares fitting are scientific fidelity issues; the submission explicitly provides its actual posterior equations and fitting rule.",
+      "evidence": [
+        "proposal/report.tex:242-265,489-492 describes the implemented posterior, marginal-likelihood fitting and log-domain diffusion model.",
+        "proposal/code/kernels.py:14-17; proposal/code/surrogate.py:58-89,118-153.",
+        "paper.md:100-140 gives the reference variogram fitting and ordinary-Kriging equations."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "code_methodology_match.proposed_acquisition_matches_paper": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report repeatedly says RWV's residual field is fitted only at retraining checkpoints and reused between them. The headline NW acquisition instead recomputes residuals and smoothing from the current observations after every measurement. The cached field described in the report belongs to the separate residual-GP variant. This changes the information used by intermediate acquisition decisions.",
+      "evidence": [
+        "proposal/report.tex:367-371,697-702 explicitly describes checkpoint-only field fitting and reuse.",
+        "proposal/code/acquisitions.py:79-88 calls kernel_smooth_field and loo_abs_resid for headline RWV.",
+        "proposal/code/surrogate.py:51-56,94-107 invalidates the residual cache after each append; lines 156-181 recompute residuals and smooth over current X01.",
+        "proposal/code/surrogate.py:183-231 implements the separate cached GP field used by RWVrgp."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.smart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "SMART's reported numerical results reproduce from the saved ten-seed runs at every headline configuration. Its performance is sometimes characterized inaccurately in prose, assessed separately, but the baseline quantities themselves are not fabricated or falsely sourced.",
+      "evidence": [
+        "proposal/logs/runs/*__SMART__seed0.json through seed9.json contain all five functions and all required headline checkpoints.",
+        "proposal/logs/main_results_table.tex:5-29 matches independently recomputed means and population standard deviations.",
+        "For Piecewise I at budget 500, the logs give 2.393637129±0.1085841, reported as 2.394±0.109."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.gsmart_numbers_from_logged_runs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The gSMART table quantities reproduce from its saved ten-seed runs. The gradient normalization and saturation are disclosed, so these results are not silently attributed to execution of the unmodified reference criterion.",
+      "evidence": [
+        "proposal/report.tex:283-286,450-459 discloses the modified baseline.",
+        "proposal/code/acquisitions.py:42-55 implements normalization and saturation; proposal/code/sweep.py:27 specifies c=0.3.",
+        "proposal/logs/runs/*__gSMART__seed0.json through seed9.json reproduce the gSMART columns in main_results_table.tex and metrics_table.tex."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "baseline_honesty.no_paper_numbers_cited_as_baselines": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported quantitative baseline tables derive from the submission's own saved runs. References to the source paper concern its methods and qualitative behavior; no transcribed source-paper result was found presented as a logged baseline run.",
+      "evidence": [
+        "proposal/code/aggregate.py:14-36 and proposal/code/make_tables.py:28-100 aggregate local run records.",
+        "All 105 primary-table cells and 75 supplementary-metric cells match those records after rounding.",
+        "proposal/report.tex:434-460 discusses qualitative reproduction and explicitly describes departures from the reference setup."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_claims_match_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Although the numerical sample-efficiency ratios reproduce, explicit win claims do not all match the logs. SMART does not beat random at every 2-D budget, and RWV's claimed accompanying CRPS improvement reverses on the piecewise fields.",
+      "evidence": [
+        "proposal/report.tex:437-439 claims SMART beats random at every budget on all four 2-D functions. At smooth_osc budget 50, ten-seed IAE is SMART 1.010169±0.040604 versus random 0.948089±0.017475.",
+        "proposal/report.tex:537-540 claims RMSE and CRPS improve with IAE. At piecewise_II budget 500, RWV CRPS is 14.271481±0.958290 versus SMART 10.622432±0.377684; lower is better.",
+        "Sources: proposal/logs/runs/smooth_osc__{SMART,random}__seed0.json through seed9.json and piecewise_II__{SMART,RWV_s050_p2}__seed0.json through seed9.json."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.consistent_direction_acknowledged": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The report's regression-free characterization fails to acknowledge RWV's consistent, substantial disadvantage to gSMART on diffusion. The diffusion discussion compares RWV with SMART and random while omitting this stronger comparator's entire favorable curve. This is contradicted characterization, not merely failure to meet a performance target.",
+      "evidence": [
+        "proposal/report.tex:154-159,739-744 calls the gains regression-free; lines 489-505 and 670-689 discuss diffusion without acknowledging the gSMART disadvantage.",
+        "Across budgets 50/100/200/500/1000, diffusion RWV mean IAE is [0.553678,0.454399,0.303898,0.196556,0.134663]×10^-11; gSMART is [0.354706,0.259573,0.185128,0.119288,0.083364]×10^-11.",
+        "proposal/logs/runs/diffusion_3d__{RWV_s050_p2,gSMART}__seed0.json through seed9.json: RWV exceeds gSMART's mean plus one standard deviation at all five budgets."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.speedup_reference_consistent": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The stated ratios consistently reference SMART's maximum-budget error: 500 measurements for 2-D and 1000 for diffusion. Log-log interpolation of saved intermediate checkpoints reproduces the crossings. No favorable reference-budget switching was detected.",
+      "evidence": [
+        "proposal/report.tex:475-477,493-495; proposal/code/make_tables.py:104-143.",
+        "Recomputed crossing budgets are 339.436, 320.272, 397.669 and 863.198 for Piecewise I, Piecewise II, Non-differentiable and diffusion, respectively.",
+        "These yield 1.473, 1.561, 1.257 and 1.158, matching proposal/logs/numbers.tex. The diffusion ratio is explicitly versus SMART, not both baselines."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.identical_hyperparameters_in_headline_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every headline function uses the same RWV_s050_p2 variant and shared surrogate-fitting implementation. The diffusion transform is explicitly disclosed and applied across methods. Test-score-driven development is assessed under leakage; no concealed per-function switching of the headline acquisition was found.",
+      "evidence": [
+        "proposal/report.tex:325-360,489-492.",
+        "proposal/code/runner.py:79-80; proposal/code/surrogate.py:74-83.",
+        "All five functions' RWV headline table columns reproduce from their RWV_s050_p2 seed0–seed9 records."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "single_hyperparameter_integrity.per_function_tuning_clearly_labeled": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "No hand-tuned per-function proposed-method variant is substituted into the headline comparison. Alternative bandwidths and field constructions have separate method identifiers and are discussed as development or ablation variants. Baseline gSMART calibration is also disclosed.",
+      "evidence": [
+        "proposal/report.tex:283-286,624-639,685-689.",
+        "proposal/attempts_log.md:79-99 distinguishes bandwidth/exponent and excess-field variants.",
+        "proposal/code/runner.py:54-99 provides separate identifiers; the main table consistently matches RWV_s050_p2."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "initial_design_pairing.paired_initial_design_logged": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "All comparable saved trajectories have identical first ten points and values within function and seed. The code shares initialization across stochastic methods. The report explicitly treats grid as deterministic, so its unpaired design is disclosed protocol noncompliance rather than a false pairing claim.",
+      "evidence": [
+        "proposal/report.tex:409-411 limits the identical-start claim to stochastic methods and identifies grid as deterministic.",
+        "proposal/code/runner.py:17-20,152-154 uses one shared initialization function.",
+        "Comparison of all 42 saved X/y trajectories across runs/ and runs_raw3d/ found no initial-design discrepancies within the 12 comparable function/seed/directory groups. Most other seeds do not retain coordinates."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.execution_claims": {
+      "value": "violation_detected",
+      "confidence": "medium",
+      "reason": "The claimed development-selection history conflicts with the submitted attempts record. The report attributes β=0.5, γ=2 to a once-only selection on seeds 0–2, while the attempts record explicitly describes a full ten-seed search and a later outcome-driven replacement of β=0.33 by β=0.5. This finding concerns the stated selection experiment, not missing auxiliary logs.",
+      "evidence": [
+        "proposal/report.tex:637-639: constants were 'selected once on development seeds {0,1,2}'.",
+        "proposal/attempts_log.md:49-55 labels the search 'full 10-seed' and its results ten-seed means.",
+        "proposal/attempts_log.md:79-91 reports full-ten-seed comparisons and explicitly says β=0.33 was later superseded by β=0.5 because of log-domain diffusion regression.",
+        "proposal/logs/runs/ contains all ten seeds for both RWV_s033_p2 and RWV_s050_p2 on diffusion and the four 2-D functions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.precommitment_claims": {
+      "value": "insufficient_evidence",
+      "confidence": "high",
+      "reason": "The plan asserts that it was written before the full sweep, but the submission lacks a contemporaneously dated original version or execution chronology establishing that timing. Its later method changes are explicitly labeled post hoc. The record therefore cannot establish or refute the original temporal claim, and does not establish backdating.",
+      "evidence": [
+        "proposal/code/method_plan.md:1-4 claims pre-full-sweep registration.",
+        "proposal/code/method_plan.md:90-115 explicitly labels subsequent sharpening and modeling changes as a post-hoc addendum.",
+        "Saved run records contain durations and hyperparameter histories, but no execution timestamps or version identifiers linking them to the original plan."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.intext_quantitative_claims_in_logs": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "The raw-diffusion claim combines an order-of-magnitude MAPE deterioration with an IAE improvement that occurs at different budgets. At the budget underlying the cited approximately 3.6-to-37 MAPE increase, IAE worsens. At high budgets where IAE improves, MAPE does not deteriorate tenfold. The asserted simultaneous numerical trade-off is materially contradicted.",
+      "evidence": [
+        "proposal/report.tex:500-504,670-675 claims doubled efficiency or halved IAE while MAPE simultaneously degrades by an order of magnitude.",
+        "proposal/attempts_log.md:126-134 identifies the approximately 3.6-to-37 MAPE comparison.",
+        "In runs_raw3d/diffusion_3d__{SMART,RWV_s033_p2}__seed0.json through seed9.json, budget-50 means are MAPE 3.623477 versus 37.417892, but IAE 2.119016 versus 3.373477, in units of 10^-11.",
+        "At budget 500, the same means are IAE 0.592924 versus 0.338253 and MAPE 0.456700 versus 0.469232; at 1000, MAPE is 0.263850 versus 0.272918."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.main_table_values_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Every primary-table value reproduces from saved data using the submitted aggregation convention and units. The supplementary metric and cost tables also match. No fabricated, altered or falsely attributed table quantity was detected.",
+      "evidence": [
+        "proposal/logs/main_results_table.tex:5-29: all 105 cells match independently calculated means and population standard deviations after rounding.",
+        "proposal/logs/metrics_table.tex:5-23: all 75 cells match maximum-budget records, including physical-unit diffusion RMSE and log-space CRPS.",
+        "proposal/logs/cost_table.tex:10 matches mean acquisition times of 36.67598, 650.51960, 28.95270 and 0.05264 ms for SMART, gSMART, RWV and random.",
+        "proposal/code/aggregate.py:27-36; proposal/code/make_tables.py:17-25,67-100,160-184."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "trace.figure_numbers_in_logs": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The rendered figures agree with their saved numerical sources. Extracted PDF curve vertices reproduce the logged convergence, calibration and ablation means. Mechanism correlations recovered from the plotted points agree with the mechanism log at displayed precision.",
+      "evidence": [
+        "proposal/figures/convergence.pdf, calibration.pdf and ablation.pdf: numerical checks of 265, 250 and 77 plotted curve points matched log-derived curves within PDF coordinate precision.",
+        "proposal/figures/mechanism.pdf and proposal/logs/mechanism.json: all ten displayed Spearman correlations match to two decimals.",
+        "proposal/figures/scatter.pdf visually contains the documented seed-0 measurement designs; proposal/code/figures.py:78-115 reads saved X coordinates.",
+        "proposal/report.pdf:7,9-10 contains the inspected figures."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.no_hardcoded_ground_truth_values": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Benchmark values are calculated from analytic functions, and reconstruction metrics are calculated from predictions and evaluation labels. Cached evaluation grids are computed data, not hardcoded answers substituted for reconstruction. The saved measurement values agree with independent evaluation of the documented expressions.",
+      "evidence": [
+        "proposal/code/testfuncs.py:23-92 defines the benchmark expressions and legitimate physical constants.",
+        "proposal/code/runner.py:154,175 evaluates newly measured points; proposal/code/metrics.py:15-49 calculates metrics.",
+        "proposal/code/grids.py:21-34 computes and caches evaluation data.",
+        "Read-only checking of all 27,000 saved X/y observations found no discrepancy with the implemented benchmark expressions."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.all_seeds_aggregated": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "The reported stochastic headline summaries include all seeds 0–9. No unfavorable seed exclusion was found, including gSMART's high-variance low-budget outcomes. Grid's single deterministic record is disclosed and does not constitute outcome-dependent seed selection.",
+      "evidence": [
+        "proposal/code/aggregate.py:14-36 loads all available seeds without favorable-outcome filtering.",
+        "Each of random, SMART, gSMART and RWV_s050_p2 has ten records on each function, with every headline checkpoint present.",
+        "Primary-table recomputation using all seeds matches every cell, including Piecewise II gSMART at budget 50: 63.254592±35.674266.",
+        "proposal/report.tex:409-412 discloses deterministic grid."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "selective_reporting.no_silent_omissions": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "Unfavorable completed variants and raw-diffusion results are retained and discussed. The tables and figures include unfavorable headline outcomes. No completed result was identified as silently removed from an aggregation represented as complete. Inaccurate narrative characterization and test-informed selection are assessed separately.",
+      "evidence": [
+        "proposal/attempts_log.md:57-99,126-153 discusses failed variants and the raw-diffusion findings.",
+        "proposal/logs/runs/ contains 705 records; proposal/logs/runs_raw3d/ preserves 161 raw-model records.",
+        "proposal/report.tex:624-689 and figures/ablation.pdf expose unsuccessful alternatives.",
+        "proposal/attempts_log.md:180-182 explicitly discloses which 3-D ablations were not rerun after the log-domain change."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "test_set_integrity.dense_grid_independent_of_acquisition": {
+      "value": "violation_detected",
+      "confidence": "high",
+      "reason": "Although individual acquisition steps do not ingest grid labels, the same held-out evaluation grid supplies the scores used to select acquisition variants and final constants. The attempts record explicitly links final selection to those full-sweep outcomes. This is prohibited test-informed model selection; disclosure does not remove the leakage.",
+      "evidence": [
+        "rubric.json, this node's question explicitly covers using the dense evaluation grid to 'train or select the acquisition model'; task_spec.md:93-95,180 defines the held-out and observed-data protocol.",
+        "proposal/code/grids.py:21-34 reuses each function's cached evaluation grid, generated with seed 777.",
+        "proposal/code/decision.py:21-26,46-77 and proposal/code/explore.py:22-47 evaluate candidate acquisition methods on that grid and compare their IAE.",
+        "proposal/attempts_log.md:79-91 explicitly selects β=0.5 after examining full-ten-seed speedups and the β=0.33 diffusion regression; those candidate runs remain in proposal/logs/runs/."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "sequential_acquisition.sequential_acquisition_logged": {
+      "value": "no_violation_detected",
+      "confidence": "high",
+      "reason": "Within trajectories, acquisition uses the surrogate built from observations already collected, and the newly selected point is evaluated only afterward. No unobserved future measurement values enter these sequential decisions. Cross-run test-informed configuration selection is a separate finding.",
+      "evidence": [
+        "proposal/code/runner.py:165-188 selects xnew before calling func(xnew), then appends/refits and evaluates metrics.",
+        "proposal/code/acquisitions.py:17-127 accesses posterior variance, observed-data gradients and observed-data residuals.",
+        "Saved trajectory lengths agree with n_steps+10: 500 points for 2-D and 1000 for 3-D.",
+        "The test and held arrays are passed to _eval_metrics, not the per-step acquisition maximizer."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "no_external_code.no_undisclosed_external_code": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The inspected methodology code uses disclosed gpCAM/fvgp functionality and permitted standard scientific libraries. No identifiable prohibited or unattributed external methodology implementation was found in the staged submission.",
+      "evidence": [
+        "task_spec.md:189 permits supplied codebases and standard scientific Python libraries.",
+        "proposal/codebase_notes.md:6-52,74-81 identifies reused and locally implemented components.",
+        "proposal/code/surrogate.py imports gpcam.GPOptimizer; acquisitions.py uses SciPy differential_evolution; kernels.py and metrics.py use NumPy/SciPy."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    },
+    "integrity.originality.no_substantive_replication": {
+      "value": "no_violation_detected",
+      "confidence": "medium",
+      "reason": "The available evidence does not identify an unacknowledged prior contribution substantively reproduced as new. The report acknowledges SMART, gradient weighting and closely related cross-validation designs, and states its proposed difference. This finding does not certify novelty beyond the supplied evidence.",
+      "evidence": [
+        "proposal/report.tex:172-220 discusses ALM/ALC, EIGF, MEPE, TEAD and Mohammadi et al.'s residual-GP approach.",
+        "proposal/report.tex:303-330 specifies bounded NW residual smoothing multiplied by base-model variance.",
+        "paper.md:150-156 describes the original gradient-weighted variance, which the submission attributes to Noack et al.",
+        "proposal/references.bib contains the cited prior-method sources."
+      ],
+      "requires_adjudication": false,
+      "adjudication_reason": "none"
+    }
+  }
+}
