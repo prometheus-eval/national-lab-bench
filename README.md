@@ -73,6 +73,7 @@ python src/grader/eval_artifacts/paper<i>/grading.py --template             # em
 python viewer/serve.py        # opens http://127.0.0.1:8000/viewer/
 ```
 
-The viewer is a static site that reads the repository's files, so GitHub Pages can host it as is: in the repository's
-Settings → Pages, deploy from the branch with folder `/ (root)`. The site opens at `https://<user>.github.io/<repo>/`
-(`index.html` forwards to `viewer/`; `.nojekyll` publishes every file unchanged).
+The viewer is a static site that reads the repository's files, so GitHub Pages can host it as is. With
+Settings → Pages → Source set to **GitHub Actions**, `.github/workflows/pages.yml` publishes the repository on every push
+to `main` (or deploy from the branch with folder `/ (root)` instead). The site opens at `https://<user>.github.io/<repo>/`,
+where `index.html` forwards to `viewer/`.
